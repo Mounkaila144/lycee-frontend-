@@ -1,0 +1,69 @@
+import { ModuleMenuConfig } from '@/shared/types/menu-config.types';
+
+export const usersGuardMenuConfig: ModuleMenuConfig = {
+  module: 'Users',
+  menus: [
+    {
+      id: 'users',
+      label: 'Users',
+      route: '/admin/users',
+      icon: {
+        type: 'emoji',
+        value: '👥',
+      },
+      order: 10,
+      module: 'usersGuard',
+      roles: ['admin'],
+      isVisible: true,
+      isActive: true,
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: {
+        type: 'emoji',
+        value: '⚙️',
+      },
+      order: 100,
+      module: 'Users',
+      roles: ['admin'],
+      isVisible: true,
+      isActive: true,
+      children: [
+        {
+          id: 'settings-auth',
+          label: 'Authentication',
+          route: '/admin/settings/auth',
+          order: 1,
+          module: 'Users',
+          parentId: 'settings',
+          roles: ['admin'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'settings-password-policy',
+          label: 'Password Policy',
+          route: '/admin/settings/password-policy',
+          order: 2,
+          module: 'Users',
+          parentId: 'settings',
+          roles: ['admin'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'settings-sessions',
+          label: 'Sessions',
+          route: '/admin/settings/sessions',
+          order: 3,
+          module: 'Users',
+          parentId: 'settings',
+          roles: ['admin'],
+          isVisible: true,
+          isActive: true,
+        },
+      ],
+    },
+  ],
+};
