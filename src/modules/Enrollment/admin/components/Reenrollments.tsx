@@ -36,6 +36,7 @@ import { useReenrollmentCampaigns } from '../hooks/useReenrollmentCampaigns';
 import { ReenrollmentValidationDialog } from './ReenrollmentValidationDialog';
 import { ReenrollmentRejectDialog } from './ReenrollmentRejectDialog';
 import { ReenrollmentDetailDialog } from './ReenrollmentDetailDialog';
+import { ReenrollmentCreateDialog } from './ReenrollmentCreateDialog';
 
 import type { Reenrollment, ReenrollmentStatus, EligibilityStatus } from '../../types/reenrollment.types';
 
@@ -118,6 +119,7 @@ export const Reenrollments = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [validateDialogOpen, setValidateDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -338,16 +340,26 @@ export const Reenrollments = () => {
           title="Gestion des Réinscriptions"
           subheader="Validez et gérez les demandes de réinscription"
           action={
-            selectedIds.length > 0 && (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {selectedIds.length > 0 && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<i className="ri-check-double-line" />}
+                  onClick={handleBatchValidate}
+                >
+                  Valider ({selectedIds.length})
+                </Button>
+              )}
               <Button
                 variant="contained"
-                color="success"
-                startIcon={<i className="ri-check-double-line" />}
-                onClick={handleBatchValidate}
+                color="primary"
+                startIcon={<i className="ri-add-line" />}
+                onClick={() => setCreateDialogOpen(true)}
               >
-                Valider ({selectedIds.length})
+                Nouvelle réinscription
               </Button>
-            )
+            </Box>
           }
         />
         <CardContent>
@@ -575,6 +587,16 @@ export const Reenrollments = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Dialog */}
+      <ReenrollmentCreateDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSuccess={() => {
+          setSnackbar({ open: true, message: 'Réinscription créée avec succès', severity: 'success' });
+          refresh();
+        }}
+      />
 
       {/* Validation Dialog */}
       <ReenrollmentValidationDialog

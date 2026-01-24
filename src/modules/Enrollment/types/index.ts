@@ -9,3 +9,5 @@ export * from './group.types';
 export * from './validation.types';
 export * from './studentCard.types';
 export * from './reenrollment.types';
+export * from './administrativeEnrollment.types';
+export * from './transfer.types';

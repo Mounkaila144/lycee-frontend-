@@ -12,3 +12,5 @@ export * from './useEnrollmentValidation';
 export * from './useStudentCards';
 export * from './useReenrollmentCampaigns';
 export * from './useReenrollments';
+export * from './useAdministrativeEnrollments';
+export * from './useTransfers';

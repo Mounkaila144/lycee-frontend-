@@ -266,7 +266,7 @@ class StudentService {
       const response = await client.get<{ data: Student[] }>(
         `${this.baseUrl}/search/autocomplete`,
         {
-          params: { query },
+          params: { q: query },
         }
       );
 

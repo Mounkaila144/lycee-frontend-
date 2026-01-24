@@ -136,9 +136,41 @@ class ReenrollmentService {
   async checkEligibility(data: EligibilityCheckRequest, tenantId?: string): Promise<EligibilityCheck> {
     try {
       const client = createApiClient(tenantId);
-      const response = await client.post<{ data: EligibilityCheck }>(`${this.baseUrl}/check-eligibility`, data);
 
-      return response.data.data;
+      // API response structure
+      interface ApiEligibilityResponse {
+        is_eligible: boolean;
+        checks: {
+          is_active: { passed: boolean; label: string };
+          has_previous_enrollment: { passed: boolean; label: string };
+          has_min_ects: { passed: boolean; label: string; details?: string };
+          financial_clearance: { passed: boolean; label: string };
+          no_disciplinary_exclusion: { passed: boolean; label: string };
+          program_eligible: { passed: boolean; label: string };
+          level_eligible: { passed: boolean; label: string };
+        };
+        validated_ects: number;
+        required_ects: number;
+      }
+
+      const response = await client.post<{ data: ApiEligibilityResponse }>(`${this.baseUrl}/check-eligibility`, data);
+      const apiData = response.data.data;
+
+      // Transform API response to flat EligibilityCheck structure
+      const eligibility: EligibilityCheck = {
+        is_eligible: apiData.is_eligible,
+        is_active: apiData.checks.is_active.passed,
+        has_previous_enrollment: apiData.checks.has_previous_enrollment.passed,
+        has_min_ects: apiData.checks.has_min_ects.passed,
+        validated_ects: apiData.validated_ects,
+        required_ects: apiData.required_ects,
+        financial_clearance: apiData.checks.financial_clearance.passed,
+        no_disciplinary_exclusion: apiData.checks.no_disciplinary_exclusion.passed,
+        program_eligible: apiData.checks.program_eligible.passed,
+        level_eligible: apiData.checks.level_eligible.passed,
+      };
+
+      return eligibility;
     } catch (error) {
       console.error('Error checking eligibility:', error);
       throw error;

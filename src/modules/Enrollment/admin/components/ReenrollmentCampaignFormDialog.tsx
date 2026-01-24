@@ -103,11 +103,11 @@ export const ReenrollmentCampaignFormDialog = ({
         const client = createApiClient(tenantId);
 
         // Fetch academic years
-        const yearsResponse = await client.get<{ data: AcademicYear[] }>('/admin/structure/academic-years');
+        const yearsResponse = await client.get<{ data: AcademicYear[] }>('/admin/academic-years');
         setAcademicYears(yearsResponse.data.data || []);
 
         // Fetch programmes
-        const progsResponse = await client.get<{ data: Programme[] }>('/admin/structure/programmes');
+        const progsResponse = await client.get<{ data: Programme[] }>('/admin/programmes');
         setProgrammes(progsResponse.data.data || []);
       } catch (err) {
         console.error('Error fetching form data:', err);

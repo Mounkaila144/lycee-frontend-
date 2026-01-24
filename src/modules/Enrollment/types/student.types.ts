@@ -79,6 +79,9 @@ export interface Student {
   matricule: string;
   firstname: string;
   lastname: string;
+  // Autocomplete endpoint fields
+  full_name?: string;
+  label?: string;
   birthdate: string;
   birthplace: string;
   sex: Sex;

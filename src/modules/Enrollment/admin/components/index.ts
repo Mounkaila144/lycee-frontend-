@@ -60,6 +60,15 @@ export { ReenrollmentCampaignFormDialog } from './ReenrollmentCampaignFormDialog
 export { ReenrollmentCampaignDeleteDialog } from './ReenrollmentCampaignDeleteDialog';
 export { ReenrollmentCampaignStatisticsDialog } from './ReenrollmentCampaignStatisticsDialog';
 export { Reenrollments } from './Reenrollments';
+export { ReenrollmentCreateDialog } from './ReenrollmentCreateDialog';
 export { ReenrollmentDetailDialog } from './ReenrollmentDetailDialog';
 export { ReenrollmentValidationDialog } from './ReenrollmentValidationDialog';
 export { ReenrollmentRejectDialog } from './ReenrollmentRejectDialog';
+
+// Transfer & Equivalence Components (Story 12)
+export { Transfers } from './Transfers';
+export { TransferFormDialog } from './TransferFormDialog';
+export { TransferDetailDialog } from './TransferDetailDialog';
+export { TransferRejectDialog } from './TransferRejectDialog';
+export { EquivalenceMatcherDialog } from './EquivalenceMatcherDialog';
+export { EquivalenceFormDialog } from './EquivalenceFormDialog';
