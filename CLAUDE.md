@@ -236,8 +236,8 @@ The application supports **three layout modes**:
 
 ### Redirects
 The app automatically redirects:
-- `/` → `/en/dashboards/crm`
-- `/:lang` → `/:lang/dashboards/crm`
+- `/` → `/en/`
+- `/:lang` → `/:lang/`
 - Missing language prefix → `/en/:path`
 
 These are defined in `next.config.ts`.
