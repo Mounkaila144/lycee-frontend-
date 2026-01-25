@@ -15,3 +15,4 @@ export * from './useReenrollments';
 export * from './useAdministrativeEnrollments';
 export * from './useTransfers';
 export * from './useExemptions';
+export * from './useEnrollmentStatistics';

@@ -80,3 +80,11 @@ export { ExemptionDetailDialog } from './ExemptionDetailDialog';
 export { ExemptionTeacherReviewDialog } from './ExemptionTeacherReviewDialog';
 export { ExemptionValidationDialog } from './ExemptionValidationDialog';
 export { ExemptionRevokeDialog } from './ExemptionRevokeDialog';
+
+// Statistics & Reports Components (Story 14)
+export { EnrollmentStatistics } from './EnrollmentStatistics';
+export { EnrollmentStatisticsKPIs } from './EnrollmentStatisticsKPIs';
+export { EnrollmentTrendsChart } from './EnrollmentTrendsChart';
+export { ProgramDistributionChart } from './ProgramDistributionChart';
+export { DemographicsCharts } from './DemographicsCharts';
+export { EnrollmentReportsDialog } from './EnrollmentReportsDialog';
