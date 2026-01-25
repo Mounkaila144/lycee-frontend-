@@ -1,6 +1,7 @@
 import { createApiClient } from '@/shared/lib/api-client';
 import { LoginCredentials, LoginResponse, User } from '../../types/auth.types';
 import { ApiResponse } from '@/shared/types/api.types';
+import type { RefreshTokenResponse } from '@/shared/types/token.types';
 
 class SuperadminAuthService {
     /**
@@ -23,6 +24,26 @@ class SuperadminAuthService {
         if (response.data.success && response.data.data.token) {
             localStorage.setItem('superadmin_auth_token', response.data.data.token);
             localStorage.setItem('superadmin_user', JSON.stringify(response.data.data.user));
+        }
+
+        return response.data;
+    }
+
+    /**
+     * Refresh the authentication token
+     * Called automatically by the API client when a 401 error is received
+     */
+    async refreshToken(): Promise<RefreshTokenResponse> {
+        const client = createApiClient();
+
+        const response = await client.post<RefreshTokenResponse>(
+            '/superadmin/auth/refresh',
+            {}
+        );
+
+        if (response.data.success && response.data.data.token) {
+            localStorage.setItem('superadmin_auth_token', response.data.data.token);
+            console.log('🔑 [SuperadminAuthService] Token refreshed and stored');
         }
 
         return response.data;

@@ -1,6 +1,7 @@
 import { createApiClient } from '@/shared/lib/api-client';
 import { LoginCredentials, LoginResponse, User } from '../../types/auth.types';
 import { ApiResponse } from '@/shared/types/api.types';
+import type { RefreshTokenResponse } from '@/shared/types/token.types';
 
 class AdminAuthService {
     /**
@@ -34,6 +35,26 @@ class AdminAuthService {
             if (response.data.data.tenant?.host) {
                 localStorage.setItem('tenant_domain', response.data.data.tenant.host);
             }
+        }
+
+        return response.data;
+    }
+
+    /**
+     * Refresh the authentication token
+     * Called automatically by the API client when a 401 error is received
+     */
+    async refreshToken(): Promise<RefreshTokenResponse> {
+        const client = createApiClient();
+
+        const response = await client.post<RefreshTokenResponse>(
+            '/admin/auth/refresh',
+            {}
+        );
+
+        if (response.data.success && response.data.data.token) {
+            localStorage.setItem('auth_token', response.data.data.token);
+            console.log('🔑 [AdminAuthService] Token refreshed and stored');
         }
 
         return response.data;

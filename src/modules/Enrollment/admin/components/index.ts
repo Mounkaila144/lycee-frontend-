@@ -72,3 +72,11 @@ export { TransferDetailDialog } from './TransferDetailDialog';
 export { TransferRejectDialog } from './TransferRejectDialog';
 export { EquivalenceMatcherDialog } from './EquivalenceMatcherDialog';
 export { EquivalenceFormDialog } from './EquivalenceFormDialog';
+
+// Module Exemption Components (Story 13)
+export { Exemptions } from './Exemptions';
+export { ExemptionFormDialog } from './ExemptionFormDialog';
+export { ExemptionDetailDialog } from './ExemptionDetailDialog';
+export { ExemptionTeacherReviewDialog } from './ExemptionTeacherReviewDialog';
+export { ExemptionValidationDialog } from './ExemptionValidationDialog';
+export { ExemptionRevokeDialog } from './ExemptionRevokeDialog';

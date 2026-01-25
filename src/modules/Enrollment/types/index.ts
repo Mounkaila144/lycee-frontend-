@@ -11,3 +11,4 @@ export * from './studentCard.types';
 export * from './reenrollment.types';
 export * from './administrativeEnrollment.types';
 export * from './transfer.types';
+export * from './exemption.types';

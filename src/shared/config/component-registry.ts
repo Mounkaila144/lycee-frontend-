@@ -20,6 +20,7 @@ import {
   ReenrollmentCampaigns,
   Reenrollments,
   Transfers,
+  Exemptions,
 } from '@/modules/Enrollment/admin/components'
 
 /**
@@ -41,6 +42,7 @@ export const adminComponentRegistry: Record<string, ComponentType<any>> = {
   'Enrollment:ReenrollmentCampaigns': ReenrollmentCampaigns,
   'Enrollment:Reenrollments': Reenrollments,
   'Enrollment:Transfers': Transfers,
+  'Enrollment:Exemptions': Exemptions,
 }
 
 /**
