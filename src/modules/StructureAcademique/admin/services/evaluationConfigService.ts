@@ -45,13 +45,14 @@ class EvaluationConfigService {
    */
   async updateConfiguration(
     moduleId: number,
+    semesterId: number,
     configId: number,
     data: EvaluationConfigFormInput,
     tenantId?: string
   ): Promise<EvaluationConfig> {
     const client = createApiClient(tenantId)
     const response = await client.put<{ data: EvaluationConfig }>(
-      `/admin/modules/${moduleId}/evaluation-config/${configId}`,
+      `/admin/modules/${moduleId}/semesters/${semesterId}/evaluation-config/${configId}`,
       data
     )
     return response.data.data
@@ -60,9 +61,9 @@ class EvaluationConfigService {
   /**
    * Delete an evaluation configuration
    */
-  async deleteConfiguration(moduleId: number, configId: number, tenantId?: string): Promise<void> {
+  async deleteConfiguration(moduleId: number, semesterId: number, configId: number, tenantId?: string): Promise<void> {
     const client = createApiClient(tenantId)
-    await client.delete(`/admin/modules/${moduleId}/evaluation-config/${configId}`)
+    await client.delete(`/admin/modules/${moduleId}/semesters/${semesterId}/evaluation-config/${configId}`)
   }
 
   /**
@@ -76,7 +77,7 @@ class EvaluationConfigService {
   ): Promise<EvaluationConfig[]> {
     const client = createApiClient(tenantId)
     const response = await client.post<{ data: EvaluationConfig[] }>(
-      `/admin/modules/${moduleId}/semesters/${semesterId}/apply-template/${templateId}`
+      `/admin/modules/${moduleId}/semesters/${semesterId}/evaluation-config/apply-template/${templateId}`
     )
     return response.data.data
   }
@@ -90,10 +91,10 @@ class EvaluationConfigService {
     tenantId?: string
   ): Promise<ValidationResult> {
     const client = createApiClient(tenantId)
-    const response = await client.post<ValidationResult>(
+    const response = await client.get<{ data: ValidationResult }>(
       `/admin/modules/${moduleId}/semesters/${semesterId}/evaluation-config/validate`
     )
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -169,7 +170,7 @@ class EvaluationConfigService {
    */
   async toggleTemplateActive(id: number, tenantId?: string): Promise<EvaluationTemplate> {
     const client = createApiClient(tenantId)
-    const response = await client.post<{ data: EvaluationTemplate }>(
+    const response = await client.patch<{ data: EvaluationTemplate }>(
       `/admin/evaluation-templates/${id}/toggle-active`
     )
     return response.data.data

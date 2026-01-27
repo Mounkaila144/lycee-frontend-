@@ -59,6 +59,7 @@ export const useEvaluationConfig = (moduleId: number, semesterId: number) => {
   ): Promise<EvaluationConfig> => {
     const updated = await evaluationConfigService.updateConfiguration(
       moduleId,
+      semesterId,
       configId,
       data,
       tenantId || undefined
@@ -68,7 +69,7 @@ export const useEvaluationConfig = (moduleId: number, semesterId: number) => {
   }
 
   const deleteConfiguration = async (configId: number): Promise<void> => {
-    await evaluationConfigService.deleteConfiguration(moduleId, configId, tenantId || undefined)
+    await evaluationConfigService.deleteConfiguration(moduleId, semesterId, configId, tenantId || undefined)
     await fetchConfigurations()
   }
 

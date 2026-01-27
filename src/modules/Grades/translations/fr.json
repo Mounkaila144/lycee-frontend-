@@ -1,0 +1,227 @@
+{
+  "grades": {
+    "title": "Saisie des Notes",
+    "myModules": "Mes Modules",
+    "evaluations": "Évaluations",
+    "noModulesAssigned": "Aucun module ne vous est assigné pour ce semestre.",
+    "noEvaluations": "Aucune évaluation configurée pour ce module.",
+    "selectEvaluation": "Sélectionnez une évaluation pour commencer la saisie des notes.",
+    "backToModules": "Retour aux modules",
+
+    "table": {
+      "matricule": "Matricule",
+      "name": "Nom & Prénom",
+      "score": "Note /20",
+      "absent": "Absent",
+      "comment": "Commentaire",
+      "commentPlaceholder": "Commentaire (optionnel)",
+      "search": "Rechercher (matricule, nom, prénom)...",
+      "sortBy": "Trier par",
+      "alphabetical": "Alphabétique",
+      "scoreAsc": "Note (croissant)",
+      "scoreDesc": "Note (décroissant)",
+      "noStudents": "Aucun étudiant inscrit à cette évaluation",
+      "noResults": "Aucun étudiant trouvé"
+    },
+
+    "status": {
+      "saving": "Sauvegarde...",
+      "saved": "Sauvegardé",
+      "error": "Erreur",
+      "unsavedChanges": "Modifications non sauvegardées"
+    },
+
+    "legend": {
+      "entered": "Saisie",
+      "missing": "Manquante",
+      "absent": "Absent",
+      "modified": "Modifié (non sauvegardé)"
+    },
+
+    "statistics": {
+      "title": "Statistiques",
+      "progress": "Progression de la saisie",
+      "average": "Moyenne",
+      "median": "Médiane",
+      "min": "Note Min",
+      "max": "Note Max",
+      "passRate": "Taux réussite",
+      "absents": "Absents",
+      "distribution": "Distribution des notes",
+      "entered": "saisies",
+      "total": "total",
+      "missing": "manquantes",
+      "noData": "Les statistiques seront disponibles après la saisie des notes."
+    },
+
+    "publish": {
+      "title": "Publier les notes",
+      "button": "Publier",
+      "published": "Publié",
+      "complete": "Toutes les notes ont été saisies. Vous pouvez publier.",
+      "incomplete": "{count} note(s) manquante(s). La publication est bloquée.",
+      "warning": "Attention : Une fois publiées, les notes seront visibles par les étudiants et ne pourront plus être modifiées sans demande de correction.",
+      "notifyStudents": "Notifier les étudiants de la publication",
+      "success": "Les notes ont été publiées avec succès !",
+      "publishing": "Publication...",
+      "notesEntered": "{count} note(s) saisie(s)",
+      "notesMissing": "{count} note(s) manquante(s)",
+      "studentsAbsent": "{count} étudiant(s) absent(s)"
+    },
+
+    "importExport": {
+      "title": "Import/Export Notes",
+      "export": "Exporter",
+      "import": "Importer",
+      "template": "Template de saisie",
+      "templateDesc": "Fichier Excel avec la liste des étudiants et colonnes de notes",
+      "absentsList": "Liste des absents",
+      "absentsDesc": "Export de la liste des étudiants marqués absents",
+      "download": "Télécharger",
+      "uploadFile": "Cliquez ou glissez un fichier ici",
+      "acceptedFormats": "Formats acceptés: .xlsx, .xls, .csv",
+      "changeFile": "Changer de fichier",
+      "overwriteExisting": "Écraser les notes existantes",
+      "importing": "Import en cours...",
+      "importButton": "Importer",
+      "rows": "lignes",
+      "valid": "valides",
+      "warnings": "avertissements",
+      "errors": "erreurs",
+      "importComplete": "Import terminé: {imported} importées, {updated} mises à jour, {skipped} ignorées, {errors} erreurs"
+    },
+
+    "validation": {
+      "invalidScore": "Note invalide",
+      "scoreTooLow": "La note doit être >= 0",
+      "scoreTooHigh": "La note doit être <= 20",
+      "publishedWarning": "Les notes sont publiées. La modification nécessite une demande de correction."
+    },
+
+    "evaluation": {
+      "type": "Type",
+      "coefficient": "Coefficient",
+      "maxScore": "Max",
+      "date": "Date",
+      "notScheduled": "Non planifiée",
+      "notes": "notes"
+    },
+
+    "module": {
+      "credits": "ECTS",
+      "evaluations": "éval.",
+      "students": "étud."
+    },
+
+    "coefficients": {
+      "title": "Configuration des coefficients",
+      "description": "Gérez les coefficients des évaluations et les crédits ECTS pour chaque module.",
+      "selectModule": "Sélectionner un module",
+      "noModuleSelected": "Sélectionnez un module pour configurer ses coefficients.",
+      "totalCoefficients": "Total coefficients",
+      "creditsEcts": "Crédits ECTS",
+      "status": "Statut",
+      "modifiable": "Modifiable",
+      "locked": "Verrouillé",
+      "gradesPublished": "Notes publiées",
+      "requiresApproval": "Modifications nécessitent approbation",
+      "freelyModifiable": "Coefficients librement modifiables",
+
+      "table": {
+        "type": "Type",
+        "name": "Nom",
+        "coefficient": "Coefficient",
+        "maxScore": "Note max",
+        "gradesEntered": "Notes saisies",
+        "status": "Statut",
+        "actions": "Actions",
+        "published": "Publiée",
+        "draft": "Brouillon",
+        "empty": "Vide",
+        "noEvaluations": "Aucune évaluation configurée pour ce module. Utilisez un template ou créez des évaluations manuellement."
+      },
+
+      "edit": {
+        "title": "Modifier le coefficient",
+        "evaluation": "Évaluation",
+        "currentCoefficient": "Coefficient actuel",
+        "newCoefficient": "Nouveau coefficient",
+        "adjustCoefficient": "Ajuster le coefficient",
+        "manualInput": "Coefficient (saisie manuelle)",
+        "reason": "Justification de la modification",
+        "reasonPlaceholder": "Expliquez la raison de cette modification...",
+        "reasonRequired": "Requise car des notes sont déjà publiées",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "cancel": "Annuler"
+      },
+
+      "credits": {
+        "title": "Modifier les crédits ECTS",
+        "module": "Module",
+        "currentCredits": "Crédits actuels",
+        "newCredits": "Nouveaux crédits",
+        "adjustCredits": "Ajuster les crédits ECTS",
+        "manualInput": "Crédits ECTS (saisie manuelle)",
+        "recommendation": "La somme des crédits ECTS d'un semestre devrait être de {recommended} ECTS.",
+        "recalculationWarning": "La modification des crédits ECTS entraînera le recalcul automatique des moyennes de semestre pour tous les étudiants inscrits à ce module."
+      },
+
+      "simulation": {
+        "title": "Simulation d'impact",
+        "simulate": "Simuler",
+        "calculating": "Calcul...",
+        "description": "Cliquez sur \"Simuler\" pour voir l'impact de cette modification sur les moyennes des étudiants.",
+        "affectedStudents": "Cette modification affectera {count} étudiants.",
+        "averageChange": "Variation moyenne: {change} points.",
+        "examples": "Exemples d'impact ({count} étudiants)",
+        "student": "Étudiant",
+        "oldAverage": "Ancienne moyenne",
+        "newAverage": "Nouvelle moyenne",
+        "difference": "Différence"
+      },
+
+      "templates": {
+        "title": "Templates de coefficients",
+        "systemTemplates": "Templates prédéfinis",
+        "customTemplates": "Templates personnalisés",
+        "system": "Système",
+        "custom": "Personnalisé",
+        "total": "Total",
+        "selected": "Sélectionné",
+        "apply": "Appliquer le template",
+        "noTemplates": "Aucun template de coefficients disponible.",
+        "hasGradesWarning": "Ce module contient déjà des notes. L'application d'un template supprimera les évaluations existantes et n'est pas autorisée.",
+        "confirmTitle": "Confirmer l'application",
+        "confirmMessage": "Cette action va remplacer toutes les évaluations existantes du module par celles du template sélectionné.",
+        "confirmQuestion": "Êtes-vous sûr de vouloir continuer ?",
+        "confirm": "Confirmer",
+        "applying": "Application..."
+      },
+
+      "history": {
+        "title": "Historique",
+        "date": "Date",
+        "oldValue": "Ancienne valeur",
+        "newValue": "Nouvelle valeur",
+        "change": "Variation",
+        "changedBy": "Modifié par",
+        "reason": "Justification",
+        "noHistory": "Aucune modification enregistrée pour cet élément.",
+        "notSpecified": "Non spécifiée",
+        "close": "Fermer"
+      },
+
+      "validation": {
+        "minCoefficient": "Le coefficient minimum est {min}",
+        "maxCoefficient": "Le coefficient maximum est {max}",
+        "stepCoefficient": "Le coefficient doit être un multiple de {step}",
+        "minCredits": "Les crédits minimum sont {min}",
+        "maxCredits": "Les crédits maximum sont {max}",
+        "integerCredits": "Les crédits doivent être un nombre entier",
+        "reasonRequiredLocked": "Une justification est requise car les crédits sont verrouillés",
+        "reasonRequiredPublished": "Une justification est requise car des notes sont publiées"
+      }
+    }
+  }
+}

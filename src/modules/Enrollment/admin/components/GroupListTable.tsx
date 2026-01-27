@@ -58,6 +58,7 @@ export const GroupListTable = () => {
     onDelete,
     onViewAssignments,
     onViewDashboard,
+    onExport,
     onCreate,
     refresh,
   } = useGroupsContext();
@@ -211,6 +212,11 @@ export const GroupListTable = () => {
                 <i className="ri-dashboard-line" />
               </IconButton>
             </Tooltip>
+            <Tooltip title="Exporter la liste">
+              <IconButton size="small" color="info" onClick={() => onExport(row.original)}>
+                <i className="ri-download-2-line" />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Modifier">
               <IconButton size="small" onClick={() => onEdit(row.original)}>
                 <i className="ri-edit-line" />
@@ -226,7 +232,7 @@ export const GroupListTable = () => {
         enableSorting: false,
       }),
     ],
-    [onEdit, onDelete, onViewAssignments, onViewDashboard]
+    [onEdit, onDelete, onViewAssignments, onViewDashboard, onExport]
   );
 
   // Custom filter content
@@ -340,8 +346,13 @@ export const GroupListTable = () => {
               onClick: () => onViewDashboard(group),
             },
             {
-              icon: 'ri-edit-line',
+              icon: 'ri-download-2-line',
               color: 'info',
+              onClick: () => onExport(group),
+            },
+            {
+              icon: 'ri-edit-line',
+              color: 'default',
               onClick: () => onEdit(group),
             },
             {

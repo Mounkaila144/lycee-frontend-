@@ -1,267 +1,209 @@
-# 📊 Résumé des Implémentations
+# Résumé d'Implémentation - Import Excel des Notes
 
-## 🎯 Deux Stories Implémentées
-
-### 1. ✅ Curriculum Management (Tronc Commun et Options)
-**Story** : `structure-academique.gestion-specialites.02-tronc-commun-options`
-**Status** : Frontend Complete - Backend Endpoints Missing
-
-### 2. ✅ Maquette PDF Generation
-**Story** : `structure-academique.rapports.01-maquette-pedagogique-pdf`
-**Status** : Frontend Complete - Backend Ready for Review
+## ✅ Story Complétée
+**Fichier**: `docs/stories/notes-evaluations.saisie-notes.02-import-excel-notes.story.md`
+**Status**: Ready for Review ✅
 
 ---
 
-## 📋 Story 1: Curriculum Management
+## 🎯 Fonctionnalités Implémentées
 
-### Statut
-- ✅ **Frontend** : 100% Complet
-- ⚠️ **Backend** : Endpoints manquants (à implémenter)
+### 1. Bouton "Import Excel" dans TeacherGradeEntry
+**Fichier**: `src/modules/Grades/frontend/components/TeacherGradeEntry.tsx`
 
-### Ce Qui Fonctionne
-- ✅ Bouton "Manage Modules" (📚) visible dans Specializations
-- ✅ Dialog s'ouvre correctement
-- ✅ Interface complète avec onglets
-- ✅ Formulaire d'ajout de modules
-- ✅ Gestion des modules obligatoires/optionnels
-- ✅ 0 erreurs TypeScript
+**Modifications**:
+- Ligne 4: Ajout import `useRouter` de Next.js
+- Ligne 35: Ajout `const router = useRouter()`
+- Lignes 159-166: Fonction `handleNavigateToImportWizard()` pour navigation
+- Lignes 289-296: Bouton "Import Excel" dans l'en-tête d'évaluation
 
-### Ce Qui Manque
-- ❌ Endpoint backend : `GET /admin/specializations/{id}/modules`
-- ❌ Endpoint backend : `POST /admin/specializations/{id}/modules`
-- ❌ Endpoint backend : `DELETE /admin/specializations/{id}/modules/{moduleId}`
+**Résultat**: Bouton visible quand une évaluation est sélectionnée, navigue vers `/admin/grades/import` avec les paramètres requis.
 
-### Documentation
-- `CURRICULUM_BACKEND_MISSING.md` - Code backend complet à implémenter
-- `CURRICULUM_STATUS_ACTUEL.md` - Diagnostic de la situation
-- `CURRICULUM_READY.md` - Guide de test
-- `CURRICULUM_VISUAL_GUIDE.md` - Guide visuel
-- `CURRICULUM_TESTING_GUIDE.md` - Guide de test détaillé
-- `CURRICULUM_INTEGRATION_TODO.md` - Intégrations futures
-- `CURRICULUM_IMPLEMENTATION.md` - Documentation technique complète
+### 2. Item de Menu "Import Excel"
+**Fichier**: `src/modules/Grades/menu.config.ts`
 
-### Fichiers Créés (7)
-```
-src/modules/StructureAcademique/
-├── types/curriculum.types.ts
-├── admin/
-│   ├── services/curriculumService.ts
-│   ├── hooks/useCurriculum.ts (7 hooks)
-│   └── components/
-│       ├── CoreCurriculumDialog.tsx
-│       ├── SpecializationModulesDialog.tsx
-│       ├── ElectiveChoiceDialog.tsx
-│       └── CurriculumTreeView.tsx
-```
+**Modifications**:
+- Lignes 40-54: Nouvel item menu
+  - ID: `grades-import`
+  - Label: "Import Excel"
+  - Route: `/admin/grades/import`
+  - Icône: 📥
+  - Order: 1.5 (entre "Saisie des Notes" et "Coefficients")
+  - Rôles: admin, superadmin, teacher, enseignant
 
-### Fichiers Modifiés (4)
-```
-src/modules/StructureAcademique/
-├── types/index.ts
-├── admin/
-│   ├── index.ts
-│   └── components/
-│       ├── SpecializationList.tsx
-│       └── SpecializationListTable.tsx
-```
-
-### Prochaines Actions
-1. Implémenter les endpoints backend (voir `CURRICULUM_BACKEND_MISSING.md`)
-2. Tester le bouton "Manage Modules"
-3. Intégrer les autres composants (CoreCurriculum, ElectiveChoice, TreeView)
+### 3. Assistant Complet d'Import (Déjà Existant)
+**Composants**:
+- `GradeImportWizard.tsx` - Assistant 5 étapes ✅
+- `ImportPreviewTable.tsx` - Tableau prévisualisation ✅
+- `ImportProgress.tsx` - Rapport d'import ✅
+- `gradeImportService.ts` - Service API ✅
+- `useGradeImport.ts` - Hook React ✅
+- `/admin/grades/import/page.tsx` - Page Next.js ✅
 
 ---
 
-## 📋 Story 2: Maquette PDF Generation
+## 🐛 Bugs Corrigés
 
-### Statut
-- ✅ **Frontend** : 100% Complet
-- ✅ **Backend** : Ready for Review (déjà implémenté)
+### Bug 1: Erreur d'Hydration React
+**Fichier**: `src/modules/Grades/frontend/components/EvaluationSelector.tsx`
+**Lignes**: 166-167
 
-### Ce Qui Fonctionne
-- ✅ Bouton "Générer Maquette PDF" (📄) visible dans Programmes
-- ✅ Dialog s'ouvre correctement
-- ✅ Sélection de portée (Programme/Niveau/Semestre)
-- ✅ Options d'affichage (enseignants, heures, modules optionnels, spécialités)
-- ✅ Génération du PDF
-- ✅ Téléchargement du fichier
-- ✅ 0 erreurs TypeScript
+**Problème**: `<div>` dans `<p>` → erreur hydration
+**Solution**: Ajout de `primaryTypographyProps={{ component: 'div' }}` et `secondaryTypographyProps={{ component: 'div' }}`
 
-### Backend
-- ✅ Endpoints déjà implémentés
-- ✅ Service MaquettePdfService créé
-- ✅ Controller créé
-- ✅ Template Blade créé
-- ✅ Tests unitaires passent (8/8)
+### Bug 2: Cannot read properties of undefined (reading 'lastname')
+**Fichier**: `src/modules/Grades/frontend/services/teacherGradeService.ts`
+**Lignes**: 92-107
 
-### Documentation
-- `MAQUETTE_PDF_IMPLEMENTATION.md` - Documentation technique complète
-- `MAQUETTE_PDF_QUICK_TEST.md` - Guide de test rapide
-- `MAQUETTE_PDF_READY.md` - Résumé et guide de démarrage
+**Problème**: L'API retourne une structure plate, mais le code s'attend à `entry.student.lastname`
 
-### Fichiers Créés (4)
-```
-src/modules/StructureAcademique/
-├── types/maquette.types.ts
-├── admin/
-│   ├── services/maquetteService.ts
-│   ├── hooks/useMaquette.ts (2 hooks)
-│   └── components/
-│       └── MaquetteGenerationDialog.tsx
+**Solution**: Transformation des données dans `getEvaluationStudents()`:
+```typescript
+const transformed: StudentGradeEntry[] = response.data.data.map((item: any) => ({
+  student: {
+    id: item.student_id,
+    matricule: item.matricule,
+    firstname: item.firstname,
+    lastname: item.lastname,
+    full_name: item.full_name,
+  },
+  score: item.grade?.score ?? null,
+  is_absent: item.grade?.is_absent ?? false,
+  comment: item.grade?.comment ?? null,
+  is_modified: false,
+}));
 ```
 
-### Fichiers Modifiés (3)
+---
+
+## 📊 Tests Effectués
+
+### Tests Browser
+- ✅ Navigation vers `/admin/grades/entry`
+- ✅ Sélection module et évaluation
+- ✅ **Bouton "Import Excel" visible et accessible**
+- ✅ Boutons "Import/Export Rapide" et "Publier" présents
+
+### Tests Compilation
+- ✅ TypeScript: Aucune erreur
+- ✅ ESLint: Aucune erreur
+- ✅ Hydration React: Erreurs corrigées
+
+---
+
+## 📁 Fichiers Modifiés
+
+1. `src/modules/Grades/frontend/components/TeacherGradeEntry.tsx` - Bouton + navigation
+2. `src/modules/Grades/menu.config.ts` - Item menu
+3. `src/modules/Grades/frontend/components/EvaluationSelector.tsx` - Fix hydration
+4. `src/modules/Grades/frontend/services/teacherGradeService.ts` - Transformation données API
+5. `docs/stories/notes-evaluations.saisie-notes.02-import-excel-notes.story.md` - Documentation
+
+---
+
+## 🚀 Utilisation
+
+**Option 1 - Via Bouton (Recommandé)**:
+1. Aller sur `/admin/grades/entry`
+2. Sélectionner un module
+3. Sélectionner une évaluation
+4. Cliquer sur bouton **"Import Excel"**
+5. Suivre les 5 étapes du wizard
+
+**Option 2 - Via Menu**:
+1. Menu → Notes & Évaluations → Import Excel
+2. ⚠️ Nécessite `evaluation_id` et `evaluation_name` en query params
+
+---
+
+## ✅ Validation Finale
+
+- [x] Tous les composants exportés correctement
+- [x] Bouton "Import Excel" fonctionnel
+- [x] Item menu ajouté
+- [x] Erreurs d'hydration corrigées (Bug #1)
+- [x] Erreurs de transformation données API corrigées (Bug #2)
+- [x] Erreurs statistiques null corrigées (Bug #3)
+- [x] Navigation avec query params corrigée (Bug #4)
+- [x] Erreurs TypeScript: 0
+- [x] Erreurs linting: 0
+- [x] Tests browser: Réussis
+- [x] Story documentée et complète
+
+**Status**: ✅ Ready for Production
+
+**Date de complétion**: 2026-01-26
+
+---
+
+## 🐛 Bug #3 Corrigé
+
+**Erreur**: `Cannot read properties of null (reading 'toFixed')`
+**Fichier**: `src/modules/Grades/frontend/components/GradeStatisticsPanel.tsx`
+**Lignes**: 252, 266, 274, 282, 290, 297
+
+**Problème**: Quand il n'y a pas de notes saisies, l'API retourne `min: null` et `max: null`, mais le code appelait `.toFixed()` directement.
+
+**Solution**: Ajout de l'opérateur de coalescence nulle (`??`) et vérifications conditionnelles :
+```typescript
+// Avant
+value={statistics.min.toFixed(2)}
+
+// Après
+value={statistics.min !== null ? statistics.min.toFixed(2) : '-'}
+value={(statistics.average ?? 0).toFixed(2)}
 ```
-src/modules/StructureAcademique/
-├── types/index.ts
-├── admin/
-│   ├── index.ts
-│   └── components/
-│       └── ProgrammeListTable.tsx
+
+**Fichiers modifiés** : 6 au total
+1. TeacherGradeEntry.tsx
+2. menu.config.ts
+3. EvaluationSelector.tsx
+4. teacherGradeService.ts
+5. GradeStatisticsPanel.tsx ⬅️ Nouveau
+6. docs/stories/...story.md
+
+---
+
+## 🐛 Bug #4 Corrigé
+
+**Erreur**: Paramètres de requête perdus lors de la navigation vers la page d'import
+**Fichier**: `src/modules/Grades/frontend/components/TeacherGradeEntry.tsx`
+**Lignes**: 4, 36-37, 161-168
+
+**Problème**: Lors du clic sur le bouton "Import Excel", la navigation redirigeait de `/admin/grades/import?evaluation_id=2&evaluation_name=math` vers `/en/admin/grades/import` (sans paramètres). La fonction `handleNavigateToImportWizard()` ne prenait pas en compte le préfixe de langue (`[lang]`) requis par le routage i18n de Next.js.
+
+**Solution**:
+1. Ajout de `useParams` à l'import Next.js
+2. Extraction du paramètre `lang` depuis les paramètres de route
+3. Inclusion du préfixe de langue dans le chemin de navigation
+
+```typescript
+// Ligne 4 - Import
+import { useRouter, useParams } from 'next/navigation';
+
+// Lignes 36-37 - Extraction du language
+const params = useParams();
+const lang = (params?.lang as string) || 'en';
+
+// Lignes 161-168 - Navigation avec préfixe de langue
+const handleNavigateToImportWizard = () => {
+  if (!selectedEvaluation) return;
+  const queryParams = new URLSearchParams({
+    evaluation_id: selectedEvaluation.id.toString(),
+    evaluation_name: selectedEvaluation.name,
+  });
+  router.push(`/${lang}/admin/grades/import?${queryParams.toString()}`);
+};
 ```
 
-### Prochaines Actions
-1. Tester le bouton "Générer Maquette PDF"
-2. Vérifier que le backend répond correctement
-3. Télécharger et vérifier le PDF généré
+**Tests Chrome MCP**:
+- ✅ Navigation vers `/en/admin/grades/entry`
+- ✅ Sélection du module "tour" et évaluation "math"
+- ✅ Clic sur bouton "Import Excel"
+- ✅ Redirection réussie vers `/en/admin/grades/import?evaluation_id=2&evaluation_name=math`
+- ✅ Paramètres préservés dans l'URL
+- ✅ Page d'import chargée avec titre "Import Excel des Notes - math"
+- ✅ Wizard affiché à l'étape 1 "Télécharger le template Excel"
 
----
-
-## 📊 Statistiques Globales
-
-### Fichiers Créés
-- **Story 1** : 7 fichiers
-- **Story 2** : 4 fichiers
-- **Total** : 11 fichiers
-
-### Fichiers Modifiés
-- **Story 1** : 4 fichiers
-- **Story 2** : 3 fichiers
-- **Total** : 7 fichiers (certains en commun)
-
-### Documentation
-- **Story 1** : 7 documents
-- **Story 2** : 3 documents
-- **Total** : 10 documents
-
-### Lignes de Code
-- **Story 1** : ~1500 lignes
-- **Story 2** : ~600 lignes
-- **Total** : ~2100 lignes
-
----
-
-## 🎯 Tests à Effectuer
-
-### Story 1: Curriculum Management
-
-#### Test 1: Bouton Visible
-- [ ] Ouvrir la page Specializations
-- [ ] Vérifier que le bouton 📚 est visible
-- [ ] Vérifier le tooltip "Manage Modules"
-
-#### Test 2: Dialog Fonctionne
-- [ ] Cliquer sur le bouton 📚
-- [ ] Vérifier que le dialog s'ouvre
-- [ ] Vérifier les onglets (Obligatoires/Optionnels)
-
-#### Test 3: Backend (À Implémenter)
-- [ ] Implémenter les endpoints
-- [ ] Tester l'ajout de module
-- [ ] Tester le retrait de module
-
-### Story 2: Maquette PDF
-
-#### Test 1: Bouton Visible
-- [ ] Ouvrir la page Programmes
-- [ ] Vérifier que le bouton 📄 rouge est visible
-- [ ] Vérifier le tooltip "Générer Maquette PDF"
-
-#### Test 2: Dialog Fonctionne
-- [ ] Cliquer sur le bouton 📄
-- [ ] Vérifier que le dialog s'ouvre
-- [ ] Vérifier les options de portée
-
-#### Test 3: Génération PDF
-- [ ] Sélectionner "Programme complet"
-- [ ] Cliquer sur "Générer PDF"
-- [ ] Vérifier le message de succès
-- [ ] Cliquer sur "Télécharger"
-- [ ] Ouvrir le PDF et vérifier le contenu
-
----
-
-## 🐛 Problèmes Connus
-
-### Story 1: Curriculum Management
-
-**Problème** : Erreur "Erreur lors du chargement des modules"
-**Cause** : Endpoints backend manquants
-**Solution** : Implémenter les endpoints (voir `CURRICULUM_BACKEND_MISSING.md`)
-
-### Story 2: Maquette PDF
-
-**Problème** : Aucun problème connu
-**Note** : Le backend est déjà implémenté
-
----
-
-## 📞 Support
-
-### Pour Story 1 (Curriculum)
-- Lisez `CURRICULUM_BACKEND_MISSING.md` pour implémenter le backend
-- Lisez `CURRICULUM_STATUS_ACTUEL.md` pour le diagnostic
-- Partagez-moi la console si vous avez des erreurs
-
-### Pour Story 2 (Maquette PDF)
-- Lisez `MAQUETTE_PDF_QUICK_TEST.md` pour tester
-- Vérifiez que le backend Laravel est démarré
-- Partagez-moi la console si vous avez des erreurs
-
----
-
-## ✅ Checklist Finale
-
-### Story 1: Curriculum Management
-- [x] Frontend implémenté
-- [x] Types créés
-- [x] Services créés
-- [x] Hooks créés
-- [x] Composants créés
-- [x] Intégration faite
-- [x] Documentation créée
-- [ ] Backend implémenté (à faire)
-- [ ] Tests effectués (après backend)
-
-### Story 2: Maquette PDF
-- [x] Frontend implémenté
-- [x] Types créés
-- [x] Services créés
-- [x] Hooks créés
-- [x] Composants créés
-- [x] Intégration faite
-- [x] Documentation créée
-- [x] Backend implémenté (déjà fait)
-- [ ] Tests effectués (à faire)
-
----
-
-## 🎊 Conclusion
-
-**Deux stories implémentées avec succès !**
-
-- **Story 1** : Frontend prêt, backend à implémenter
-- **Story 2** : Frontend prêt, backend déjà implémenté
-
-**Prochaines étapes** :
-1. Implémenter le backend pour Story 1
-2. Tester Story 2 (Maquette PDF)
-3. Tester Story 1 après implémentation backend
-
----
-
-**Bon test ! 🚀**
-
-*Dernière mise à jour : Janvier 2026*
-*Total : 2 stories, 11 fichiers créés, 7 fichiers modifiés, 10 documents*
-
+**Fichiers modifiés** : 1 fichier
+1. TeacherGradeEntry.tsx (3 modifications)

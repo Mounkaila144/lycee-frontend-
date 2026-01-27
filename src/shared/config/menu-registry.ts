@@ -13,6 +13,7 @@ import { usersGuardMenuConfig } from '@/modules/UsersGuard/menu.config';
 import { superAdminMenuConfig } from '@/modules/SuperAdmin/menu.config';
 import { structureAcademiqueMenuConfig } from '@/modules/StructureAcademique/menu.config';
 import { enrollmentMenuConfig } from '@/modules/Enrollment/menu.config';
+import { gradesMenuConfig } from '@/modules/Grades/menu.config';
 
 /**
  * Registry of all module menu configurations
@@ -28,6 +29,7 @@ const moduleMenuConfigs: ModuleMenuConfig[] = [
   superAdminMenuConfig,
   structureAcademiqueMenuConfig,
   enrollmentMenuConfig,
+  gradesMenuConfig,
   // Add more module menu configs here
 ];
 

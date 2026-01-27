@@ -316,3 +316,62 @@ export interface MyGroupsResponse {
     name: string;
   };
 }
+
+/**
+ * Export Format Types
+ */
+export type ExportFormat = 'pdf' | 'excel' | 'csv';
+
+/**
+ * Export Template Types
+ */
+export type ExportTemplate = 'group_list' | 'group_list_complete' | 'group_list_with_photos' | 'attendance_sheet';
+
+/**
+ * Export Sort By Options
+ */
+export type ExportSortBy = 'lastname' | 'firstname' | 'matricule';
+
+/**
+ * Export Orientation
+ */
+export type ExportOrientation = 'portrait' | 'landscape';
+
+/**
+ * Group Export Options
+ */
+export interface GroupExportOptions {
+  format: ExportFormat;
+  template?: ExportTemplate;
+  orientation?: ExportOrientation;
+  sort_by?: ExportSortBy;
+  include_email?: boolean;
+  include_phone?: boolean;
+  include_photo?: boolean;
+  include_birthdate?: boolean;
+  include_option?: boolean;
+  include_level?: boolean;
+  include_numbering?: boolean;
+  include_header?: boolean;
+  session_count?: number; // For attendance sheet (4-20)
+}
+
+/**
+ * Batch Export Request
+ */
+export interface BatchExportRequest {
+  group_ids: number[];
+  format: ExportFormat;
+  options?: Omit<GroupExportOptions, 'format'>;
+}
+
+/**
+ * Export Template Info
+ */
+export interface ExportTemplateInfo {
+  id: ExportTemplate;
+  name: string;
+  description: string;
+  supports_photos: boolean;
+  default_orientation: ExportOrientation;
+}

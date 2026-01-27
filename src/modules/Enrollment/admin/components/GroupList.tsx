@@ -14,6 +14,7 @@ import GroupFormDialog from './GroupFormDialog';
 import GroupDeleteDialog from './GroupDeleteDialog';
 import GroupAssignmentDialog from './GroupAssignmentDialog';
 import { GroupAssignmentDashboard } from './GroupAssignmentDashboard';
+import { GroupExportDialog } from './GroupExportDialog';
 
 import { useGroups, type PaginationMeta } from '../hooks/useGroups';
 
@@ -35,6 +36,7 @@ interface GroupsContextType {
   onDelete: (group: Group) => void;
   onViewAssignments: (group: Group) => void;
   onViewDashboard: (group: Group) => void;
+  onExport: (group: Group) => void;
   onCreate: () => void;
 }
 
@@ -67,6 +69,7 @@ export const GroupList = ({ onViewAssignments }: GroupListProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [dashboardDialogOpen, setDashboardDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
   // Snackbar state
@@ -107,6 +110,23 @@ export const GroupList = ({ onViewAssignments }: GroupListProps) => {
     },
     []
   );
+
+  const handleExport = useCallback(
+    (group: Group) => {
+      setSelectedGroup(group);
+      setExportDialogOpen(true);
+    },
+    []
+  );
+
+  const handleExportClose = useCallback(() => {
+    setExportDialogOpen(false);
+    setSelectedGroup(null);
+  }, []);
+
+  const handleExportSuccess = useCallback(() => {
+    setSnackbar({ open: true, message: 'Export réussi', severity: 'success' });
+  }, []);
 
   const handleAssignmentClose = useCallback(() => {
     setAssignmentDialogOpen(false);
@@ -172,6 +192,7 @@ export const GroupList = ({ onViewAssignments }: GroupListProps) => {
         onDelete: handleDelete,
         onViewAssignments: handleViewAssignments,
         onViewDashboard: handleViewDashboard,
+        onExport: handleExport,
         onCreate: handleCreate,
       }}
     >
@@ -203,6 +224,14 @@ export const GroupList = ({ onViewAssignments }: GroupListProps) => {
         group={selectedGroup}
         onClose={handleAssignmentClose}
         onRefresh={refresh}
+      />
+
+      {/* Export Dialog */}
+      <GroupExportDialog
+        open={exportDialogOpen}
+        group={selectedGroup}
+        onClose={handleExportClose}
+        onSuccess={handleExportSuccess}
       />
 
       {/* Dashboard Dialog */}

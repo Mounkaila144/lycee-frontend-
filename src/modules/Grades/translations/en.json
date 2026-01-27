@@ -1,0 +1,227 @@
+{
+  "grades": {
+    "title": "Grade Entry",
+    "myModules": "My Modules",
+    "evaluations": "Evaluations",
+    "noModulesAssigned": "No modules are assigned to you for this semester.",
+    "noEvaluations": "No evaluations configured for this module.",
+    "selectEvaluation": "Select an evaluation to start entering grades.",
+    "backToModules": "Back to modules",
+
+    "table": {
+      "matricule": "Student ID",
+      "name": "Name",
+      "score": "Score /20",
+      "absent": "Absent",
+      "comment": "Comment",
+      "commentPlaceholder": "Comment (optional)",
+      "search": "Search (ID, first name, last name)...",
+      "sortBy": "Sort by",
+      "alphabetical": "Alphabetical",
+      "scoreAsc": "Score (ascending)",
+      "scoreDesc": "Score (descending)",
+      "noStudents": "No students enrolled in this evaluation",
+      "noResults": "No students found"
+    },
+
+    "status": {
+      "saving": "Saving...",
+      "saved": "Saved",
+      "error": "Error",
+      "unsavedChanges": "Unsaved changes"
+    },
+
+    "legend": {
+      "entered": "Entered",
+      "missing": "Missing",
+      "absent": "Absent",
+      "modified": "Modified (unsaved)"
+    },
+
+    "statistics": {
+      "title": "Statistics",
+      "progress": "Entry progress",
+      "average": "Average",
+      "median": "Median",
+      "min": "Min Score",
+      "max": "Max Score",
+      "passRate": "Pass rate",
+      "absents": "Absents",
+      "distribution": "Grade distribution",
+      "entered": "entered",
+      "total": "total",
+      "missing": "missing",
+      "noData": "Statistics will be available after entering grades."
+    },
+
+    "publish": {
+      "title": "Publish grades",
+      "button": "Publish",
+      "published": "Published",
+      "complete": "All grades have been entered. You can publish.",
+      "incomplete": "{count} grade(s) missing. Publication is blocked.",
+      "warning": "Warning: Once published, grades will be visible to students and can no longer be modified without a correction request.",
+      "notifyStudents": "Notify students of the publication",
+      "success": "Grades have been published successfully!",
+      "publishing": "Publishing...",
+      "notesEntered": "{count} grade(s) entered",
+      "notesMissing": "{count} grade(s) missing",
+      "studentsAbsent": "{count} student(s) absent"
+    },
+
+    "importExport": {
+      "title": "Import/Export Grades",
+      "export": "Export",
+      "import": "Import",
+      "template": "Entry template",
+      "templateDesc": "Excel file with student list and grade columns",
+      "absentsList": "Absent list",
+      "absentsDesc": "Export of students marked absent",
+      "download": "Download",
+      "uploadFile": "Click or drag a file here",
+      "acceptedFormats": "Accepted formats: .xlsx, .xls, .csv",
+      "changeFile": "Change file",
+      "overwriteExisting": "Overwrite existing grades",
+      "importing": "Importing...",
+      "importButton": "Import",
+      "rows": "rows",
+      "valid": "valid",
+      "warnings": "warnings",
+      "errors": "errors",
+      "importComplete": "Import complete: {imported} imported, {updated} updated, {skipped} skipped, {errors} errors"
+    },
+
+    "validation": {
+      "invalidScore": "Invalid score",
+      "scoreTooLow": "Score must be >= 0",
+      "scoreTooHigh": "Score must be <= 20",
+      "publishedWarning": "Grades are published. Modification requires a correction request."
+    },
+
+    "evaluation": {
+      "type": "Type",
+      "coefficient": "Coefficient",
+      "maxScore": "Max",
+      "date": "Date",
+      "notScheduled": "Not scheduled",
+      "notes": "grades"
+    },
+
+    "module": {
+      "credits": "ECTS",
+      "evaluations": "eval.",
+      "students": "stud."
+    },
+
+    "coefficients": {
+      "title": "Coefficient Configuration",
+      "description": "Manage evaluation coefficients and ECTS credits for each module.",
+      "selectModule": "Select a module",
+      "noModuleSelected": "Select a module to configure its coefficients.",
+      "totalCoefficients": "Total coefficients",
+      "creditsEcts": "ECTS Credits",
+      "status": "Status",
+      "modifiable": "Modifiable",
+      "locked": "Locked",
+      "gradesPublished": "Grades published",
+      "requiresApproval": "Modifications require approval",
+      "freelyModifiable": "Coefficients freely modifiable",
+
+      "table": {
+        "type": "Type",
+        "name": "Name",
+        "coefficient": "Coefficient",
+        "maxScore": "Max score",
+        "gradesEntered": "Grades entered",
+        "status": "Status",
+        "actions": "Actions",
+        "published": "Published",
+        "draft": "Draft",
+        "empty": "Empty",
+        "noEvaluations": "No evaluations configured for this module. Use a template or create evaluations manually."
+      },
+
+      "edit": {
+        "title": "Edit coefficient",
+        "evaluation": "Evaluation",
+        "currentCoefficient": "Current coefficient",
+        "newCoefficient": "New coefficient",
+        "adjustCoefficient": "Adjust coefficient",
+        "manualInput": "Coefficient (manual input)",
+        "reason": "Modification reason",
+        "reasonPlaceholder": "Explain the reason for this modification...",
+        "reasonRequired": "Required because grades are already published",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+
+      "credits": {
+        "title": "Edit ECTS credits",
+        "module": "Module",
+        "currentCredits": "Current credits",
+        "newCredits": "New credits",
+        "adjustCredits": "Adjust ECTS credits",
+        "manualInput": "ECTS credits (manual input)",
+        "recommendation": "The sum of ECTS credits for a semester should be {recommended} ECTS.",
+        "recalculationWarning": "Modifying ECTS credits will trigger automatic recalculation of semester averages for all students enrolled in this module."
+      },
+
+      "simulation": {
+        "title": "Impact simulation",
+        "simulate": "Simulate",
+        "calculating": "Calculating...",
+        "description": "Click \"Simulate\" to see the impact of this modification on student averages.",
+        "affectedStudents": "This modification will affect {count} students.",
+        "averageChange": "Average change: {change} points.",
+        "examples": "Impact examples ({count} students)",
+        "student": "Student",
+        "oldAverage": "Old average",
+        "newAverage": "New average",
+        "difference": "Difference"
+      },
+
+      "templates": {
+        "title": "Coefficient templates",
+        "systemTemplates": "Predefined templates",
+        "customTemplates": "Custom templates",
+        "system": "System",
+        "custom": "Custom",
+        "total": "Total",
+        "selected": "Selected",
+        "apply": "Apply template",
+        "noTemplates": "No coefficient templates available.",
+        "hasGradesWarning": "This module already contains grades. Applying a template will delete existing evaluations and is not allowed.",
+        "confirmTitle": "Confirm application",
+        "confirmMessage": "This action will replace all existing evaluations of the module with those from the selected template.",
+        "confirmQuestion": "Are you sure you want to continue?",
+        "confirm": "Confirm",
+        "applying": "Applying..."
+      },
+
+      "history": {
+        "title": "History",
+        "date": "Date",
+        "oldValue": "Old value",
+        "newValue": "New value",
+        "change": "Change",
+        "changedBy": "Changed by",
+        "reason": "Reason",
+        "noHistory": "No modifications recorded for this element.",
+        "notSpecified": "Not specified",
+        "close": "Close"
+      },
+
+      "validation": {
+        "minCoefficient": "Minimum coefficient is {min}",
+        "maxCoefficient": "Maximum coefficient is {max}",
+        "stepCoefficient": "Coefficient must be a multiple of {step}",
+        "minCredits": "Minimum credits is {min}",
+        "maxCredits": "Maximum credits is {max}",
+        "integerCredits": "Credits must be a whole number",
+        "reasonRequiredLocked": "A reason is required because credits are locked",
+        "reasonRequiredPublished": "A reason is required because grades are published"
+      }
+    }
+  }
+}

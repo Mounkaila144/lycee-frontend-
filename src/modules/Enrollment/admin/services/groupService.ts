@@ -14,7 +14,21 @@ import type {
   GroupStudentsQueryParams,
   UnassignedStudentsResponse,
   MyGroupsResponse,
+  GroupExportOptions,
+  BatchExportRequest,
+  ExportTemplateInfo,
 } from '../../types/group.types';
+
+/**
+ * Export Response from backend
+ */
+export interface ExportResponse {
+  message: string;
+  data: {
+    path: string;
+    download_url: string;
+  };
+}
 
 /**
  * Group Response (single)
@@ -380,6 +394,172 @@ class GroupService {
       console.error('Error fetching my groups:', error);
       throw error;
     }
+  }
+
+  // ============================================
+  // GROUP EXPORT METHODS
+  // ============================================
+
+  /**
+   * Get available export templates
+   */
+  async getExportTemplates(tenantId?: string): Promise<ExportTemplateInfo[]> {
+    try {
+      const client = createApiClient(tenantId);
+      const response = await client.get<{ data: ExportTemplateInfo[] }>(
+        '/admin/enrollment/group-exports/templates'
+      );
+
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching export templates:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export group to PDF
+   * Returns a download URL from the backend
+   */
+  async exportGroupToPdf(groupId: number, options?: Omit<GroupExportOptions, 'format'>, tenantId?: string): Promise<string> {
+    try {
+      const client = createApiClient(tenantId);
+      const queryParams = this.buildExportQueryParams(options);
+      const queryString = queryParams.toString();
+      const url = queryString
+        ? `/admin/enrollment/group-exports/${groupId}/pdf?${queryString}`
+        : `/admin/enrollment/group-exports/${groupId}/pdf`;
+
+      const response = await client.get<ExportResponse>(url);
+
+      return response.data.data.download_url;
+    } catch (error) {
+      console.error(`Error exporting group ${groupId} to PDF:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export group to Excel
+   * Returns a download URL from the backend
+   */
+  async exportGroupToExcel(groupId: number, options?: Omit<GroupExportOptions, 'format'>, tenantId?: string): Promise<string> {
+    try {
+      const client = createApiClient(tenantId);
+      const queryParams = this.buildExportQueryParams(options);
+      const queryString = queryParams.toString();
+      const url = queryString
+        ? `/admin/enrollment/group-exports/${groupId}/excel?${queryString}`
+        : `/admin/enrollment/group-exports/${groupId}/excel`;
+
+      const response = await client.get<ExportResponse>(url);
+
+      return response.data.data.download_url;
+    } catch (error) {
+      console.error(`Error exporting group ${groupId} to Excel:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export group to CSV
+   * Returns a download URL from the backend
+   */
+  async exportGroupToCsv(groupId: number, options?: Omit<GroupExportOptions, 'format'>, tenantId?: string): Promise<string> {
+    try {
+      const client = createApiClient(tenantId);
+      const queryParams = this.buildExportQueryParams(options);
+      const queryString = queryParams.toString();
+      const url = queryString
+        ? `/admin/enrollment/group-exports/${groupId}/csv?${queryString}`
+        : `/admin/enrollment/group-exports/${groupId}/csv`;
+
+      const response = await client.get<ExportResponse>(url);
+
+      return response.data.data.download_url;
+    } catch (error) {
+      console.error(`Error exporting group ${groupId} to CSV:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export attendance sheet for a group
+   * Returns a download URL from the backend
+   */
+  async exportAttendanceSheet(
+    groupId: number,
+    sessionCount?: number,
+    options?: Omit<GroupExportOptions, 'format' | 'template' | 'session_count'>,
+    tenantId?: string
+  ): Promise<string> {
+    try {
+      const client = createApiClient(tenantId);
+      const queryParams = this.buildExportQueryParams(options);
+
+      if (sessionCount) {
+        queryParams.append('session_count', String(sessionCount));
+      }
+
+      const queryString = queryParams.toString();
+      const url = queryString
+        ? `/admin/enrollment/group-exports/${groupId}/attendance-sheet?${queryString}`
+        : `/admin/enrollment/group-exports/${groupId}/attendance-sheet`;
+
+      const response = await client.get<ExportResponse>(url);
+
+      return response.data.data.download_url;
+    } catch (error) {
+      console.error(`Error exporting attendance sheet for group ${groupId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Batch export multiple groups
+   * Returns a download URL from the backend
+   */
+  async batchExport(request: BatchExportRequest, tenantId?: string): Promise<string> {
+    try {
+      const client = createApiClient(tenantId);
+      const response = await client.post<ExportResponse>(
+        '/admin/enrollment/group-exports/batch',
+        request
+      );
+
+      return response.data.data.download_url;
+    } catch (error) {
+      console.error('Error batch exporting groups:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Helper to build export query params
+   * Note: Laravel expects booleans as "1" or "0" for validation
+   */
+  private buildExportQueryParams(options?: Omit<GroupExportOptions, 'format'>): URLSearchParams {
+    const queryParams = new URLSearchParams();
+
+    if (!options) return queryParams;
+
+    // Helper to convert boolean to Laravel-compatible string
+    const boolToString = (value: boolean): string => value ? '1' : '0';
+
+    if (options.template) queryParams.append('template', options.template);
+    if (options.orientation) queryParams.append('orientation', options.orientation);
+    if (options.sort_by) queryParams.append('sort_by', options.sort_by);
+    if (options.include_email !== undefined) queryParams.append('include_email', boolToString(options.include_email));
+    if (options.include_phone !== undefined) queryParams.append('include_phone', boolToString(options.include_phone));
+    if (options.include_photo !== undefined) queryParams.append('include_photo', boolToString(options.include_photo));
+    if (options.include_birthdate !== undefined) queryParams.append('include_birthdate', boolToString(options.include_birthdate));
+    if (options.include_option !== undefined) queryParams.append('include_option', boolToString(options.include_option));
+    if (options.include_level !== undefined) queryParams.append('include_level', boolToString(options.include_level));
+    if (options.include_numbering !== undefined) queryParams.append('include_numbering', boolToString(options.include_numbering));
+    if (options.include_header !== undefined) queryParams.append('include_header', boolToString(options.include_header));
+    if (options.session_count) queryParams.append('session_count', String(options.session_count));
+
+    return queryParams;
   }
 }
 

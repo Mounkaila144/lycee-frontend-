@@ -37,6 +37,7 @@ export { GroupFormDialog } from './GroupFormDialog';
 export { GroupDeleteDialog } from './GroupDeleteDialog';
 export { GroupAssignmentDashboard } from './GroupAssignmentDashboard';
 export { GroupAssignmentDialog } from './GroupAssignmentDialog';
+export { GroupExportDialog } from './GroupExportDialog';
 
 // Enrollment Validation Components (Story 09)
 export { EnrollmentValidation } from './EnrollmentValidation';

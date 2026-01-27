@@ -301,9 +301,18 @@ const EvaluationConfigDialog = ({
                 <Typography variant="body1" color="text.secondary" gutterBottom>
                   Aucune évaluation configurée
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Commencez par appliquer un template ou créer une évaluation
                 </Typography>
+                {!isPublished && (
+                  <Button
+                    variant="contained"
+                    startIcon={<i className="ri-add-line" />}
+                    onClick={handleAddNew}
+                  >
+                    Créer une évaluation
+                  </Button>
+                )}
               </Box>
             )}
           </>

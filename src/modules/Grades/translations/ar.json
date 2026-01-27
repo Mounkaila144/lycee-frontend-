@@ -1,0 +1,227 @@
+{
+  "grades": {
+    "title": "إدخال الدرجات",
+    "myModules": "وحداتي",
+    "evaluations": "التقييمات",
+    "noModulesAssigned": "لا توجد وحدات مخصصة لك في هذا الفصل الدراسي.",
+    "noEvaluations": "لا توجد تقييمات مُعدَّة لهذه الوحدة.",
+    "selectEvaluation": "اختر تقييمًا لبدء إدخال الدرجات.",
+    "backToModules": "العودة إلى الوحدات",
+
+    "table": {
+      "matricule": "رقم الطالب",
+      "name": "الاسم",
+      "score": "الدرجة /20",
+      "absent": "غائب",
+      "comment": "ملاحظة",
+      "commentPlaceholder": "ملاحظة (اختياري)",
+      "search": "بحث (رقم، اسم)...",
+      "sortBy": "ترتيب حسب",
+      "alphabetical": "أبجدي",
+      "scoreAsc": "الدرجة (تصاعدي)",
+      "scoreDesc": "الدرجة (تنازلي)",
+      "noStudents": "لا يوجد طلاب مسجلون في هذا التقييم",
+      "noResults": "لم يتم العثور على طلاب"
+    },
+
+    "status": {
+      "saving": "جارِ الحفظ...",
+      "saved": "تم الحفظ",
+      "error": "خطأ",
+      "unsavedChanges": "تغييرات غير محفوظة"
+    },
+
+    "legend": {
+      "entered": "مُدخَل",
+      "missing": "مفقود",
+      "absent": "غائب",
+      "modified": "معدَّل (غير محفوظ)"
+    },
+
+    "statistics": {
+      "title": "الإحصائيات",
+      "progress": "تقدم الإدخال",
+      "average": "المتوسط",
+      "median": "الوسيط",
+      "min": "أدنى درجة",
+      "max": "أعلى درجة",
+      "passRate": "نسبة النجاح",
+      "absents": "الغائبون",
+      "distribution": "توزيع الدرجات",
+      "entered": "مُدخَلة",
+      "total": "المجموع",
+      "missing": "مفقودة",
+      "noData": "ستتوفر الإحصائيات بعد إدخال الدرجات."
+    },
+
+    "publish": {
+      "title": "نشر الدرجات",
+      "button": "نشر",
+      "published": "منشور",
+      "complete": "تم إدخال جميع الدرجات. يمكنك النشر.",
+      "incomplete": "{count} درجة(درجات) مفقودة. النشر محظور.",
+      "warning": "تحذير: بمجرد النشر، ستكون الدرجات مرئية للطلاب ولا يمكن تعديلها دون طلب تصحيح.",
+      "notifyStudents": "إخطار الطلاب بالنشر",
+      "success": "تم نشر الدرجات بنجاح!",
+      "publishing": "جارِ النشر...",
+      "notesEntered": "{count} درجة(درجات) مُدخَلة",
+      "notesMissing": "{count} درجة(درجات) مفقودة",
+      "studentsAbsent": "{count} طالب(طلاب) غائب"
+    },
+
+    "importExport": {
+      "title": "استيراد/تصدير الدرجات",
+      "export": "تصدير",
+      "import": "استيراد",
+      "template": "قالب الإدخال",
+      "templateDesc": "ملف Excel يحتوي على قائمة الطلاب وأعمدة الدرجات",
+      "absentsList": "قائمة الغائبين",
+      "absentsDesc": "تصدير الطلاب المسجلين كغائبين",
+      "download": "تحميل",
+      "uploadFile": "انقر أو اسحب ملفًا هنا",
+      "acceptedFormats": "الصيغ المقبولة: .xlsx, .xls, .csv",
+      "changeFile": "تغيير الملف",
+      "overwriteExisting": "الكتابة فوق الدرجات الموجودة",
+      "importing": "جارِ الاستيراد...",
+      "importButton": "استيراد",
+      "rows": "صفوف",
+      "valid": "صالحة",
+      "warnings": "تحذيرات",
+      "errors": "أخطاء",
+      "importComplete": "اكتمل الاستيراد: {imported} مستوردة، {updated} محدثة، {skipped} تم تخطيها، {errors} أخطاء"
+    },
+
+    "validation": {
+      "invalidScore": "درجة غير صالحة",
+      "scoreTooLow": "يجب أن تكون الدرجة >= 0",
+      "scoreTooHigh": "يجب أن تكون الدرجة <= 20",
+      "publishedWarning": "الدرجات منشورة. يتطلب التعديل طلب تصحيح."
+    },
+
+    "evaluation": {
+      "type": "النوع",
+      "coefficient": "المعامل",
+      "maxScore": "الحد الأقصى",
+      "date": "التاريخ",
+      "notScheduled": "غير مجدول",
+      "notes": "درجات"
+    },
+
+    "module": {
+      "credits": "ECTS",
+      "evaluations": "تقييم",
+      "students": "طالب"
+    },
+
+    "coefficients": {
+      "title": "إعداد المعاملات",
+      "description": "إدارة معاملات التقييم ونقاط ECTS لكل وحدة.",
+      "selectModule": "اختر وحدة",
+      "noModuleSelected": "اختر وحدة لتكوين معاملاتها.",
+      "totalCoefficients": "مجموع المعاملات",
+      "creditsEcts": "نقاط ECTS",
+      "status": "الحالة",
+      "modifiable": "قابل للتعديل",
+      "locked": "مقفل",
+      "gradesPublished": "الدرجات منشورة",
+      "requiresApproval": "التعديلات تتطلب موافقة",
+      "freelyModifiable": "المعاملات قابلة للتعديل بحرية",
+
+      "table": {
+        "type": "النوع",
+        "name": "الاسم",
+        "coefficient": "المعامل",
+        "maxScore": "الدرجة القصوى",
+        "gradesEntered": "الدرجات المدخلة",
+        "status": "الحالة",
+        "actions": "الإجراءات",
+        "published": "منشور",
+        "draft": "مسودة",
+        "empty": "فارغ",
+        "noEvaluations": "لا توجد تقييمات مُعدَّة لهذه الوحدة. استخدم قالبًا أو أنشئ تقييمات يدويًا."
+      },
+
+      "edit": {
+        "title": "تعديل المعامل",
+        "evaluation": "التقييم",
+        "currentCoefficient": "المعامل الحالي",
+        "newCoefficient": "المعامل الجديد",
+        "adjustCoefficient": "ضبط المعامل",
+        "manualInput": "المعامل (إدخال يدوي)",
+        "reason": "سبب التعديل",
+        "reasonPlaceholder": "اشرح سبب هذا التعديل...",
+        "reasonRequired": "مطلوب لأن الدرجات منشورة بالفعل",
+        "save": "حفظ",
+        "saving": "جارِ الحفظ...",
+        "cancel": "إلغاء"
+      },
+
+      "credits": {
+        "title": "تعديل نقاط ECTS",
+        "module": "الوحدة",
+        "currentCredits": "النقاط الحالية",
+        "newCredits": "النقاط الجديدة",
+        "adjustCredits": "ضبط نقاط ECTS",
+        "manualInput": "نقاط ECTS (إدخال يدوي)",
+        "recommendation": "يجب أن يكون مجموع نقاط ECTS للفصل الدراسي {recommended} ECTS.",
+        "recalculationWarning": "تعديل نقاط ECTS سيؤدي إلى إعادة حساب متوسطات الفصل الدراسي لجميع الطلاب المسجلين في هذه الوحدة."
+      },
+
+      "simulation": {
+        "title": "محاكاة التأثير",
+        "simulate": "محاكاة",
+        "calculating": "جارِ الحساب...",
+        "description": "انقر على \"محاكاة\" لمعرفة تأثير هذا التعديل على متوسطات الطلاب.",
+        "affectedStudents": "سيؤثر هذا التعديل على {count} طالب.",
+        "averageChange": "متوسط التغيير: {change} نقطة.",
+        "examples": "أمثلة التأثير ({count} طلاب)",
+        "student": "الطالب",
+        "oldAverage": "المتوسط القديم",
+        "newAverage": "المتوسط الجديد",
+        "difference": "الفرق"
+      },
+
+      "templates": {
+        "title": "قوالب المعاملات",
+        "systemTemplates": "القوالب المحددة مسبقًا",
+        "customTemplates": "القوالب المخصصة",
+        "system": "النظام",
+        "custom": "مخصص",
+        "total": "المجموع",
+        "selected": "محدد",
+        "apply": "تطبيق القالب",
+        "noTemplates": "لا توجد قوالب معاملات متاحة.",
+        "hasGradesWarning": "تحتوي هذه الوحدة بالفعل على درجات. تطبيق قالب سيحذف التقييمات الموجودة وهذا غير مسموح به.",
+        "confirmTitle": "تأكيد التطبيق",
+        "confirmMessage": "سيؤدي هذا الإجراء إلى استبدال جميع التقييمات الموجودة في الوحدة بتلك الموجودة في القالب المحدد.",
+        "confirmQuestion": "هل أنت متأكد من أنك تريد المتابعة؟",
+        "confirm": "تأكيد",
+        "applying": "جارِ التطبيق..."
+      },
+
+      "history": {
+        "title": "السجل",
+        "date": "التاريخ",
+        "oldValue": "القيمة القديمة",
+        "newValue": "القيمة الجديدة",
+        "change": "التغيير",
+        "changedBy": "تم التغيير بواسطة",
+        "reason": "السبب",
+        "noHistory": "لا توجد تعديلات مسجلة لهذا العنصر.",
+        "notSpecified": "غير محدد",
+        "close": "إغلاق"
+      },
+
+      "validation": {
+        "minCoefficient": "الحد الأدنى للمعامل هو {min}",
+        "maxCoefficient": "الحد الأقصى للمعامل هو {max}",
+        "stepCoefficient": "يجب أن يكون المعامل مضاعفًا لـ {step}",
+        "minCredits": "الحد الأدنى للنقاط هو {min}",
+        "maxCredits": "الحد الأقصى للنقاط هو {max}",
+        "integerCredits": "يجب أن تكون النقاط عددًا صحيحًا",
+        "reasonRequiredLocked": "السبب مطلوب لأن النقاط مقفلة",
+        "reasonRequiredPublished": "السبب مطلوب لأن الدرجات منشورة"
+      }
+    }
+  }
+}
