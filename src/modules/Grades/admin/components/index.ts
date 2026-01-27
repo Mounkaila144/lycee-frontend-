@@ -10,3 +10,5 @@ export { CoefficientEditDialog } from './CoefficientEditDialog';
 export { CreditsEditDialog } from './CreditsEditDialog';
 export { CoefficientTemplatesDialog } from './CoefficientTemplatesDialog';
 export { CoefficientHistoryDialog } from './CoefficientHistoryDialog';
+export { GradeValidationsDashboard } from './GradeValidationsDashboard';
+export { GradeValidationReview } from './GradeValidationReview';

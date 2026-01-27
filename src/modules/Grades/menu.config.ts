@@ -38,21 +38,6 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           isActive: true,
         },
         {
-          id: 'grades-import',
-          label: 'Import Excel',
-          route: '/admin/grades/import',
-          icon: {
-            type: 'emoji',
-            value: '📥',
-          },
-          order: 1.5,
-          module: 'Grades',
-          parentId: 'grades',
-          roles: ['admin', 'superadmin', 'teacher', 'enseignant'],
-          isVisible: true,
-          isActive: true,
-        },
-        {
           id: 'grades-coefficients',
           label: 'Coefficients & ECTS',
           route: '/admin/grades/coefficients',
