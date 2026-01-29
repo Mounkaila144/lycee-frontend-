@@ -3,7 +3,6 @@
  */
 export { teacherGradeService } from './teacherGradeService';
 export { gradeImportService } from './gradeImportService';
-export { gradeSubmissionService } from './gradeSubmissionService';
 export type {
   FileValidationResult,
   ImportPreviewRow,

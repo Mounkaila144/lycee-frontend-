@@ -12,3 +12,4 @@ export { CoefficientTemplatesDialog } from './CoefficientTemplatesDialog';
 export { CoefficientHistoryDialog } from './CoefficientHistoryDialog';
 export { GradeValidationsDashboard } from './GradeValidationsDashboard';
 export { GradeValidationReview } from './GradeValidationReview';
+export { GradeSubmissionCard } from './GradeSubmissionCard';

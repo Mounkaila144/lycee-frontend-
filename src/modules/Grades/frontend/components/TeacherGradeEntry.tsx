@@ -20,6 +20,7 @@ import { GradeEntryTable } from './GradeEntryTable';
 import { GradeStatisticsPanel } from './GradeStatisticsPanel';
 import { GradeImportExportDialog } from './GradeImportExportDialog';
 import { GradePublishDialog } from './GradePublishDialog';
+import { GradeSubmissionCard } from '@/modules/Grades/admin/components';
 
 // Hooks
 import { useTeacherModules } from '../hooks/useTeacherModules';
@@ -314,6 +315,20 @@ export const TeacherGradeEntry: React.FC = () => {
                     statistics={statistics}
                     completionStatus={completionStatus}
                     loading={gradesLoading}
+                  />
+                </Box>
+
+                {/* Submission Card */}
+                <Box mb={2}>
+                  <GradeSubmissionCard
+                    moduleId={selectedModule.id}
+                    evaluationId={selectedEvaluation.id}
+                    academicYearId={selectedModule.semester?.academic_year_id || 1}
+                    statistics={statistics}
+                    onSubmitSuccess={() => {
+                      refreshEvaluations();
+                      refreshGrades();
+                    }}
                   />
                 </Box>
 

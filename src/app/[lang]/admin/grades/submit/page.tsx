@@ -13,7 +13,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { GradeSubmissionCard } from '@/modules/Grades/frontend/components';
+import { GradeSubmissionCard } from '@/modules/Grades/admin/components';
 import { useTeacherModules } from '@/modules/Grades/frontend/hooks';
 
 export default function GradeSubmissionPage() {

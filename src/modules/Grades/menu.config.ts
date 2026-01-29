@@ -38,6 +38,21 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           isActive: true,
         },
         {
+          id: 'grades-validations',
+          label: 'Validation des Notes',
+          route: '/admin/grades/validations',
+          icon: {
+            type: 'emoji',
+            value: '✅',
+          },
+          order: 1.5,
+          module: 'Grades',
+          parentId: 'grades',
+          roles: ['admin', 'superadmin', 'responsable_pedagogique'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
           id: 'grades-coefficients',
           label: 'Coefficients & ECTS',
           route: '/admin/grades/coefficients',

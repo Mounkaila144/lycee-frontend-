@@ -15,6 +15,21 @@ interface ApiResponse<T> {
 }
 
 /**
+ * Backend simplified submission status response
+ */
+interface BackendSubmissionStatus {
+  module_id: number;
+  module_name?: string;
+  evaluation_id?: number;
+  can_submit: boolean;
+  errors: string[];
+  warnings: string[];
+  status?: string;
+  submitted_at?: string | null;
+  validated_at?: string | null;
+}
+
+/**
  * Grade Submission Service (Teacher)
  * Handles grade submission for validation
  * API routes: /frontend/teacher/grades/...
@@ -58,12 +73,42 @@ class GradeSubmissionService {
   ): Promise<SubmissionStatus> {
     try {
       const client = createApiClient(tenantId);
-      const response = await client.get<ApiResponse<SubmissionStatus>>(
-        `${this.baseUrl}/submission-status`,
-        { params }
-      );
+      const response = await client.get<
+        ApiResponse<BackendSubmissionStatus | BackendSubmissionStatus[]>
+      >(`${this.baseUrl}/submission-status`, { params });
 
-      return response.data.data;
+      // Backend returns an array, get the first element
+      const backendData = response.data.data;
+      const data = Array.isArray(backendData) ? backendData[0] : backendData;
+
+      // Transform backend response to expected format
+      const submissionStatus: SubmissionStatus = {
+        module_id: data.module_id,
+        evaluation_id: data.evaluation_id ?? params.evaluation_id ?? null,
+        status: (data.status as any) ?? 'Draft',
+        submitted_at: data.submitted_at ?? null,
+        validated_at: data.validated_at ?? null,
+        can_edit: !data.status || data.status === 'Draft',
+        can_submit: data.can_submit,
+        validation_id: null,
+        // Build pre_check from errors/warnings
+        pre_check:
+          data.errors.length > 0 || data.warnings.length > 0
+            ? {
+                can_submit: data.can_submit,
+                checks: {
+                  all_grades_entered: data.errors.length === 0,
+                  valid_grade_range: true,
+                  no_anomalies: data.warnings.length === 0,
+                },
+                errors: data.errors,
+                warnings: data.warnings,
+                statistics: null,
+              }
+            : undefined,
+      };
+
+      return submissionStatus;
     } catch (error) {
       console.error('Error fetching submission status:', error);
       throw error;
