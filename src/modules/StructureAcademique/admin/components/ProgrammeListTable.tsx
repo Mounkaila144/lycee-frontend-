@@ -422,7 +422,7 @@ const ProgrammeListTable = () => {
           ) : (
             <Chip
               variant='outlined'
-              label="Aucun"
+              label={t('None')}
               size='small'
               color='default'
             />
