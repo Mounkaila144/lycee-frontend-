@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';

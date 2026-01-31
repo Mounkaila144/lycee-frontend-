@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -33,6 +35,7 @@ export const ExemptionTeacherReviewDialog = ({
   onConfirm,
   exemption,
 }: ExemptionTeacherReviewDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const [opinion, setOpinion] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,13 +50,13 @@ export const ExemptionTeacherReviewDialog = ({
 
   const handleSubmit = async () => {
     if (!opinion.trim()) {
-      setError("Veuillez saisir votre avis");
+      setError(t('Please enter your opinion'));
 
       return;
     }
 
     if (opinion.length < 20) {
-      setError("Votre avis doit contenir au moins 20 caractères");
+      setError(t('Your opinion must contain at least 20 characters'));
 
       return;
     }
@@ -63,7 +66,7 @@ export const ExemptionTeacherReviewDialog = ({
       setError(null);
       await onConfirm(opinion);
     } catch (err: any) {
-      setError(err.message || "Erreur lors de l'enregistrement de l'avis");
+      setError(err.message || t('Error saving opinion'));
     } finally {
       setLoading(false);
     }
@@ -76,7 +79,7 @@ export const ExemptionTeacherReviewDialog = ({
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <i className="ri-message-2-line" />
-          <Typography variant="h6">Donner un avis</Typography>
+          <Typography variant="h6">{t('Give an opinion')}</Typography>
         </Box>
       </DialogTitle>
       <DialogContent dividers>
@@ -90,7 +93,7 @@ export const ExemptionTeacherReviewDialog = ({
           {/* Exemption Summary */}
           <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, mb: 3 }}>
             <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-              Demande de dispense
+              {t('Exemption request')}
             </Typography>
             <Typography variant="body1" fontWeight={500}>
               {exemption.exemption_number}
@@ -117,7 +120,7 @@ export const ExemptionTeacherReviewDialog = ({
 
           {/* Reason Summary */}
           <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Motif de la demande
+            {t('Reason for request')}
           </Typography>
           <Box sx={{ p: 2, bgcolor: 'info.lighter', borderRadius: 1, mb: 3 }}>
             <Typography variant="body2" fontWeight={500} gutterBottom>
@@ -133,17 +136,17 @@ export const ExemptionTeacherReviewDialog = ({
             fullWidth
             multiline
             rows={4}
-            label="Votre avis technique"
+            label={t('Your technical opinion')}
             value={opinion}
             onChange={e => setOpinion(e.target.value)}
-            placeholder="Donnez votre avis technique sur cette demande de dispense. Votre opinion sera prise en compte lors de la validation finale."
-            helperText={`${opinion.length}/20 caractères minimum`}
+            placeholder={t('Give your technical opinion on this exemption request. Your opinion will be taken into account during final validation.')}
+            helperText={t('{{count}}/20 characters minimum', { count: opinion.length })}
           />
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose} disabled={loading}>
-          Annuler
+          {t('Cancel')}
         </Button>
         <Button
           variant="contained"
@@ -151,7 +154,7 @@ export const ExemptionTeacherReviewDialog = ({
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? <CircularProgress size={24} /> : "Soumettre l'avis"}
+          {loading ? <CircularProgress size={24} /> : t('Submit opinion')}
         </Button>
       </DialogActions>
     </Dialog>

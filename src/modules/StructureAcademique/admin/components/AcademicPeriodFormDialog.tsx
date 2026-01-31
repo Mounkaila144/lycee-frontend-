@@ -15,6 +15,7 @@ import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { AcademicPeriod, AcademicPeriodFormInput, AcademicPeriodType } from '../../types/academicCalendar.types'
 
 const schema = object({

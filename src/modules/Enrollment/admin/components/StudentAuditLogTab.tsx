@@ -28,6 +28,9 @@ import { studentService } from '../services/studentService'
 // Context Imports
 import { useTenant } from '@/shared/lib/tenant-context'
 
+// i18n Imports
+import { useTranslation } from '@/shared/i18n/use-translation'
+
 interface StudentAuditLogTabProps {
   studentId: number
 }
@@ -38,6 +41,7 @@ interface StudentAuditLogTabProps {
  */
 const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
   const { tenantId } = useTenant()
+  const { t } = useTranslation('Enrollment')
   const [logs, setLogs] = useState<StudentAuditLog[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +55,7 @@ const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
       setLogs(data)
     } catch (err) {
       console.error('Error fetching audit logs:', err)
-      setError('Impossible de charger l\'historique des modifications')
+      setError(t('auditLog.loadError'))
     } finally {
       setLoading(false)
     }
@@ -75,15 +79,15 @@ const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
     }
   }
 
-  // Get event label in French
+  // Get event label
   const getEventLabel = (event: string): string => {
     switch (event.toLowerCase()) {
       case 'created':
-        return 'Création'
+        return t('auditLog.events.created')
       case 'updated':
-        return 'Modification'
+        return t('auditLog.events.updated')
       case 'deleted':
-        return 'Suppression'
+        return t('auditLog.events.deleted')
       default:
         return event
     }
@@ -91,7 +95,7 @@ const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
 
   // Get user full name
   const getUserName = (user?: { firstname: string; lastname: string } | null): string => {
-    if (!user) return 'Système'
+    if (!user) return t('auditLog.system')
     return `${user.firstname} ${user.lastname}`
   }
 
@@ -132,7 +136,7 @@ const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
       <Box className="text-center" sx={{ py: 6 }}>
         <i className="ri-history-line text-4xl text-gray-400 mb-2" />
         <Typography color="text.secondary">
-          Aucun historique de modifications disponible
+          {t('auditLog.noHistory')}
         </Typography>
       </Box>
     )
@@ -142,9 +146,9 @@ const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
     <Box>
       <Box className="flex justify-between items-center mb-4">
         <Typography variant="h6">
-          Historique des Modifications
+          {t('auditLog.title')}
         </Typography>
-        <Tooltip title="Actualiser">
+        <Tooltip title={t('common.refresh')}>
           <IconButton onClick={fetchAuditLogs} disabled={loading}>
             <i className="ri-refresh-line" />
           </IconButton>
@@ -155,11 +159,11 @@ const StudentAuditLogTab = ({ studentId }: StudentAuditLogTabProps) => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Action</TableCell>
-              <TableCell>Utilisateur</TableCell>
-              <TableCell>Modifications</TableCell>
-              <TableCell>Adresse IP</TableCell>
+              <TableCell>{t('auditLog.columns.date')}</TableCell>
+              <TableCell>{t('auditLog.columns.action')}</TableCell>
+              <TableCell>{t('auditLog.columns.user')}</TableCell>
+              <TableCell>{t('auditLog.columns.changes')}</TableCell>
+              <TableCell>{t('auditLog.columns.ipAddress')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

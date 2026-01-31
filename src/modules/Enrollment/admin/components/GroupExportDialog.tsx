@@ -7,6 +7,8 @@
 
 import React, { useState, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import {
   Dialog,
   DialogTitle,
