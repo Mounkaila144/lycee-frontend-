@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { valibotResolver } from '@hookform/resolvers/valibot';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import {
   object,
   string,
@@ -47,7 +48,7 @@ const moduleSchema = object({
   ),
   coefficient: pipe(
     number('Le coefficient doit être un nombre'),
-    minValue(0.5, 'Minimum 0.5'),
+    minValue(1, 'Minimum 1'),
     maxValue(5, 'Maximum 5')
   ),
   type: string(),
@@ -80,6 +81,7 @@ const ModuleFormDialog: React.FC<ModuleFormDialogProps> = ({
   module,
   isEditMode = false,
 }) => {
+  const { t } = useTranslation('StructureAcademique');
   const {
     control,
     handleSubmit,
@@ -121,7 +123,7 @@ const ModuleFormDialog: React.FC<ModuleFormDialogProps> = ({
         code: module.code,
         name: module.name,
         credits_ects: module.credits_ects,
-        coefficient: module.coefficient,
+        coefficient: Math.round(module.coefficient),
         type: module.type,
         semester: module.semester,
         level: module.level,
@@ -175,7 +177,7 @@ const ModuleFormDialog: React.FC<ModuleFormDialogProps> = ({
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h5">
-            {isEditMode ? 'Modifier le Module' : 'Nouveau Module'}
+            {isEditMode ? t('Edit Module') : t('New Module')}
           </Typography>
           <IconButton onClick={onClose} size="small">
             <i className="ri-close-line" />
@@ -307,12 +309,12 @@ const ModuleFormDialog: React.FC<ModuleFormDialogProps> = ({
                     type="number"
                     fullWidth
                     label="Coefficient *"
-                    value={value}
-                    onChange={(e) => onChange(Number(e.target.value))}
+                    value={value != null ? Math.round(value) : ''}
+                    onChange={(e) => onChange(Math.round(Number(e.target.value)))}
                     error={!!errors.coefficient}
-                    helperText={errors.coefficient?.message || '0.5-5'}
+                    helperText={errors.coefficient?.message || '1-5'}
                     disabled={isSubmitting || (isEditMode && !module?.can_be_modified)}
-                    inputProps={{ min: 0.5, max: 5, step: 0.5 }}
+                    inputProps={{ min: 1, max: 5, step: 1 }}
                   />
                 )}
               />
@@ -482,10 +484,10 @@ const ModuleFormDialog: React.FC<ModuleFormDialogProps> = ({
 
         <DialogActions>
           <Button onClick={onClose} disabled={isSubmitting}>
-            Annuler
+            {t('Cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {isSubmitting ? 'Enregistrement...' : isEditMode ? 'Modifier' : 'Créer'}
+            {isSubmitting ? t('Saving...') : isEditMode ? t('Edit') : t('Create')}
           </Button>
         </DialogActions>
       </form>
