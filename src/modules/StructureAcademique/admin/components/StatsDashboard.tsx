@@ -30,6 +30,7 @@ import { CreditsByLevelChart } from './CreditsByLevelChart';
 import { ProgramsByTypeChart } from './ProgramsByTypeChart';
 
 export const StatsDashboard: React.FC = () => {
+  const { t } = useTranslation('StructureAcademique');
   const { data: globalStats, loading: loadingGlobal, error: errorGlobal, refetch: refetchGlobal } = useGlobalStats();
   const { data: volumes, loading: loadingVolumes, error: errorVolumes } = useVolumeDistribution();
   const { data: credits, loading: loadingCredits, error: errorCredits } = useCreditsByLevel();
@@ -72,7 +73,7 @@ export const StatsDashboard: React.FC = () => {
     <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Statistiques de la Structure Académique</Typography>
+        <Typography variant="h4">{t('Statistiques de la Structure Académique')}</Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             variant="outlined"
@@ -80,7 +81,7 @@ export const StatsDashboard: React.FC = () => {
             onClick={handleRefresh}
             disabled={isInvalidating}
           >
-            {isInvalidating ? 'Actualisation...' : 'Actualiser'}
+            {isInvalidating ? t('Actualisation...') : t('Actualiser')}
           </Button>
           <Button
             variant="contained"
@@ -88,7 +89,7 @@ export const StatsDashboard: React.FC = () => {
             onClick={handleExport}
             disabled={isExporting}
           >
-            {isExporting ? 'Export...' : 'Exporter Excel'}
+            {isExporting ? t('Exportation...') : t('Exporter Excel')}
           </Button>
         </Box>
       </Box>
@@ -99,36 +100,36 @@ export const StatsDashboard: React.FC = () => {
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
-                title="Filières"
+                title={t('Filières')}
                 value={globalStats.programs.total}
-                subtitle={`${globalStats.programs.active} actifs`}
+                subtitle={`${globalStats.programs.active} ${t('actifs')}`}
                 icon="ri-book-line"
                 color="primary"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
-                title="Modules"
+                title={t('Modules')}
                 value={globalStats.modules.total}
-                subtitle={`${globalStats.modules.total_credits} crédits ECTS`}
+                subtitle={`${globalStats.modules.total_credits} ${t('crédits ECTS')}`}
                 icon="ri-file-list-line"
                 color="success"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
-                title="Enseignants"
+                title={t('Enseignants')}
                 value={globalStats.teachers.total_assigned}
-                subtitle={`${Math.round(globalStats.teachers.average_workload)}h moy.`}
+                subtitle={`${Math.round(globalStats.teachers.average_workload)}${t('h moy.')}`}
                 icon="ri-user-line"
                 color="info"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
-                title="Taux de Couverture"
+                title={t('Taux de Couverture')}
                 value={`${Math.round(globalStats.coverage_rate)}%`}
-                subtitle="Modules avec enseignant"
+                subtitle={t('Modules avec enseignant')}
                 icon="ri-pie-chart-line"
                 color="warning"
               />
@@ -141,7 +142,7 @@ export const StatsDashboard: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Programmes par Type
+                    {t('Programmes par Type')}
                   </Typography>
                   <ProgramsByTypeChart data={globalStats.programs.by_type} />
                 </CardContent>
@@ -151,7 +152,7 @@ export const StatsDashboard: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Répartition Volumes Horaires
+                    {t('Répartition Volumes Horaires')}
                   </Typography>
                   {volumes && <VolumeChart data={volumes} />}
                 </CardContent>
@@ -165,7 +166,7 @@ export const StatsDashboard: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Modules par Niveau
+                    {t('Modules par Niveau')}
                   </Typography>
                   <ModulesByLevelChart data={globalStats.modules.by_level} />
                 </CardContent>
@@ -175,7 +176,7 @@ export const StatsDashboard: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Crédits ECTS par Niveau
+                    {t('Crédits ECTS par Niveau')}
                   </Typography>
                   {credits && <CreditsByLevelChart data={credits} />}
                 </CardContent>
@@ -187,13 +188,13 @@ export const StatsDashboard: React.FC = () => {
           <Card sx={{ mt: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Détails Supplémentaires
+                {t('Détails Supplémentaires')}
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Modules Éliminatoires
+                      {t('Modules Éliminatoires')}
                     </Typography>
                     <Typography variant="h6">
                       {globalStats.modules.eliminatory_count}
@@ -203,7 +204,7 @@ export const StatsDashboard: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Crédits Moyens/Module
+                      {t('Crédits Moyens/Module')}
                     </Typography>
                     <Typography variant="h6">
                       {globalStats.modules.avg_credits.toFixed(1)} ECTS
@@ -213,7 +214,7 @@ export const StatsDashboard: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Affectations Enseignants
+                      {t('Affectations Enseignants')}
                     </Typography>
                     <Typography variant="h6">
                       {globalStats.teachers.total_assignments}
@@ -223,11 +224,11 @@ export const StatsDashboard: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Statut Filières
+                      {t('Statut Filières')}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                      <Chip label={`${globalStats.programs.active} Actifs`} size="small" color="success" />
-                      <Chip label={`${globalStats.programs.draft} Brouillon`} size="small" color="warning" />
+                      <Chip label={`${globalStats.programs.active} ${t('Actifs')}`} size="small" color="success" />
+                      <Chip label={`${globalStats.programs.draft} ${t('Brouillon')}`} size="small" color="warning" />
                     </Box>
                   </Box>
                 </Grid>

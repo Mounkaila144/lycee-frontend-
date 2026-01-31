@@ -311,7 +311,7 @@ const ModuleListTable = () => {
         cell: ({ row }) => (
           <Chip
             variant="tonal"
-            label={row.original.type}
+            label={t(row.original.type)}
             size="small"
             color={getModuleTypeBadgeColor(row.original.type)}
           />
@@ -336,7 +336,7 @@ const ModuleListTable = () => {
         header: t('Éliminatoire'),
         cell: ({ row }) =>
           row.original.is_eliminatory ? (
-            <Chip variant="tonal" label="Éliminatoire" size="small" color="error" />
+            <Chip variant="tonal" label={t('Éliminatoire')} size="small" color="error" />
           ) : (
             <Typography variant="body2" color="text.secondary">
               -
@@ -353,7 +353,7 @@ const ModuleListTable = () => {
           if (count === 0) {
             return (
               <Typography variant="body2" color="text.secondary">
-                Aucune
+                {t('Aucune')}
               </Typography>
             );
           }
@@ -400,7 +400,7 @@ const ModuleListTable = () => {
             <IconButton
               size="small"
               onClick={() => handleOpenPrerequisitesDialog(row.original)}
-              title="Gérer les prérequis"
+              title={t('Gérer les prérequis')}
             >
               <i className="ri-links-line text-textSecondary" />
             </IconButton>
@@ -409,7 +409,7 @@ const ModuleListTable = () => {
             <IconButton
               size="small"
               onClick={() => handleOpenDependencyGraphDialog(row.original)}
-              title="Graphe de dépendances"
+              title={t('Graphe de dépendances')}
             >
               <i className="ri-node-tree text-textSecondary" />
             </IconButton>
@@ -418,7 +418,7 @@ const ModuleListTable = () => {
             <IconButton
               size="small"
               onClick={() => handleOpenTeachersDialog(row.original)}
-              title="Affecter des enseignants"
+              title={t('Affecter des enseignants')}
             >
               <i className="ri-user-line text-textSecondary" />
             </IconButton>
@@ -427,7 +427,7 @@ const ModuleListTable = () => {
             <IconButton
               size="small"
               onClick={() => handleOpenEvaluationConfigDialog(row.original)}
-              title="Configuration des évaluations"
+              title={t('Configuration des évaluations')}
             >
               <i className="ri-file-list-3-line text-textSecondary" />
             </IconButton>
@@ -495,7 +495,7 @@ const ModuleListTable = () => {
             title={module.name}
             subtitle={module.code}
             status={{
-              label: module.type,
+              label: t(module.type),
               color: getModuleTypeBadgeColor(module.type),
             }}
             fields={[
@@ -529,16 +529,16 @@ const ModuleListTable = () => {
                 label: t('Filières'),
                 value: (() => {
                   const programmes = module.programmes || module.programs || [];
-                  if (programmes.length === 0) return 'Aucune';
+                  if (programmes.length === 0) return t('Aucune');
                   if (programmes.length === 1) return programmes[0].libelle;
-                  return `${programmes.length} filières`;
+                  return `${programmes.length} ${t('filières')}`;
                 })(),
               },
               module.is_eliminatory
                 ? {
                     icon: 'ri-alert-line',
                     label: t('Éliminatoire'),
-                    value: 'Oui',
+                    value: t('Oui'),
                   }
                 : { icon: '', value: '', hidden: true },
             ]}

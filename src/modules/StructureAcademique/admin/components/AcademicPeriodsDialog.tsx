@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -28,6 +29,7 @@ interface AcademicPeriodsDialogProps {
 }
 
 const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialogProps) => {
+  const { t, locale } = useTranslation('StructureAcademique')
   const { periods, loading, error, createPeriod, updatePeriod, deletePeriod } = useAcademicPeriods({
     semesterId: semester.id
   })
@@ -42,7 +44,7 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
   }
 
   const handleDelete = async (period: AcademicPeriod) => {
-    if (confirm(`Supprimer la période "${period.name}" ?`)) {
+    if (confirm(t('Supprimer la période "{name}" ?', { name: period.name }))) {
       try {
         setDeleting(period.id)
         await deletePeriod(period.id)
@@ -63,7 +65,8 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
   }
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
+    const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-SA' }
+    return new Date(date).toLocaleDateString(localeMap[locale] || 'fr-FR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -75,7 +78,7 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography variant="h6">Périodes - {semester.name}</Typography>
+            <Typography variant="h6">{t('Périodes')} - {semester.name}</Typography>
             <Button
               variant="contained"
               size="small"
@@ -86,7 +89,7 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
               }}
               disabled={loading}
             >
-              Nouvelle période
+              {t('Nouvelle période')}
             </Button>
           </Box>
         </DialogTitle>
@@ -104,10 +107,10 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
           ) : periods.length === 0 ? (
             <Box textAlign="center" py={4}>
               <Typography variant="body1" color="text.secondary">
-                Aucune période définie
+                {t('Aucune période définie')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Ajoutez des périodes (vacances, examens, etc.)
+                {t('Ajoutez des périodes (vacances, examens, etc.)')}
               </Typography>
             </Box>
           ) : (
@@ -117,12 +120,12 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
                   key={period.id}
                   secondaryAction={
                     <Box display="flex" gap={0.5}>
-                      <Tooltip title="Modifier">
+                      <Tooltip title={t('Modifier')}>
                         <IconButton size="small" onClick={() => handleEdit(period)}>
                           <i className="ri-edit-line" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Supprimer">
+                      <Tooltip title={t('Supprimer')}>
                         <IconButton
                           size="small"
                           color="error"
@@ -159,7 +162,7 @@ const AcademicPeriodsDialog = ({ open, onClose, semester }: AcademicPeriodsDialo
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Fermer</Button>
+          <Button onClick={onClose}>{t('Fermer')}</Button>
         </DialogActions>
       </Dialog>
 

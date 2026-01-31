@@ -10,7 +10,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
   menus: [
     {
       id: 'grades',
-      label: 'Notes & Évaluations',
+      label: 'Grades & Evaluations',
       route: '/admin/grades',
       icon: {
         type: 'emoji',
@@ -24,7 +24,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
       children: [
         {
           id: 'grades-entry',
-          label: 'Saisie des Notes',
+          label: 'Grade Entry',
           route: '/admin/grades/entry',
           icon: {
             type: 'emoji',
@@ -39,7 +39,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'grades-validations',
-          label: 'Validation des Notes',
+          label: 'Grade Validation',
           route: '/admin/grades/validations',
           icon: {
             type: 'emoji',
@@ -69,7 +69,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'grades-deliberation',
-          label: 'Délibérations',
+          label: 'Deliberations',
           route: '/admin/grades/deliberation',
           icon: {
             type: 'emoji',
@@ -84,7 +84,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'grades-transcripts',
-          label: 'Relevés de Notes',
+          label: 'Transcripts',
           route: '/admin/grades/transcripts',
           icon: {
             type: 'emoji',
@@ -99,7 +99,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'grades-statistics',
-          label: 'Statistiques',
+          label: 'Statistics',
           route: '/admin/grades/statistics',
           icon: {
             type: 'emoji',
@@ -114,7 +114,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'grades-correction-requests',
-          label: 'Demandes de Correction',
+          label: 'Correction Requests',
           route: '/admin/grades/correction-requests',
           icon: {
             type: 'emoji',

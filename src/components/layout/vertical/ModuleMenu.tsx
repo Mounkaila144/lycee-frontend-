@@ -11,6 +11,7 @@ import { MenuItem, SubMenu } from '@menu/vertical-menu'
 
 // Hook Imports
 import { useConfigMenus } from '@/shared/hooks/useConfigMenus'
+import { useTranslation } from '@/shared/i18n/use-translation'
 
 // Type Imports
 import type { MenuConfig, UserRole } from '@/shared/types/menu-config.types'
@@ -24,6 +25,10 @@ const ModuleMenu = () => {
   // Hooks
   const { lang: locale } = useParams()
   const pathname = usePathname()
+  const { t, locale: translationLocale } = useTranslation()
+
+  // Debug log
+  console.log('🔧 [ModuleMenu] URL locale:', locale, '| Translation locale:', translationLocale)
 
   // Detect current role from URL
   const currentRole: UserRole | undefined = useMemo(() => {
@@ -67,7 +72,7 @@ const ModuleMenu = () => {
     // Has children - render as SubMenu
     if (menu.children && menu.children.length > 0) {
       return (
-        <SubMenu key={menu.id} label={menu.label} icon={getIcon()}>
+        <SubMenu key={menu.id} label={t(menu.label)} icon={getIcon()}>
           {menu.children.map(child => renderMenuItem(child))}
         </SubMenu>
       )
@@ -79,7 +84,7 @@ const ModuleMenu = () => {
 
       return (
         <MenuItem key={menu.id} href={href} icon={getIcon()}>
-          {menu.label}
+          {t(menu.label)}
         </MenuItem>
       )
     }
@@ -87,7 +92,7 @@ const ModuleMenu = () => {
     // Menu item without route (shouldn't happen, but handle it)
     return (
       <MenuItem key={menu.id} icon={getIcon()}>
-        {menu.label}
+        {t(menu.label)}
       </MenuItem>
     )
   }

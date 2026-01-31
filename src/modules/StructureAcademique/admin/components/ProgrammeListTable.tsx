@@ -467,7 +467,7 @@ const ProgrammeListTable = () => {
             <IconButton
               size='small'
               onClick={() => handleOpenLevelDialog(row.original)}
-              title="Gérer les niveaux"
+              title={t('Gérer les niveaux')}
             >
               <i className='ri-list-check text-textSecondary' />
             </IconButton>
@@ -476,7 +476,7 @@ const ProgrammeListTable = () => {
             <IconButton
               size='small'
               onClick={() => handleOpenModulesDialog(row.original)}
-              title="Gérer les modules"
+              title={t('Gérer les modules')}
             >
               <i className='ri-book-line text-textSecondary' />
             </IconButton>
@@ -485,7 +485,7 @@ const ProgrammeListTable = () => {
             <IconButton
               size='small'
               onClick={() => handleOpenCreditConfigDialog(row.original)}
-              title="Configuration Crédits ECTS"
+              title={t('Configuration Crédits ECTS')}
             >
               <i className='ri-medal-line text-textSecondary' />
             </IconButton>
@@ -494,7 +494,7 @@ const ProgrammeListTable = () => {
             <IconButton
               size='small'
               onClick={() => handleOpenEliminatoryModulesDialog(row.original)}
-              title="Modules Éliminatoires"
+              title={t('Modules Éliminatoires')}
             >
               <i className='ri-alert-line text-textSecondary' />
             </IconButton>
@@ -503,7 +503,7 @@ const ProgrammeListTable = () => {
             <IconButton
               size='small'
               onClick={() => handleOpenMaquetteDialog(row.original)}
-              title="Générer Maquette PDF"
+              title={t('Générer Maquette PDF')}
             >
               <i className='ri-file-pdf-line text-error' />
             </IconButton>

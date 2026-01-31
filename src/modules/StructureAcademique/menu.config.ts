@@ -10,7 +10,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
   menus: [
     {
       id: 'structure-academique',
-      label: 'Structure Académique',
+      label: 'Academic Structure',
       route: '/admin/structure',
       icon: {
         type: 'emoji',
@@ -24,7 +24,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
       children: [
         {
           id: 'structure-programmes',
-          label: 'Filières',
+          label: 'Programs',
           route: '/admin/structure/programmes',
           icon: {
             type: 'emoji',
@@ -54,7 +54,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'structure-specialites',
-          label: 'Spécialités',
+          label: 'Specializations',
           route: '/admin/structure/specializations',
           icon: {
             type: 'emoji',
@@ -69,7 +69,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'structure-academic-years',
-          label: 'Calendrier Académique',
+          label: 'Academic Calendar',
           route: '/admin/structure/academic-years',
           icon: {
             type: 'emoji',
@@ -84,7 +84,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'structure-progression-rules',
-          label: 'Règles de Progression',
+          label: 'Progression Rules',
           route: '/admin/structure/progression-rules',
           icon: {
             type: 'emoji',
@@ -99,7 +99,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'structure-evaluation-templates',
-          label: 'Templates d\'Évaluation',
+          label: 'Evaluation Templates',
           route: '/admin/structure/evaluation-templates',
           icon: {
             type: 'emoji',
@@ -114,7 +114,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'structure-statistics',
-          label: 'Statistiques',
+          label: 'Statistics',
           route: '/admin/statistics',
           icon: {
             type: 'emoji',

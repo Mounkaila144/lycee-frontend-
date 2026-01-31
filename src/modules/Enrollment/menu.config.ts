@@ -10,7 +10,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
   menus: [
     {
       id: 'enrollment',
-      label: 'Inscriptions',
+      label: 'Enrollments',
       route: '/admin/enrollment',
       icon: {
         type: 'emoji',
@@ -24,7 +24,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
       children: [
         {
           id: 'enrollment-students',
-          label: 'Étudiants',
+          label: 'Students',
           route: '/admin/enrollment/students',
           icon: {
             type: 'emoji',
@@ -39,7 +39,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-groups',
-          label: 'Affectation Groupes',
+          label: 'Group Assignment',
           route: '/admin/enrollment/groups',
           icon: {
             type: 'emoji',
@@ -54,7 +54,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-statistics',
-          label: 'Statistiques',
+          label: 'Statistics',
           route: '/admin/enrollment/statistics',
           icon: {
             type: 'emoji',
@@ -69,7 +69,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-options',
-          label: 'Choix des Options',
+          label: 'Option Choices',
           route: '/admin/enrollment/options',
           icon: {
             type: 'emoji',
@@ -84,7 +84,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-validation',
-          label: 'Validation Inscriptions',
+          label: 'Enrollment Validation',
           route: '/admin/enrollment/validation',
           icon: {
             type: 'emoji',
@@ -99,7 +99,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-student-cards',
-          label: 'Cartes Étudiants',
+          label: 'Student Cards',
           route: '/admin/enrollment/student-cards',
           icon: {
             type: 'emoji',
@@ -114,7 +114,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-reenrollment-campaigns',
-          label: 'Campagnes Réinscription',
+          label: 'Re-enrollment Campaigns',
           route: '/admin/enrollment/reenrollment-campaigns',
           icon: {
             type: 'emoji',
@@ -129,7 +129,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-reenrollments',
-          label: 'Réinscriptions',
+          label: 'Re-enrollments',
           route: '/admin/enrollment/reenrollments',
           icon: {
             type: 'emoji',
@@ -144,7 +144,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-transfers',
-          label: 'Transferts & Équivalences',
+          label: 'Transfers & Equivalences',
           route: '/admin/enrollment/transfers',
           icon: {
             type: 'emoji',
@@ -159,7 +159,7 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'enrollment-exemptions',
-          label: 'Dispenses de Modules',
+          label: 'Module Exemptions',
           route: '/admin/enrollment/exemptions',
           icon: {
             type: 'emoji',

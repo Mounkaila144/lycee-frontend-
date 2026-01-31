@@ -384,5 +384,33 @@
   "Locked": "مقفل",
   "Unlocked": "غير مقفل",
   "Lock": "قفل",
-  "Unlock": "فتح"
+  "Unlock": "فتح",
+
+  "Academic Structure": "الهيكل الأكاديمي",
+  "Academic Calendar": "التقويم الأكاديمي",
+  "Progression Rules": "قواعد التقدم",
+  "Evaluation Templates": "قوالب التقييم",
+
+  "Group Assignment": "تعيين المجموعات",
+  "Option Choices": "اختيار الخيارات",
+  "Enrollment Validation": "التحقق من التسجيل",
+  "Student Cards": "بطاقات الطلاب",
+  "Re-enrollment Campaigns": "حملات إعادة التسجيل",
+  "Transfers & Equivalences": "التحويلات والمعادلات",
+  "Module Exemptions": "إعفاءات الوحدات",
+
+  "Grades & Evaluations": "الدرجات والتقييمات",
+  "Grade Entry": "إدخال الدرجات",
+  "Grade Validation": "التحقق من الدرجات",
+  "Coefficients & ECTS": "المعاملات و ECTS",
+  "Deliberations": "المداولات",
+  "Transcripts": "كشوف الدرجات",
+  "Correction Requests": "طلبات التصحيح",
+
+  "Authentication": "المصادقة",
+  "Password Policy": "سياسة كلمة المرور",
+  "Sessions": "الجلسات",
+  "Sites": "المواقع",
+  "Module Management": "إدارة الوحدات",
+  "Modules/UE": "الوحدات"
 }

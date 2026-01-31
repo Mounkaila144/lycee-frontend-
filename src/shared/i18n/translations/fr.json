@@ -397,5 +397,33 @@
   "Locked": "Verrouill\u00e9",
   "Unlocked": "D\u00e9verrouill\u00e9",
   "Lock": "Verrouiller",
-  "Unlock": "D\u00e9verrouiller"
+  "Unlock": "D\u00e9verrouiller",
+
+  "Academic Structure": "Structure Acad\u00e9mique",
+  "Academic Calendar": "Calendrier Acad\u00e9mique",
+  "Progression Rules": "R\u00e8gles de Progression",
+  "Evaluation Templates": "Mod\u00e8les d'\u00c9valuation",
+
+  "Group Assignment": "Affectation Groupes",
+  "Option Choices": "Choix des Options",
+  "Enrollment Validation": "Validation Inscriptions",
+  "Student Cards": "Cartes \u00c9tudiants",
+  "Re-enrollment Campaigns": "Campagnes R\u00e9inscription",
+  "Transfers & Equivalences": "Transferts & \u00c9quivalences",
+  "Module Exemptions": "Dispenses de Modules",
+
+  "Grades & Evaluations": "Notes & \u00c9valuations",
+  "Grade Entry": "Saisie des Notes",
+  "Grade Validation": "Validation des Notes",
+  "Coefficients & ECTS": "Coefficients & ECTS",
+  "Deliberations": "D\u00e9lib\u00e9rations",
+  "Transcripts": "Relev\u00e9s de Notes",
+  "Correction Requests": "Demandes de Correction",
+
+  "Authentication": "Authentification",
+  "Password Policy": "Politique de mot de passe",
+  "Sessions": "Sessions",
+  "Sites": "Sites",
+  "Module Management": "Gestion des modules",
+  "Modules/UE": "Modules/UE"
 }

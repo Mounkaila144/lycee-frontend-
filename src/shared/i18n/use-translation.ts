@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import { useParams } from 'next/navigation';
 import { useTranslationContext } from './translation-provider';
-import { UseTranslationReturn, TranslationKeys } from './types';
+import { UseTranslationReturn, TranslationKeys, Locale } from './types';
 
 /**
  * Load translations for a specific module and locale
@@ -59,54 +60,44 @@ function interpolate(
 const translationCache: Record<string, TranslationKeys> = {};
 
 /**
- * Main translation hook with default English text approach
+ * Main translation hook with French as base language
  *
  * @param moduleName - Optional module name for module-specific translations
  * @returns Translation function with locale management
  *
  * @example
- * // Default English text, translated in other languages
- * const { t } = useTranslation('UsersGuard');
- * t('Login'); // EN: "Login", FR: "Connexion", AR: "تسجيل الدخول"
+ * // French text as key, translated to other languages
+ * const { t } = useTranslation('StructureAcademique');
+ * t('Ajouter'); // EN: "Add", FR: "Ajouter", AR: "إضافة"
  *
  * @example
  * // With parameters
  * const { t } = useTranslation();
- * t('Welcome, {name}!', { name: 'John' }); // EN: "Welcome, John!", FR: "Bienvenue, John!"
+ * t('Bienvenue, {name}!', { name: 'John' }); // EN: "Welcome, John!", FR: "Bienvenue, John!"
  *
  * @example
  * // Global translations
  * const { t } = useTranslation();
- * t('Save'); // EN: "Save", FR: "Enregistrer", AR: "حفظ"
+ * t('Enregistrer'); // EN: "Save", FR: "Enregistrer", AR: "حفظ"
  */
 export function useTranslation(moduleName?: string): UseTranslationReturn {
-  const { locale, setLocale } = useTranslationContext();
-  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  const { setLocale } = useTranslationContext();
+  const params = useParams();
+  const [updateCount, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  // Get locale from URL params (source of truth) with fallback to 'fr'
+  const urlLocale = params?.lang as string;
+  const locale: Locale = (urlLocale === 'en' || urlLocale === 'fr' || urlLocale === 'ar')
+    ? urlLocale as Locale
+    : 'fr';
 
   /**
    * Translate text with fallback logic:
-   * 1. If locale is 'en', return the default English text
-   * 2. Check module translations (if moduleName provided)
-   * 3. Check global translations
-   * 4. Return the default English text if not found
+   * 1. Check module translations (if moduleName provided)
+   * 2. Check global translations
+   * 3. Return the default text (French) if no translation found
    */
   const t = React.useCallback((defaultText: string, params?: Record<string, string | number>): string => {
-    // If English, return default text directly
-    if (locale === 'en') {
-      return interpolate(defaultText, params);
-    }
-
-    // For other languages, look up translations
-    const cacheKey = `${moduleName || 'global'}_${locale}`;
-
-    // Try to get from cache first
-    const translations = translationCache[cacheKey];
-
-    if (!translations) {
-      // Translations not loaded yet, return default English text
-      return interpolate(defaultText, params);
-    }
-
     // Try module translations first
     if (moduleName) {
       const moduleKey = `${moduleName}_${locale}`;
@@ -133,22 +124,14 @@ export function useTranslation(moduleName?: string): UseTranslationReturn {
       }
     }
 
-    // Return default English text if no translation found
+    // Return default text (French) if no translation found
     return interpolate(defaultText, params);
-  }, [locale]);
+  }, [locale, updateCount, moduleName]);
 
-  // Preload translations (runs once per locale/module combination)
-  // Skip loading for English since we use default text
+  // Preload translations for all locales (including English)
   React.useEffect(() => {
-    if (locale === 'en') {
-      forceUpdate(); // Force re-render for English
-      return; // No need to load translations for English
-    }
-
     const loadTranslations = async () => {
       console.log(`🔄 Loading translations for module: ${moduleName || 'global'}, locale: ${locale}`);
-
-      let translationsChanged = false;
 
       // Load module translations
       if (moduleName) {
@@ -157,7 +140,6 @@ export function useTranslation(moduleName?: string): UseTranslationReturn {
           const moduleTranslations = await loadModuleTranslations(moduleName, locale);
           if (moduleTranslations) {
             translationCache[moduleKey] = moduleTranslations;
-            translationsChanged = true;
             console.log(`✅ Loaded ${Object.keys(moduleTranslations).length} module translations for ${moduleName}/${locale}`);
           }
         }
@@ -169,16 +151,13 @@ export function useTranslation(moduleName?: string): UseTranslationReturn {
         const globalTranslations = await loadGlobalTranslations(locale);
         if (globalTranslations) {
           translationCache[globalKey] = globalTranslations;
-          translationsChanged = true;
           console.log(`✅ Loaded ${Object.keys(globalTranslations).length} global translations for ${locale}`);
         }
       }
 
-      // Force re-render after translations are loaded
-      if (translationsChanged) {
-        console.log(`🔄 Forcing re-render for locale: ${locale}`);
-        forceUpdate();
-      }
+      // Always force re-render when locale changes to ensure translations are applied
+      console.log(`🔄 Forcing re-render for locale: ${locale}`);
+      forceUpdate();
     };
 
     loadTranslations();
