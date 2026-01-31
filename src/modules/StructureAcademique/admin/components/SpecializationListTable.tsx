@@ -12,6 +12,7 @@ import Chip from '@mui/material/Chip'
 import Tooltip from '@mui/material/Tooltip'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { Specialization } from '../../types/specialization.types'
 
 interface SpecializationListTableProps {
@@ -29,11 +30,13 @@ const SpecializationListTable = ({
   onViewCandidates,
   onManageModules
 }: SpecializationListTableProps) => {
+  const { t } = useTranslation('StructureAcademique')
+
   if (specializations.length === 0) {
     return (
       <Paper sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="body1" color="text.secondary">
-          No specializations found
+          {t('Aucune spécialisation trouvée')}
         </Typography>
       </Paper>
     )
@@ -48,7 +51,7 @@ const SpecializationListTable = ({
   }
 
   const getAvailablePlaces = (spec: Specialization) => {
-    if (!spec.capacity) return 'Unlimited'
+    if (!spec.capacity) return t('Illimité')
     const accepted = spec.accepted_count || 0
     const available = spec.capacity - accepted
     return `${available}/${spec.capacity}`
@@ -59,16 +62,16 @@ const SpecializationListTable = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Code</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Programme</TableCell>
-            <TableCell>Level</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>Mode</TableCell>
-            <TableCell>Places</TableCell>
-            <TableCell>Candidates</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell>{t('Code')}</TableCell>
+            <TableCell>{t('Nom')}</TableCell>
+            <TableCell>{t('Filière')}</TableCell>
+            <TableCell>{t('Niveau')}</TableCell>
+            <TableCell>{t('Type')}</TableCell>
+            <TableCell>{t('Mode')}</TableCell>
+            <TableCell>{t('Places')}</TableCell>
+            <TableCell>{t('Candidats')}</TableCell>
+            <TableCell>{t('Statut')}</TableCell>
+            <TableCell align="right">{t('Actions')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -115,7 +118,7 @@ const SpecializationListTable = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography variant="body2">{spec.candidates_count || 0}</Typography>
                   {(spec.candidates_count || 0) > 0 && (
-                    <Tooltip title="View candidates">
+                    <Tooltip title={t('Voir les candidats')}>
                       <IconButton size="small" onClick={() => onViewCandidates(spec)}>
                         <i className="ri-eye-line" />
                       </IconButton>
@@ -125,24 +128,24 @@ const SpecializationListTable = ({
               </TableCell>
               <TableCell>
                 <Chip
-                  label={spec.is_active ? 'Active' : 'Inactive'}
+                  label={spec.is_active ? t('Actif') : t('Inactif')}
                   size="small"
                   color={spec.is_active ? 'success' : 'default'}
                 />
               </TableCell>
               <TableCell align="right">
                 <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                  <Tooltip title="Manage Modules">
+                  <Tooltip title={t('Gérer les modules')}>
                     <IconButton size="small" color="primary" onClick={() => onManageModules(spec)}>
                       <i className="ri-book-line" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Edit">
+                  <Tooltip title={t('Modifier')}>
                     <IconButton size="small" onClick={() => onEdit(spec)}>
                       <i className="ri-edit-line" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Delete">
+                  <Tooltip title={t('Supprimer')}>
                     <IconButton size="small" color="error" onClick={() => onDelete(spec)}>
                       <i className="ri-delete-bin-line" />
                     </IconButton>

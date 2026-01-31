@@ -17,6 +17,7 @@ import {
   FormControlLabel,
   Checkbox
 } from '@mui/material'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { EvaluationTemplate, EvaluationType } from '../../types/evaluationConfig.types'
 
 const evaluationTypes: EvaluationType[] = ['CC', 'TP', 'Projet', 'Examen', 'Rattrapage']
@@ -45,6 +46,7 @@ interface EvaluationTemplateFormProps {
 }
 
 const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: EvaluationTemplateFormProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const {
     control,
     handleSubmit,
@@ -113,7 +115,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
         {/* Template Info */}
         <Grid item xs={12}>
           <Typography variant="h6" gutterBottom>
-            Informations du template
+            {t('Informations du template')}
           </Typography>
         </Grid>
 
@@ -126,8 +128,8 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
               <TextField
                 {...field}
                 fullWidth
-                label="Nom du template"
-                placeholder="Ex: Standard L1, Pratique avec TP"
+                label={t("Nom du template")}
+                placeholder={t("Ex: Standard L1, Pratique avec TP")}
                 error={!!errors.name}
                 helperText={errors.name?.message}
                 disabled={isSubmitting || disabled}
@@ -150,7 +152,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                     disabled={isSubmitting || disabled}
                   />
                 }
-                label="Template actif"
+                label={t("Template actif")}
               />
             )}
           />
@@ -167,8 +169,8 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                 fullWidth
                 multiline
                 rows={2}
-                label="Description"
-                placeholder="Décrivez l'usage de ce template"
+                label={t("Description")}
+                placeholder={t("Décrivez l'usage de ce template")}
                 error={!!errors.description}
                 helperText={errors.description?.message}
                 disabled={isSubmitting || disabled}
@@ -183,7 +185,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
           <Divider sx={{ my: 2 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6">
-              Évaluations ({fields.length})
+              {t('Évaluations')} ({fields.length})
             </Typography>
             <Chip
               label={`Total: ${totalCoefficient}%`}
@@ -194,7 +196,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
 
           {totalCoefficient !== 100 && (
             <Alert severity="warning" sx={{ mb: 2 }}>
-              Le total des coefficients doit être égal à 100% (actuellement {totalCoefficient}%)
+              {t('Le total des coefficients doit être égal à 100% (actuellement')} {totalCoefficient}%)
             </Alert>
           )}
         </Grid>
@@ -204,7 +206,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
             <Paper variant="outlined" sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Évaluation #{index + 1}
+                  {t('Évaluation')} #{index + 1}
                 </Typography>
                 <IconButton
                   size="small"
@@ -226,8 +228,8 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                       <TextField
                         {...field}
                         fullWidth
-                        label="Nom"
-                        placeholder="Ex: CC1, Examen Final"
+                        label={t("Nom")}
+                        placeholder={t("Ex: CC1, Examen Final")}
                         size="small"
                         error={!!errors.evaluations?.[index]?.name}
                         helperText={errors.evaluations?.[index]?.name?.message}
@@ -279,7 +281,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                         {...field}
                         type="number"
                         fullWidth
-                        label="Coefficient (%)"
+                        label={t("Coefficient (%)")}
                         size="small"
                         error={!!errors.evaluations?.[index]?.coefficient}
                         helperText={errors.evaluations?.[index]?.coefficient?.message}
@@ -301,7 +303,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                         {...field}
                         type="number"
                         fullWidth
-                        label="Note max"
+                        label={t("Note max")}
                         size="small"
                         error={!!errors.evaluations?.[index]?.max_score}
                         disabled={isSubmitting || disabled}
@@ -325,7 +327,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                             disabled={isSubmitting || disabled}
                           />
                         }
-                        label="Éliminatoire"
+                        label={t("Éliminatoire")}
                       />
                     )}
                   />
@@ -341,7 +343,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
                           {...field}
                           type="number"
                           fullWidth
-                          label="Seuil éliminatoire"
+                          label={t("Seuil éliminatoire")}
                           size="small"
                           placeholder="Ex: 8"
                           disabled={isSubmitting || disabled}
@@ -365,7 +367,7 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
             disabled={isSubmitting || disabled}
             fullWidth
           >
-            Ajouter une évaluation
+            {t('Ajouter une évaluation')}
           </Button>
         </Grid>
 
@@ -373,14 +375,14 @@ const EvaluationTemplateForm = ({ initialData, onSubmit, onCancel, disabled }: E
         <Grid item xs={12}>
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
             <Button onClick={onCancel} disabled={isSubmitting || disabled}>
-              Annuler
+              {t('Annuler')}
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={isSubmitting || disabled || totalCoefficient !== 100}
             >
-              {isSubmitting ? 'Enregistrement...' : initialData ? 'Mettre à jour' : 'Créer'}
+              {isSubmitting ? t('Enregistrement...') : initialData ? t('Mettre à jour') : t('Créer')}
             </Button>
           </Box>
         </Grid>

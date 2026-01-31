@@ -20,6 +20,7 @@ import Paper from '@mui/material/Paper'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
 import Snackbar from '@mui/material/Snackbar'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import { useEvaluationPeriods } from '../hooks/useEvaluationPeriods'
 import { EvaluationPeriodFormDialog } from './EvaluationPeriodFormDialog'
 import type { Semester, EvaluationPeriod, EvaluationPeriodFormInput } from '../../types/academicCalendar.types'
@@ -32,6 +33,7 @@ interface EvaluationPeriodsDialogProps {
 }
 
 export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = ({ open, onClose, semester }) => {
+  const { t } = useTranslation('StructureAcademique')
   const [formOpen, setFormOpen] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<EvaluationPeriod | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -58,13 +60,13 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
   }
 
   const handleDelete = async (id: number) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette période d\'évaluation ?')) {
+    if (confirm(t('Êtes-vous sûr de vouloir supprimer cette période d\'évaluation ?'))) {
       try {
         setIsSubmitting(true)
         await deleteEvaluationPeriod(id)
-        setSuccessMessage('Période d\'évaluation supprimée avec succès')
+        setSuccessMessage(t('Période d\'évaluation supprimée avec succès'))
       } catch (err: any) {
-        const message = err.response?.data?.message || err.message || 'Erreur lors de la suppression'
+        const message = err.response?.data?.message || err.message || t('Erreur lors de la suppression')
         setErrorMessage(message)
       } finally {
         setIsSubmitting(false)
@@ -77,10 +79,10 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
     try {
       if (selectedPeriod) {
         await updateEvaluationPeriod(selectedPeriod.id, data)
-        setSuccessMessage('Période d\'évaluation modifiée avec succès')
+        setSuccessMessage(t('Période d\'évaluation modifiée avec succès'))
       } else {
         await createEvaluationPeriod(data)
-        setSuccessMessage('Période d\'évaluation créée avec succès')
+        setSuccessMessage(t('Période d\'évaluation créée avec succès'))
       }
       setFormOpen(false)
       setSelectedPeriod(null)
@@ -105,9 +107,9 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Périodes d'Évaluation - {semester?.name}</Typography>
+            <Typography variant="h6">{t('Périodes d\'Évaluation')} - {semester?.name}</Typography>
             <Button variant="contained" size="small" onClick={handleAdd} disabled={!semester}>
-              Ajouter
+              {t('Ajouter')}
             </Button>
           </Box>
         </DialogTitle>
@@ -120,12 +122,12 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              Erreur lors du chargement des périodes d'évaluation
+              {t('Erreur lors du chargement des périodes d\'évaluation')}
             </Alert>
           )}
 
           {!loading && !error && evaluationPeriods && evaluationPeriods.length === 0 && (
-            <Alert severity="info">Aucune période d'évaluation configurée pour ce semestre.</Alert>
+            <Alert severity="info">{t('Aucune période d\'évaluation configurée pour ce semestre.')}</Alert>
           )}
 
           {!loading && !error && evaluationPeriods && evaluationPeriods.length > 0 && (
@@ -133,12 +135,12 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Nom</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Date Début</TableCell>
-                    <TableCell>Date Fin</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell>{t('Nom')}</TableCell>
+                    <TableCell>{t('Type')}</TableCell>
+                    <TableCell>{t('Date Début')}</TableCell>
+                    <TableCell>{t('Date Fin')}</TableCell>
+                    <TableCell>{t('Statut')}</TableCell>
+                    <TableCell align="right">{t('Actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -165,7 +167,7 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
                       <TableCell>{formatDate(period.end_date)}</TableCell>
                       <TableCell>
                         <Chip
-                          label={period.is_active ? 'Active' : 'Inactive'}
+                          label={period.is_active ? t('Active') : t('Inactive')}
                           color={period.is_active ? 'success' : 'default'}
                           size="small"
                         />
@@ -186,7 +188,7 @@ export const EvaluationPeriodsDialog: React.FC<EvaluationPeriodsDialogProps> = (
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Fermer</Button>
+          <Button onClick={onClose}>{t('Fermer')}</Button>
         </DialogActions>
       </Dialog>
 

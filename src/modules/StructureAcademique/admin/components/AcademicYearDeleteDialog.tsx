@@ -8,6 +8,7 @@ import DialogContentText from '@mui/material/DialogContentText'
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
 import { useState } from 'react'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { AcademicYear } from '../../types/academicCalendar.types'
 
 interface AcademicYearDeleteDialogProps {
@@ -18,6 +19,7 @@ interface AcademicYearDeleteDialogProps {
 }
 
 const AcademicYearDeleteDialog = ({ open, onClose, onConfirm, academicYear }: AcademicYearDeleteDialogProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,7 +30,7 @@ const AcademicYearDeleteDialog = ({ open, onClose, onConfirm, academicYear }: Ac
       await onConfirm()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
+      setError(err instanceof Error ? err.message : t('Erreur lors de la suppression'))
     } finally {
       setDeleting(false)
     }
@@ -43,7 +45,7 @@ const AcademicYearDeleteDialog = ({ open, onClose, onConfirm, academicYear }: Ac
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Supprimer l'année académique</DialogTitle>
+      <DialogTitle>{t('Supprimer l\'année académique')}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -51,18 +53,18 @@ const AcademicYearDeleteDialog = ({ open, onClose, onConfirm, academicYear }: Ac
           </Alert>
         )}
         <DialogContentText>
-          Êtes-vous sûr de vouloir supprimer l'année académique <strong>{academicYear?.name}</strong> ?
+          {t('Êtes-vous sûr de vouloir supprimer l\'année académique')} <strong>{academicYear?.name}</strong> ?
         </DialogContentText>
         <DialogContentText sx={{ mt: 2, color: 'error.main' }}>
-          Cette action supprimera également tous les semestres et périodes associés. Cette action est irréversible.
+          {t('Cette action supprimera également tous les semestres et périodes associés. Cette action est irréversible.')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={deleting}>
-          Annuler
+          {t('Annuler')}
         </Button>
         <Button onClick={handleConfirm} color="error" variant="contained" disabled={deleting}>
-          {deleting ? 'Suppression...' : 'Supprimer'}
+          {deleting ? t('Suppression...') : t('Supprimer')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -58,7 +58,7 @@ const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'type', label: 'Type', defaultVisible: true },
   { id: 'total_hours', label: 'Volume Horaire', defaultVisible: true },
   { id: 'is_eliminatory', label: 'Éliminatoire', defaultVisible: false },
-  { id: 'programs_count', label: 'Programmes', defaultVisible: false },
+  { id: 'programs_count', label: 'Filières', defaultVisible: false },
   { id: 'created_at', label: 'Créé le', defaultVisible: false },
 ];
 
@@ -345,15 +345,15 @@ const ModuleListTable = () => {
       }),
       columnHelper.accessor('programs_count', {
         id: 'programs_count',
-        header: t('Programmes'),
+        header: t('Filières'),
         cell: ({ row }) => {
           const programmes = row.original.programmes || row.original.programs || [];
           const count = programmes.length;
-          
+
           if (count === 0) {
             return (
               <Typography variant="body2" color="text.secondary">
-                Aucun
+                Aucune
               </Typography>
             );
           }
@@ -526,12 +526,12 @@ const ModuleListTable = () => {
               },
               {
                 icon: 'ri-book-line',
-                label: t('Programmes'),
+                label: t('Filières'),
                 value: (() => {
                   const programmes = module.programmes || module.programs || [];
-                  if (programmes.length === 0) return 'Aucun';
+                  if (programmes.length === 0) return 'Aucune';
                   if (programmes.length === 1) return programmes[0].libelle;
-                  return `${programmes.length} programmes`;
+                  return `${programmes.length} filières`;
                 })(),
               },
               module.is_eliminatory

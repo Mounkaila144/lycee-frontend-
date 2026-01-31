@@ -15,6 +15,7 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { AcademicYear } from '../../types/academicCalendar.types'
 import { getAcademicYearStatusColor } from '../../types/academicCalendar.types'
 import AcademicYearFormDialog from './AcademicYearFormDialog'
@@ -40,6 +41,7 @@ const AcademicYearListTable = ({
   onDeleteYear,
   onActivateYear
 }: AcademicYearListTableProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const [formOpen, setFormOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [semesterOpen, setSemesterOpen] = useState(false)
@@ -111,10 +113,10 @@ const AcademicYearListTable = ({
       <Card>
         <Box p={4} textAlign="center">
           <Typography variant="h6" color="text.secondary">
-            Aucune année académique
+            {t('Aucune année académique')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Créez votre première année académique pour commencer
+            {t('Créez votre première année académique pour commencer')}
           </Typography>
         </Box>
       </Card>
@@ -127,12 +129,12 @@ const AcademicYearListTable = ({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Année</TableCell>
-              <TableCell>Date de début</TableCell>
-              <TableCell>Date de fin</TableCell>
-              <TableCell>Statut</TableCell>
-              <TableCell>Semestres</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>{t('Année')}</TableCell>
+              <TableCell>{t('Date de début')}</TableCell>
+              <TableCell>{t('Date de fin')}</TableCell>
+              <TableCell>{t('Statut')}</TableCell>
+              <TableCell>{t('Semestres')}</TableCell>
+              <TableCell align="right">{t('Actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -144,7 +146,7 @@ const AcademicYearListTable = ({
                       {year.name}
                     </Typography>
                     {year.is_active && (
-                      <Chip label="Active" color="success" size="small" sx={{ height: 20 }} />
+                      <Chip label={t("Active")} color="success" size="small" sx={{ height: 20 }} />
                     )}
                   </Box>
                 </TableCell>
@@ -155,18 +157,18 @@ const AcademicYearListTable = ({
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" color="text.secondary">
-                    {year.semesters?.length || 0} semestre(s)
+                    {year.semesters?.length || 0} {t('semestre(s)')}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Box display="flex" justifyContent="flex-end" gap={0.5}>
-                    <Tooltip title="Gérer les semestres">
+                    <Tooltip title={t("Gérer les semestres")}>
                       <IconButton size="small" onClick={() => handleManageSemesters(year)}>
                         <i className="ri-calendar-2-line" />
                       </IconButton>
                     </Tooltip>
                     {!year.is_active && (
-                      <Tooltip title="Activer cette année">
+                      <Tooltip title={t("Activer cette année")}>
                         <IconButton
                           size="small"
                           color="success"
@@ -181,12 +183,12 @@ const AcademicYearListTable = ({
                         </IconButton>
                       </Tooltip>
                     )}
-                    <Tooltip title="Modifier">
+                    <Tooltip title={t("Modifier")}>
                       <IconButton size="small" onClick={() => handleEdit(year)}>
                         <i className="ri-edit-line" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Supprimer">
+                    <Tooltip title={t("Supprimer")}>
                       <IconButton size="small" color="error" onClick={() => handleDelete(year)}>
                         <i className="ri-delete-bin-line" />
                       </IconButton>

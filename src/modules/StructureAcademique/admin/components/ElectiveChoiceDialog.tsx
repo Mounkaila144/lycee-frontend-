@@ -22,6 +22,7 @@ import {
   Chip,
   LinearProgress,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import {
   useAvailableElectives,
   useElectiveChoiceMutations,

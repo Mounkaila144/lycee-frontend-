@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -46,6 +48,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
   onClose,
   onApply,
 }) => {
+  const { t } = useTranslation('Grades');
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<boolean>(false);
 
@@ -99,7 +102,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={1}>
             <i className="ri-file-copy-line" />
-            Templates de coefficients
+            {t('coefficientTemplatesDialog.title')}
           </Box>
         </DialogTitle>
 
@@ -108,8 +111,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
           {hasGrades && (
             <Alert severity="error" sx={{ mb: 3 }}>
               <Typography variant="body2">
-                <strong>Attention:</strong> Ce module contient déjà des notes. L'application d'un template
-                supprimera les évaluations existantes et n'est pas autorisée.
+                <strong>{t('common.warning')}:</strong> {t('coefficientTemplatesDialog.hasGradesWarning')}
               </Typography>
             </Alert>
           )}
@@ -120,7 +122,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
             </Box>
           ) : templates.length === 0 ? (
             <Alert severity="info">
-              Aucun template de coefficients disponible.
+              {t('coefficientTemplatesDialog.noTemplates')}
             </Alert>
           ) : (
             <>
@@ -128,7 +130,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
               {systemTemplates.length > 0 && (
                 <Box mb={4}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                    Templates prédéfinis
+                    {t('coefficientTemplatesDialog.predefinedTemplates')}
                   </Typography>
                   <Grid container spacing={2}>
                     {systemTemplates.map((template) => (
@@ -149,7 +151,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
                               <Typography variant="subtitle1" fontWeight="bold">
                                 {template.name}
                               </Typography>
-                              <Chip label="Système" size="small" color="info" variant="outlined" />
+                              <Chip label={t('coefficientTemplatesDialog.system')} size="small" color="info" variant="outlined" />
                             </Box>
                             {template.description && (
                               <Typography variant="body2" color="text.secondary" mb={2}>
@@ -173,7 +175,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
                           </CardContent>
                           {selectedTemplate === template.id && (
                             <CardActions>
-                              <Chip label="Sélectionné" color="primary" size="small" />
+                              <Chip label={t('coefficientTemplatesDialog.selected')} color="primary" size="small" />
                             </CardActions>
                           )}
                         </Card>
@@ -187,7 +189,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
               {customTemplates.length > 0 && (
                 <Box>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                    Templates personnalisés
+                    {t('coefficientTemplatesDialog.customTemplates')}
                   </Typography>
                   <Grid container spacing={2}>
                     {customTemplates.map((template) => (
@@ -208,7 +210,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
                               <Typography variant="subtitle1" fontWeight="bold">
                                 {template.name}
                               </Typography>
-                              <Chip label="Personnalisé" size="small" color="secondary" variant="outlined" />
+                              <Chip label={t('coefficientTemplatesDialog.custom')} size="small" color="secondary" variant="outlined" />
                             </Box>
                             {template.description && (
                               <Typography variant="body2" color="text.secondary" mb={2}>
@@ -232,7 +234,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
                           </CardContent>
                           {selectedTemplate === template.id && (
                             <CardActions>
-                              <Chip label="Sélectionné" color="primary" size="small" />
+                              <Chip label={t('coefficientTemplatesDialog.selected')} color="primary" size="small" />
                             </CardActions>
                           )}
                         </Card>
@@ -247,7 +249,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
 
         <DialogActions>
           <Button onClick={onClose}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -255,27 +257,27 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
             disabled={!selectedTemplate || hasGrades || saving}
             startIcon={saving ? <CircularProgress size={16} /> : <i className="ri-check-line" />}
           >
-            Appliquer le template
+            {t('coefficientTemplatesDialog.applyTemplate')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Confirmation dialog */}
       <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)} maxWidth="xs">
-        <DialogTitle>Confirmer l'application</DialogTitle>
+        <DialogTitle>{t('coefficientTemplatesDialog.confirmTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              Cette action va remplacer toutes les évaluations existantes du module par celles du template sélectionné.
+              {t('coefficientTemplatesDialog.confirmWarning')}
             </Typography>
           </Alert>
           <Typography variant="body2">
-            Êtes-vous sûr de vouloir continuer ?
+            {t('coefficientTemplatesDialog.confirmQuestion')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDialog(false)}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -284,7 +286,7 @@ export const CoefficientTemplatesDialog: React.FC<CoefficientTemplatesDialogProp
             disabled={saving}
             startIcon={saving ? <CircularProgress size={16} /> : <i className="ri-check-line" />}
           >
-            {saving ? 'Application...' : 'Confirmer'}
+            {saving ? t('coefficientTemplatesDialog.applying') : t('common.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import {
   Box,
   Card,
@@ -44,6 +47,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
   tenantId,
   onActionComplete,
 }) => {
+  const { t } = useTranslation('Grades');
   const [showValidateDialog, setShowValidateDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
@@ -144,7 +148,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
   }
 
   if (!validation) {
-    return <Alert severity="error">Validation introuvable</Alert>;
+    return <Alert severity="error">{t('gradeValidationReview.notFound')}</Alert>;
   }
 
   const stats = validation.statistics;
@@ -165,7 +169,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
-                Enseignant
+                {t('gradeValidationReview.teacher')}
               </Typography>
               <Typography variant="body1">
                 {validation.submitted_by_user
@@ -175,7 +179,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
-                Date de soumission
+                {t('gradeValidationReview.submissionDate')}
               </Typography>
               <Typography variant="body1">
                 {new Date(validation.submitted_at).toLocaleString('fr-FR')}
@@ -185,7 +189,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
               <>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="text.secondary">
-                    Validé par
+                    {t('gradeValidationReview.validatedBy')}
                   </Typography>
                   <Typography variant="body1">
                     {validation.validated_by_user
@@ -195,7 +199,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="text.secondary">
-                    Date de validation
+                    {t('gradeValidationReview.validationDate')}
                   </Typography>
                   <Typography variant="body1">
                     {new Date(validation.validated_at).toLocaleString('fr-FR')}
@@ -206,7 +210,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             {validation.rejection_reason && (
               <Grid item xs={12}>
                 <Alert severity="error">
-                  <AlertTitle>Motif de rejet</AlertTitle>
+                  <AlertTitle>{t('gradeValidationReview.rejectionReason')}</AlertTitle>
                   {validation.rejection_reason}
                 </Alert>
               </Grid>
@@ -218,7 +222,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
       {/* Anomalies */}
       {hasAnomalies && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          <AlertTitle>⚠️ Anomalies détectées</AlertTitle>
+          <AlertTitle>{t('gradeValidationReview.anomaliesDetected')}</AlertTitle>
           <List dense>
             {validation.anomalies.map((anomaly, idx) => (
               <ListItem key={idx}>
@@ -233,18 +237,18 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
       {stats && (
         <>
           <Card sx={{ mb: 3 }}>
-            <CardHeader title="Statistiques" />
+            <CardHeader title={t('gradeValidationReview.statistics')} />
             <CardContent>
               <Grid container spacing={3}>
                 <Grid item xs={6} sm={3}>
                   <Typography variant="caption" color="text.secondary">
-                    Nombre de notes
+                    {t('gradeValidationReview.gradesCount')}
                   </Typography>
                   <Typography variant="h4">{stats.count}</Typography>
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Typography variant="caption" color="text.secondary">
-                    Moyenne
+                    {t('gradeValidationReview.average')}
                   </Typography>
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="h4">{stats.average.toFixed(2)}</Typography>
@@ -255,13 +259,13 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Typography variant="caption" color="text.secondary">
-                    Écart-type
+                    {t('gradeValidationReview.stdDev')}
                   </Typography>
                   <Typography variant="h4">{stats.std_dev.toFixed(2)}</Typography>
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Typography variant="caption" color="text.secondary">
-                    Taux de réussite
+                    {t('gradeValidationReview.passRate')}
                   </Typography>
                   <Typography variant="h4" color={stats.pass_rate >= 50 ? 'success.main' : 'error.main'}>
                     {stats.pass_rate.toFixed(1)}%
@@ -272,19 +276,19 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
               <Grid container spacing={2}>
                 <Grid item xs={4}>
                   <Typography variant="caption" color="text.secondary">
-                    Minimum
+                    {t('gradeValidationReview.minimum')}
                   </Typography>
                   <Typography variant="h6">{stats.min.toFixed(2)}</Typography>
                 </Grid>
                 <Grid item xs={4}>
                   <Typography variant="caption" color="text.secondary">
-                    Médiane
+                    {t('gradeValidationReview.median')}
                   </Typography>
                   <Typography variant="h6">{stats.median.toFixed(2)}</Typography>
                 </Grid>
                 <Grid item xs={4}>
                   <Typography variant="caption" color="text.secondary">
-                    Maximum
+                    {t('gradeValidationReview.maximum')}
                   </Typography>
                   <Typography variant="h6">{stats.max.toFixed(2)}</Typography>
                 </Grid>
@@ -294,7 +298,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
 
           {/* Distribution Chart */}
           <Card sx={{ mb: 3 }}>
-            <CardHeader title="Distribution des notes" />
+            <CardHeader title={t('gradeValidationReview.gradeDistribution')} />
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={prepareDistributionData(stats)}>
@@ -318,14 +322,14 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             color="error"
             onClick={() => setShowRejectDialog(true)}
           >
-            ❌ Rejeter
+            {t('gradeValidationReview.reject')}
           </Button>
           <Button
             variant="contained"
             color="success"
             onClick={() => setShowValidateDialog(true)}
           >
-            ✅ Valider
+            {t('gradeValidationReview.validate')}
           </Button>
         </Box>
       )}
@@ -337,31 +341,31 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             color="primary"
             onClick={() => setShowPublishDialog(true)}
           >
-            📤 Publier les notes
+            {t('gradeValidationReview.publishGrades')}
           </Button>
         </Box>
       )}
 
       {/* Validate Dialog */}
       <Dialog open={showValidateDialog} onClose={() => setShowValidateDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Valider les notes</DialogTitle>
+        <DialogTitle>{t('gradeValidationReview.validateDialogTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="success" sx={{ mb: 2 }}>
-            Les notes seront validées et l'enseignant sera notifié. Vous pourrez ensuite les publier aux étudiants.
+            {t('gradeValidationReview.validateDialogMessage')}
           </Alert>
           <TextField
             fullWidth
             multiline
             rows={3}
-            label="Notes (optionnel)"
+            label={t('gradeValidationReview.notesOptional')}
             value={validationNotes}
             onChange={(e) => setValidationNotes(e.target.value)}
-            placeholder="Ajouter des notes pour l'enseignant..."
+            placeholder={t('gradeValidationReview.notesPlaceholder')}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowValidateDialog(false)} disabled={validateMutation.isPending}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -369,34 +373,34 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             onClick={handleValidate}
             disabled={validateMutation.isPending}
           >
-            {validateMutation.isPending ? '⏳ Validation...' : '✅ Valider'}
+            {validateMutation.isPending ? t('gradeValidationReview.validating') : t('gradeValidationReview.validate')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Reject Dialog */}
       <Dialog open={showRejectDialog} onClose={() => setShowRejectDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Rejeter les notes</DialogTitle>
+        <DialogTitle>{t('gradeValidationReview.rejectDialogTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="error" sx={{ mb: 2 }}>
-            Les notes seront rejetées et l'enseignant devra les corriger avant de les soumettre à nouveau.
+            {t('gradeValidationReview.rejectDialogMessage')}
           </Alert>
           <TextField
             fullWidth
             required
             multiline
             rows={4}
-            label="Motif du rejet"
+            label={t('gradeValidationReview.rejectionReasonLabel')}
             value={rejectionReason}
             onChange={(e) => setRejectionReason(e.target.value)}
-            placeholder="Indiquez le motif du rejet..."
+            placeholder={t('gradeValidationReview.rejectionReasonPlaceholder')}
             error={!rejectionReason.trim()}
-            helperText={!rejectionReason.trim() ? 'Le motif est obligatoire' : ''}
+            helperText={!rejectionReason.trim() ? t('gradeValidationReview.rejectionReasonRequired') : ''}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowRejectDialog(false)} disabled={rejectMutation.isPending}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -404,39 +408,39 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             onClick={handleReject}
             disabled={rejectMutation.isPending || !rejectionReason.trim()}
           >
-            {rejectMutation.isPending ? '⏳ Rejet...' : '❌ Rejeter'}
+            {rejectMutation.isPending ? t('gradeValidationReview.rejecting') : t('gradeValidationReview.reject')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Publish Dialog */}
       <Dialog open={showPublishDialog} onClose={() => setShowPublishDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Publier les notes</DialogTitle>
+        <DialogTitle>{t('gradeValidationReview.publishDialogTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="info" sx={{ mb: 2 }}>
-            <AlertTitle>Publication des notes</AlertTitle>
-            Les notes seront visibles par les étudiants. Une notification leur sera envoyée.
+            <AlertTitle>{t('gradeValidationReview.publishAlertTitle')}</AlertTitle>
+            {t('gradeValidationReview.publishAlertMessage')}
           </Alert>
           {stats && (
             <Box mb={2}>
               <Typography variant="subtitle2" gutterBottom>
-                Résumé
+                {t('gradeValidationReview.summary')}
               </Typography>
               <Typography variant="body2">
-                • {stats.count} notes seront publiées
+                {t('gradeValidationReview.gradesToPublish', { count: stats.count })}
               </Typography>
               <Typography variant="body2">
-                • Moyenne: {stats.average.toFixed(2)}/20
+                {t('gradeValidationReview.averageValue', { value: stats.average.toFixed(2) })}
               </Typography>
               <Typography variant="body2">
-                • Taux de réussite: {stats.pass_rate.toFixed(1)}%
+                {t('gradeValidationReview.passRateValue', { value: stats.pass_rate.toFixed(1) })}
               </Typography>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowPublishDialog(false)} disabled={publishMutation.isPending}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -444,7 +448,7 @@ export const GradeValidationReview: React.FC<GradeValidationReviewProps> = ({
             onClick={handlePublish}
             disabled={publishMutation.isPending}
           >
-            {publishMutation.isPending ? '⏳ Publication...' : '📤 Publier'}
+            {publishMutation.isPending ? t('gradeValidationReview.publishing') : t('gradeValidationReview.publish')}
           </Button>
         </DialogActions>
       </Dialog>

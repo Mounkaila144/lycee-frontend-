@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -47,11 +48,11 @@ interface Programme {
 }
 
 const LEVELS = ['L1', 'L2', 'L3', 'M1', 'M2'];
-const DOCUMENT_TYPES = [
-  { value: 'photo', label: 'Photo d\'identité' },
-  { value: 'attestation', label: 'Attestation de réussite' },
-  { value: 'certificat_scolarite', label: 'Certificat de scolarité' },
-  { value: 'quittance', label: 'Quittance de paiement' },
+const getDocumentTypes = (t: (key: string) => string) => [
+  { value: 'photo', label: t('ID photo') },
+  { value: 'attestation', label: t('Success certificate') },
+  { value: 'certificat_scolarite', label: t('School certificate') },
+  { value: 'quittance', label: t('Payment receipt') },
 ];
 
 /**
@@ -64,6 +65,7 @@ export const ReenrollmentCampaignFormDialog = ({
   onSave,
   campaign,
 }: ReenrollmentCampaignFormDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const { tenantId: rawTenantId } = useTenant();
   const tenantId = rawTenantId ?? undefined;
 
@@ -111,7 +113,7 @@ export const ReenrollmentCampaignFormDialog = ({
         setProgrammes(progsResponse.data.data || []);
       } catch (err) {
         console.error('Error fetching form data:', err);
-        setError('Erreur lors du chargement des données');
+        setError(t('Error loading data'));
       } finally {
         setLoading(false);
       }
@@ -167,31 +169,31 @@ export const ReenrollmentCampaignFormDialog = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Le nom est obligatoire';
+      newErrors.name = t('Name is required');
     }
 
     if (!formData.from_academic_year_id) {
-      newErrors.from_academic_year_id = 'L\'année source est obligatoire';
+      newErrors.from_academic_year_id = t('Source year is required');
     }
 
     if (!formData.to_academic_year_id) {
-      newErrors.to_academic_year_id = 'L\'année cible est obligatoire';
+      newErrors.to_academic_year_id = t('Target year is required');
     }
 
     if (!formData.start_date) {
-      newErrors.start_date = 'La date de début est obligatoire';
+      newErrors.start_date = t('Start date is required');
     }
 
     if (!formData.end_date) {
-      newErrors.end_date = 'La date de fin est obligatoire';
+      newErrors.end_date = t('End date is required');
     }
 
     if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
-      newErrors.end_date = 'La date de fin doit être après la date de début';
+      newErrors.end_date = t('End date must be after start date');
     }
 
     if (formData.min_ects_required < 0 || formData.min_ects_required > 60) {
-      newErrors.min_ects_required = 'Le minimum ECTS doit être entre 0 et 60';
+      newErrors.min_ects_required = t('Minimum ECTS must be between 0 and 60');
     }
 
     setErrors(newErrors);
@@ -208,7 +210,7 @@ export const ReenrollmentCampaignFormDialog = ({
     try {
       await onSave(formData);
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Une erreur est survenue');
+      setError(err.response?.data?.message || err.message || t('An error occurred'));
     } finally {
       setSubmitting(false);
     }
@@ -216,7 +218,7 @@ export const ReenrollmentCampaignFormDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{campaign ? 'Modifier la Campagne' : 'Nouvelle Campagne de Réinscription'}</DialogTitle>
+      <DialogTitle>{campaign ? t('Edit Campaign') : t('New Reenrollment Campaign')}</DialogTitle>
       <DialogContent dividers>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
@@ -234,26 +236,26 @@ export const ReenrollmentCampaignFormDialog = ({
             <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
-                label="Nom de la campagne"
+                label={t('Campaign name')}
                 value={formData.name}
                 onChange={e => handleChange('name', e.target.value)}
                 error={!!errors.name}
                 helperText={errors.name}
-                placeholder="Ex: Réinscription 2025-2026"
+                placeholder={t('Ex: Reenrollment 2025-2026')}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth error={!!errors.from_academic_year_id}>
-                <InputLabel>Année académique source</InputLabel>
+                <InputLabel>{t('Source academic year')}</InputLabel>
                 <Select
                   value={formData.from_academic_year_id || ''}
-                  label="Année académique source"
+                  label={t('Source academic year')}
                   onChange={e => handleChange('from_academic_year_id', Number(e.target.value))}
                 >
                   {academicYears.map(year => (
                     <MenuItem key={year.id} value={year.id}>
-                      {year.name} {year.is_current && '(En cours)'}
+                      {year.name} {year.is_current && t('(Current)')}
                     </MenuItem>
                   ))}
                 </Select>
@@ -267,10 +269,10 @@ export const ReenrollmentCampaignFormDialog = ({
 
             <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth error={!!errors.to_academic_year_id}>
-                <InputLabel>Année académique cible</InputLabel>
+                <InputLabel>{t('Target academic year')}</InputLabel>
                 <Select
                   value={formData.to_academic_year_id || ''}
-                  label="Année académique cible"
+                  label={t('Target academic year')}
                   onChange={e => handleChange('to_academic_year_id', Number(e.target.value))}
                 >
                   {academicYears.map(year => (
@@ -292,7 +294,7 @@ export const ReenrollmentCampaignFormDialog = ({
               <TextField
                 fullWidth
                 type="date"
-                label="Date de début"
+                label={t('Start date')}
                 value={formData.start_date}
                 onChange={e => handleChange('start_date', e.target.value)}
                 error={!!errors.start_date}

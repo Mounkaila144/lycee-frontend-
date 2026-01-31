@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -71,6 +72,7 @@ const getEquivalenceTypeColor = (type: EquivalenceType): 'success' | 'warning' |
  * Dialog for managing equivalences for a transfer
  */
 export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: EquivalenceMatcherDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const {
     equivalences,
     loading: loadingEquivalences,
@@ -165,7 +167,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
   // Analyze equivalences
   const handleAnalyze = useCallback(async () => {
     if (!transfer || originModules.length === 0) {
-      setError('Veuillez ajouter au moins un module à analyser');
+      setError(t('Please add at least one module to analyze'));
 
       return;
     }
@@ -174,7 +176,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
     const validModules = originModules.filter(m => m.name.trim() && m.ects > 0);
 
     if (validModules.length === 0) {
-      setError('Veuillez remplir correctement les informations des modules');
+      setError(t('Please fill in the module information correctly'));
 
       return;
     }
@@ -187,14 +189,14 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
 
       setSnackbar({
         open: true,
-        message: `${result.suggestions_count} équivalence(s) suggérée(s)`,
+        message: t('{{count}} equivalence(s) suggested', { count: result.suggestions_count }),
         severity: 'success',
       });
 
       setOriginModules([]);
       refreshEquivalences();
     } catch (err: any) {
-      const message = err.response?.data?.message || err.message || "Erreur lors de l'analyse";
+      const message = err.response?.data?.message || err.message || t('Error during analysis');
       setError(message);
     } finally {
       setAnalyzing(false);
@@ -206,36 +208,36 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
     async (equivalence: Equivalence) => {
       try {
         await validateEquivalence(equivalence.id);
-        setSnackbar({ open: true, message: 'Équivalence validée', severity: 'success' });
+        setSnackbar({ open: true, message: t('Equivalence validated'), severity: 'success' });
       } catch (err: any) {
-        setSnackbar({ open: true, message: err.message || 'Erreur', severity: 'error' });
+        setSnackbar({ open: true, message: err.message || t('Error'), severity: 'error' });
       }
     },
-    [validateEquivalence]
+    [validateEquivalence, t]
   );
 
   const handleRejectOne = useCallback(
     async (equivalence: Equivalence) => {
       try {
         await rejectEquivalence(equivalence.id);
-        setSnackbar({ open: true, message: 'Équivalence rejetée', severity: 'success' });
+        setSnackbar({ open: true, message: t('Equivalence rejected'), severity: 'success' });
       } catch (err: any) {
-        setSnackbar({ open: true, message: err.message || 'Erreur', severity: 'error' });
+        setSnackbar({ open: true, message: err.message || t('Error'), severity: 'error' });
       }
     },
-    [rejectEquivalence]
+    [rejectEquivalence, t]
   );
 
   const handleDeleteOne = useCallback(
     async (equivalence: Equivalence) => {
       try {
         await deleteEquivalence(equivalence.id);
-        setSnackbar({ open: true, message: 'Équivalence supprimée', severity: 'success' });
+        setSnackbar({ open: true, message: t('Equivalence deleted'), severity: 'success' });
       } catch (err: any) {
-        setSnackbar({ open: true, message: err.message || 'Erreur', severity: 'error' });
+        setSnackbar({ open: true, message: err.message || t('Error'), severity: 'error' });
       }
     },
-    [deleteEquivalence]
+    [deleteEquivalence, t]
   );
 
   const handleBatchValidate = useCallback(async () => {
@@ -245,14 +247,14 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
       const result = await batchValidate(selectedIds);
       setSnackbar({
         open: true,
-        message: `${result.validated_count} équivalence(s) validée(s)`,
+        message: t('{{count}} equivalence(s) validated', { count: result.validated_count }),
         severity: result.errors.length > 0 ? 'warning' : 'success',
       });
       setSelectedIds([]);
     } catch (err: any) {
-      setSnackbar({ open: true, message: 'Erreur lors de la validation groupée', severity: 'error' });
+      setSnackbar({ open: true, message: t('Error during batch validation'), severity: 'error' });
     }
-  }, [selectedIds, batchValidate]);
+  }, [selectedIds, batchValidate, t]);
 
   // Validate transfer
   const handleValidateTransfer = useCallback(async () => {
@@ -260,12 +262,12 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
 
     try {
       await validateTransfer(transfer.id);
-      setSnackbar({ open: true, message: 'Transfert validé avec succès', severity: 'success' });
+      setSnackbar({ open: true, message: t('Transfer validated successfully'), severity: 'success' });
       onClose();
     } catch (err: any) {
-      setSnackbar({ open: true, message: err.message || 'Erreur', severity: 'error' });
+      setSnackbar({ open: true, message: err.message || t('Error'), severity: 'error' });
     }
-  }, [transfer, validateTransfer, onClose]);
+  }, [transfer, validateTransfer, onClose, t]);
 
   // Open form dialog for manual equivalence
   const handleOpenForm = useCallback((equivalence?: Equivalence) => {
@@ -286,13 +288,13 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
               <i className="ri-exchange-line" />
             </Avatar>
             <Box>
-              <Typography variant="h6">Gestion des équivalences</Typography>
+              <Typography variant="h6">{t('Equivalences management')}</Typography>
               <Typography variant="body2" color="textSecondary">
                 {transfer.transfer_number} - {transfer.full_name}
               </Typography>
             </Box>
           </Box>
-          <Chip label={`${stats.validated}/${stats.total} validées`} color="primary" />
+          <Chip label={`${stats.validated}/${stats.total} ${t('validated')}`} color="primary" />
         </Box>
       </DialogTitle>
 
@@ -341,8 +343,8 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
 
         {/* Tabs */}
         <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
-          <Tab label={`Équivalences (${equivalences.length})`} />
-          <Tab label="Analyser nouveaux modules" />
+          <Tab label={`${t('Equivalences')} (${equivalences.length})`} />
+          <Tab label={t('Analyze new modules')} />
         </Tabs>
 
         {/* Tab 0: Equivalences List */}
@@ -359,7 +361,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
                     startIcon={<i className="ri-check-double-line" />}
                     onClick={handleBatchValidate}
                   >
-                    Valider ({selectedIds.length})
+                    {t('Validate')} ({selectedIds.length})
                   </Button>
                 )}
               </Box>
@@ -369,7 +371,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
                 startIcon={<i className="ri-add-line" />}
                 onClick={() => handleOpenForm()}
               >
-                Équivalence manuelle
+                {t('Manual equivalence')}
               </Button>
             </Box>
 
@@ -380,7 +382,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
               </Box>
             ) : equivalences.length === 0 ? (
               <Alert severity="info">
-                Aucune équivalence n'a encore été définie. Utilisez l'onglet "Analyser nouveaux modules" ou ajoutez une équivalence manuellement.
+                {t('No equivalences have been defined yet. Use the "Analyze new modules" tab or add a manual equivalence.')}
               </Alert>
             ) : (
               <TableContainer component={Paper} variant="outlined">
@@ -519,7 +521,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
         {activeTab === 1 && (
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Ajoutez les modules de l'établissement d'origine pour que le système suggère automatiquement des équivalences avec les modules du programme cible.
+              {t('Add origin institution modules so the system can automatically suggest equivalences with target program modules.')}
             </Alert>
 
             {/* Origin Modules Input */}
@@ -590,7 +592,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
 
             <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
               <Button variant="outlined" startIcon={<i className="ri-add-line" />} onClick={addOriginModule}>
-                Ajouter un module
+                {t('Add a module')}
               </Button>
               {originModules.length > 0 && (
                 <Button
@@ -600,7 +602,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
                   onClick={handleAnalyze}
                   disabled={analyzing}
                 >
-                  {analyzing ? 'Analyse en cours...' : 'Analyser et suggérer équivalences'}
+                  {analyzing ? t('Analyzing...') : t('Analyze and suggest equivalences')}
                 </Button>
               )}
             </Box>
@@ -617,11 +619,11 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
               startIcon={<i className="ri-check-double-line" />}
               onClick={handleValidateTransfer}
             >
-              Valider le transfert
+              {t('Validate transfer')}
             </Button>
           )}
         </Box>
-        <Button onClick={onClose}>Fermer</Button>
+        <Button onClick={onClose}>{t('Close')}</Button>
       </DialogActions>
 
       {/* Form Dialog for Manual Equivalence */}
@@ -632,7 +634,7 @@ export const EquivalenceMatcherDialog = ({ open, onClose, transfer }: Equivalenc
           setSelectedEquivalence(null);
         }}
         onSuccess={() => {
-          setSnackbar({ open: true, message: 'Équivalence enregistrée', severity: 'success' });
+          setSnackbar({ open: true, message: t('Equivalence saved'), severity: 'success' });
           refreshEquivalences();
         }}
         transfer={transfer}

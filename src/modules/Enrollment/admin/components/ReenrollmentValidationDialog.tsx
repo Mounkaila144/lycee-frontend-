@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -30,21 +31,22 @@ export const ReenrollmentValidationDialog = ({
   onConfirm,
   reenrollment,
 }: ReenrollmentValidationDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   if (!reenrollment) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Valider la Réinscription</DialogTitle>
+      <DialogTitle>{t('Validate Reenrollment')}</DialogTitle>
       <DialogContent>
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2">
-            Vous êtes sur le point de valider la réinscription de l'étudiant suivant :
+            {t('You are about to validate the reenrollment of the following student:')}
           </Typography>
         </Alert>
 
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" color="textSecondary">
-            Étudiant
+            {t('Student')}
           </Typography>
           <Typography variant="body1" fontWeight={500}>
             {reenrollment.student?.firstname} {reenrollment.student?.lastname}
@@ -59,13 +61,13 @@ export const ReenrollmentValidationDialog = ({
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="textSecondary">
-              Niveau précédent
+              {t('Previous level')}
             </Typography>
             <Chip label={reenrollment.previous_level} size="small" />
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="textSecondary">
-              Niveau cible
+              {t('Target level')}
             </Typography>
             <Chip
               label={reenrollment.target_level}
@@ -77,39 +79,39 @@ export const ReenrollmentValidationDialog = ({
 
         {reenrollment.is_redoing && (
           <Alert severity="warning" sx={{ mt: 2 }}>
-            Cet étudiant redouble son niveau.
+            {t('This student is repeating their level.')}
           </Alert>
         )}
 
         {reenrollment.is_reorientation && (
           <Alert severity="info" sx={{ mt: 2 }}>
-            Cet étudiant change de programme (réorientation).
+            {t('This student is changing program (reorientation).')}
           </Alert>
         )}
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2" color="textSecondary">
-            Cette action va :
+            {t('This action will:')}
           </Typography>
           <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
             <li>
-              <Typography variant="body2">Créer une nouvelle inscription pédagogique</Typography>
+              <Typography variant="body2">{t('Create a new pedagogical enrollment')}</Typography>
             </li>
             <li>
-              <Typography variant="body2">Mettre à jour le niveau de l'étudiant</Typography>
+              <Typography variant="body2">{t('Update the student level')}</Typography>
             </li>
             {reenrollment.personal_data_updates && Object.keys(reenrollment.personal_data_updates).length > 0 && (
               <li>
-                <Typography variant="body2">Appliquer les mises à jour des informations personnelles</Typography>
+                <Typography variant="body2">{t('Apply personal information updates')}</Typography>
               </li>
             )}
           </ul>
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Annuler</Button>
+        <Button onClick={onClose}>{t('Cancel')}</Button>
         <Button variant="contained" color="success" onClick={onConfirm}>
-          Valider la réinscription
+          {t('Validate reenrollment')}
         </Button>
       </DialogActions>
     </Dialog>

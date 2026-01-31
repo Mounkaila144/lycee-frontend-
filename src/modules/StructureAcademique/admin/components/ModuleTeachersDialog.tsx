@@ -21,6 +21,7 @@ import {
   Chip,
   Autocomplete,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { useModuleTeachers } from '../hooks/useModuleTeachers';
 import { useTeachers } from '../hooks/useTeachers';
 import type { Module } from '../../types/module.types';
@@ -41,6 +42,7 @@ interface ModuleTeachersDialogProps {
 const TEACHING_TYPES: TeachingType[] = ['CM', 'TD', 'TP'];
 
 const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClose, module }) => {
+  const { t } = useTranslation('StructureAcademique');
   const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
   const [selectedTeachingType, setSelectedTeachingType] = useState<TeachingType>('CM');
   const [hoursAssigned, setHoursAssigned] = useState<number>(0);
@@ -79,14 +81,14 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
       
       // Vérifier que le module a un programme
       if (!module.programmes && !module.programs) {
-        alert('Ce module n\'a pas de programme associé. Veuillez d\'abord associer un programme au module.');
+        alert(t('Ce module n\'a pas de programme associé. Veuillez d\'abord associer un programme au module.'));
         setAdding(false);
         return;
       }
-      
+
       const programmes = module.programmes || module.programs || [];
       if (programmes.length === 0) {
-        alert('Ce module n\'a pas de programme associé. Veuillez d\'abord associer un programme au module.');
+        alert(t('Ce module n\'a pas de programme associé. Veuillez d\'abord associer un programme au module.'));
         setAdding(false);
         return;
       }
@@ -113,7 +115,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
       // Afficher l'erreur à l'utilisateur
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as any;
-        const errorMessage = axiosError.response?.data?.message || 'Erreur lors de l\'affectation';
+        const errorMessage = axiosError.response?.data?.message || t('Erreur lors de l\'affectation');
         alert(errorMessage);
         console.error('Backend error:', axiosError.response?.data);
       }
@@ -123,7 +125,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
   };
 
   const handleRemove = async (assignmentId: number) => {
-    if (confirm('Êtes-vous sûr de vouloir retirer cette affectation ?')) {
+    if (confirm(t('Êtes-vous sûr de vouloir retirer cette affectation ?'))) {
       try {
         await removeAssignment(assignmentId);
       } catch (error) {
@@ -147,7 +149,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h5">Affectation des Enseignants</Typography>
+            <Typography variant="h5">{t('Affectation des Enseignants')}</Typography>
             <Typography variant="body2" color="text.secondary">
               {module.code} - {module.name}
             </Typography>
@@ -164,7 +166,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
           <TextField
             select
             fullWidth
-            label="Année Académique"
+            label={t('Année Académique')}
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
             size="small"
@@ -172,7 +174,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
             {academicYears.map((year) => (
               <MenuItem key={year} value={year}>
                 {year}
-                {year === getCurrentAcademicYear() && ' (Actuelle)'}
+                {year === getCurrentAcademicYear() && ` (${t('Actuelle')})`}
               </MenuItem>
             ))}
           </TextField>
@@ -181,7 +183,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
         {/* Volume Horaire Info */}
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2" fontWeight="medium" gutterBottom>
-            Volume horaire du module:
+            {t('Volume horaire du module')}:
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             {maxHours.CM > 0 && (
@@ -211,7 +213,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
         {/* Add Section */}
         <Box sx={{ mb: 4, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
           <Typography variant="subtitle1" gutterBottom>
-            Affecter un Enseignant
+            {t('Affecter un Enseignant')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <Box sx={{ flex: '1 1 300px', minWidth: 200 }}>
@@ -221,7 +223,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
                 value={availableTeachers.find((t) => t.id === selectedTeacherId) || null}
                 onChange={(_, newValue) => setSelectedTeacherId(newValue?.id || null)}
                 renderInput={(params) => (
-                  <TextField {...params} label="Enseignant" placeholder="Sélectionner un enseignant" size="small" />
+                  <TextField {...params} label={t('Enseignant')} placeholder={t('Sélectionner un enseignant')} size="small" />
                 )}
                 disabled={adding || teachersLoading}
                 loading={teachersLoading}
@@ -248,7 +250,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
               <TextField
                 type="number"
                 fullWidth
-                label="Heures"
+                label={t('Heures')}
                 value={hoursAssigned}
                 onChange={(e) => setHoursAssigned(Number(e.target.value))}
                 disabled={adding}
@@ -264,7 +266,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
                 disabled={!selectedTeacherId || hoursAssigned <= 0 || adding}
                 startIcon={adding ? <CircularProgress size={16} /> : <i className="ri-add-line" />}
               >
-                Ajouter
+                {t('Ajouter')}
               </Button>
             </Box>
           </Box>
@@ -278,11 +280,11 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
         ) : error ? (
           <Alert severity="error">{error.message}</Alert>
         ) : teachers.length === 0 ? (
-          <Alert severity="warning">Aucun enseignant affecté pour cette année académique.</Alert>
+          <Alert severity="warning">{t('Aucun enseignant affecté pour cette année académique.')}</Alert>
         ) : (
           <Box>
             <Typography variant="subtitle1" gutterBottom>
-              Enseignants Affectés ({selectedYear})
+              {t('Enseignants Affectés')} ({selectedYear})
             </Typography>
             {TEACHING_TYPES.map((type) => {
               const typeTeachers = teachersByType[type] || [];
@@ -313,7 +315,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
                             primary={
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="body2" fontWeight="medium">
-                                  {assignment.teacher?.name || 'Enseignant inconnu'}
+                                  {assignment.teacher?.name || t('Enseignant inconnu')}
                                 </Typography>
                                 <Chip
                                   label={`${assignment.hours_assigned}h`}
@@ -340,7 +342,7 @@ const ModuleTeachersDialog: React.FC<ModuleTeachersDialogProps> = ({ open, onClo
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Fermer</Button>
+        <Button onClick={onClose}>{t('Fermer')}</Button>
       </DialogActions>
     </Dialog>
   );

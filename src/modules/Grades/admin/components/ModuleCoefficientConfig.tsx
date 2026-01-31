@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -40,6 +42,8 @@ interface ModuleCoefficientConfigProps {
  * Main component for managing module coefficients and ECTS credits
  */
 export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = ({ moduleId, semesterId, moduleData: selectedModuleData }) => {
+  const { t } = useTranslation('Grades');
+
   // Hook
   const {
     moduleData,
@@ -149,7 +153,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
       <Card>
         <CardContent>
           <Alert severity="info">
-            Sélectionnez un semestre et un module pour configurer les coefficients.
+            {t('moduleCoefficientConfig.selectModuleAndSemester')}
           </Alert>
         </CardContent>
       </Card>
@@ -161,7 +165,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
     return (
       <Card>
         <CardContent>
-          <Alert severity="error" action={<Button onClick={refresh}>Réessayer</Button>}>
+          <Alert severity="error" action={<Button onClick={refresh}>{t('common.retry')}</Button>}>
             {error.message}
           </Alert>
         </CardContent>
@@ -175,7 +179,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
       <Card>
         <CardContent>
           <Alert severity="warning">
-            Impossible de charger les données du module.
+            {t('moduleCoefficientConfig.loadError')}
           </Alert>
         </CardContent>
       </Card>
@@ -195,12 +199,12 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
           }
           action={
             <Box display="flex" alignItems="center" gap={1}>
-              <Tooltip title="Rafraîchir">
+              <Tooltip title={t('common.refresh')}>
                 <IconButton onClick={refresh}>
                   <i className="ri-refresh-line" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Appliquer un template">
+              <Tooltip title={t('moduleCoefficientConfig.applyTemplate')}>
                 <Button
                   variant="outlined"
                   size="small"
@@ -208,7 +212,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                   onClick={() => setTemplatesDialog(true)}
                   disabled={moduleData.has_published_grades || false}
                 >
-                  Template
+                  {t('moduleCoefficientConfig.template')}
                 </Button>
               </Tooltip>
             </Box>
@@ -227,14 +231,14 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                 }}
               >
                 <Typography variant="subtitle2" color="text.secondary">
-                  Crédits ECTS
+                  {t('moduleCoefficientConfig.ectsCredits')}
                 </Typography>
                 <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
                   <Typography variant="h3" color="primary">
                     {moduleData?.credits_ects !== undefined ? moduleData.credits_ects : (selectedModuleData?.credits_ects ?? 0)}
                   </Typography>
                   <Box>
-                    <Tooltip title="Modifier les crédits">
+                    <Tooltip title={t('moduleCoefficientConfig.editCredits')}>
                       <IconButton
                         size="small"
                         onClick={() => setEditCreditsDialog(true)}
@@ -243,7 +247,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                         <i className="ri-edit-line" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Historique des crédits">
+                    <Tooltip title={t('moduleCoefficientConfig.creditsHistory')}>
                       <IconButton size="small" onClick={handleViewCreditsHistory}>
                         <i className="ri-history-line" />
                       </IconButton>
@@ -252,7 +256,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                 </Box>
                 {(moduleData.credits_locked || false) && (
                   <Chip
-                    label="Verrouillé"
+                    label={t('moduleCoefficientConfig.locked')}
                     size="small"
                     color="warning"
                     icon={<i className="ri-lock-line" />}
@@ -273,13 +277,13 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                 }}
               >
                 <Typography variant="subtitle2" color="text.secondary">
-                  Total coefficients
+                  {t('moduleCoefficientConfig.totalCoefficients')}
                 </Typography>
                 <Typography variant="h3" color="info.main">
                   {totalCoefficients.toFixed(2)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {moduleData.evaluations?.length || 0} évaluation(s)
+                  {t('moduleCoefficientConfig.evaluationsCount', { count: moduleData.evaluations?.length || 0 })}
                 </Typography>
               </Box>
             </Grid>
@@ -295,20 +299,20 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                 }}
               >
                 <Typography variant="subtitle2" color="text.secondary">
-                  Statut
+                  {t('moduleCoefficientConfig.status')}
                 </Typography>
                 {(moduleData.has_published_grades || false) ? (
                   <>
-                    <Chip label="Notes publiées" color="warning" sx={{ mt: 1 }} />
+                    <Chip label={t('moduleCoefficientConfig.gradesPublished')} color="warning" sx={{ mt: 1 }} />
                     <Typography variant="caption" display="block" mt={1}>
-                      Modifications nécessitent approbation
+                      {t('moduleCoefficientConfig.requiresApproval')}
                     </Typography>
                   </>
                 ) : (
                   <>
-                    <Chip label="Modifiable" color="success" sx={{ mt: 1 }} />
+                    <Chip label={t('moduleCoefficientConfig.modifiable')} color="success" sx={{ mt: 1 }} />
                     <Typography variant="caption" display="block" mt={1}>
-                      Coefficients librement modifiables
+                      {t('moduleCoefficientConfig.freelyModifiable')}
                     </Typography>
                   </>
                 )}
@@ -321,8 +325,8 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
       {/* Coefficients table card */}
       <Card>
         <CardHeader
-          title="Configuration des coefficients"
-          subheader="Gérez les coefficients de chaque évaluation du module"
+          title={t('moduleCoefficientConfig.coefficientConfigTitle')}
+          subheader={t('moduleCoefficientConfig.coefficientConfigSubtitle')}
         />
         <Divider />
         <CardContent>

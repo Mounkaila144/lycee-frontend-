@@ -16,6 +16,7 @@ import {
   Button,
   Chip,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import {
   useGlobalStats,
   useVolumeDistribution,
@@ -98,7 +99,7 @@ export const StatsDashboard: React.FC = () => {
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
-                title="Programmes"
+                title="Filières"
                 value={globalStats.programs.total}
                 subtitle={`${globalStats.programs.active} actifs`}
                 icon="ri-book-line"
@@ -222,7 +223,7 @@ export const StatsDashboard: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Statut Programmes
+                      Statut Filières
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                       <Chip label={`${globalStats.programs.active} Actifs`} size="small" color="success" />

@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -50,11 +53,13 @@ export const TeacherModulesList: React.FC<TeacherModulesListProps> = ({
   error,
   onSelectModule,
 }) => {
+  const { t } = useTranslation('Grades');
+
   if (loading) {
     return (
       <Box>
         <Typography variant="h6" gutterBottom>
-          Mes Modules
+          {t('teacherModulesList.myModules')}
         </Typography>
         <Grid container spacing={2}>
           {[1, 2, 3, 4].map((i) => (
@@ -70,7 +75,7 @@ export const TeacherModulesList: React.FC<TeacherModulesListProps> = ({
   if (error) {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
-        Erreur lors du chargement des modules: {error.message}
+        {t('teacherModulesList.loadError', { error: error.message })}
       </Alert>
     );
   }
@@ -78,7 +83,7 @@ export const TeacherModulesList: React.FC<TeacherModulesListProps> = ({
   if (modules.length === 0) {
     return (
       <Alert severity="info">
-        Aucun module ne vous est assigné pour ce semestre.
+        {t('teacherModulesList.noModules')}
       </Alert>
     );
   }
@@ -86,7 +91,7 @@ export const TeacherModulesList: React.FC<TeacherModulesListProps> = ({
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Mes Modules ({modules.length})
+        {t('teacherModulesList.myModulesCount', { count: modules.length })}
       </Typography>
 
       <Grid container spacing={2}>

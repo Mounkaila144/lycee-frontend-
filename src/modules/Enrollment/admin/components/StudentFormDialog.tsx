@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -28,10 +29,10 @@ interface StudentFormDialogProps {
   isEditMode?: boolean;
 }
 
-const sexOptions: { value: Sex; label: string }[] = [
-  { value: 'M', label: 'Masculin' },
-  { value: 'F', label: 'Féminin' },
-  { value: 'O', label: 'Autre' },
+const getSexOptions = (t: (key: string) => string): { value: Sex; label: string }[] => [
+  { value: 'M', label: t('Male') },
+  { value: 'F', label: t('Female') },
+  { value: 'O', label: t('Other') },
 ];
 
 export const StudentFormDialog = ({
@@ -41,6 +42,7 @@ export const StudentFormDialog = ({
   student,
   isEditMode = false,
 }: StudentFormDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const { createStudent, updateStudent, loading, programmes, loadingProgrammes } =
     useStudentsContext();
   const [error, setError] = useState<string | null>(null);
@@ -128,39 +130,39 @@ export const StudentFormDialog = ({
   const validateForm = (): boolean => {
     // Required fields validation
     if (!formData.firstname.trim()) {
-      setError('Le prénom est obligatoire');
+      setError(t('First name is required'));
 
       return false;
     }
     if (!formData.lastname.trim()) {
-      setError('Le nom est obligatoire');
+      setError(t('Last name is required'));
 
       return false;
     }
     if (!formData.birthdate) {
-      setError('La date de naissance est obligatoire');
+      setError(t('Birth date is required'));
 
       return false;
     }
     if (!formData.birthplace.trim()) {
-      setError('Le lieu de naissance est obligatoire');
+      setError(t('Birthplace is required'));
 
       return false;
     }
     if (!formData.email.trim()) {
-      setError("L'email est obligatoire");
+      setError(t('Email is required'));
 
       return false;
     }
     if (!formData.mobile.trim()) {
-      setError('Le téléphone mobile est obligatoire');
+      setError(t('Mobile phone is required'));
 
       return false;
     }
-    
+
     // Programme is only required for creation (to generate matricule)
     if (!isEditMode && !formData.programme_id) {
-      setError('Le programme est obligatoire pour générer le matricule');
+      setError(t('Program is required to generate matricule'));
 
       return false;
     }
@@ -169,7 +171,7 @@ export const StudentFormDialog = ({
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(formData.email)) {
-      setError("Format d'email invalide");
+      setError(t('Invalid email format'));
 
       return false;
     }
@@ -178,13 +180,13 @@ export const StudentFormDialog = ({
     const phoneRegex = /^\+\d{10,15}$/;
 
     if (formData.mobile && !phoneRegex.test(formData.mobile)) {
-      setError('Le mobile doit être au format international (+227...)');
+      setError(t('Mobile must be in international format (+227...)'));
 
       return false;
     }
 
     if (formData.phone && !phoneRegex.test(formData.phone)) {
-      setError('Le téléphone doit être au format international (+227...)');
+      setError(t('Phone must be in international format (+227...)'));
 
       return false;
     }
@@ -200,7 +202,7 @@ export const StudentFormDialog = ({
     }
 
     if (age < 15 || age > 60) {
-      setError("L'étudiant doit avoir entre 15 et 60 ans");
+      setError(t('Student must be between 15 and 60 years old'));
 
       return false;
     }
@@ -229,7 +231,7 @@ export const StudentFormDialog = ({
 
         if (duplicateResult.has_duplicates && duplicateResult.potential_duplicates.length > 0) {
           setDuplicateWarning(
-            `Attention: ${duplicateResult.potential_duplicates.length} étudiant(s) similaire(s) trouvé(s). Voulez-vous continuer ?`
+            t('Warning: {{count}} similar student(s) found. Do you want to continue?', { count: duplicateResult.potential_duplicates.length })
           );
 
           return;
@@ -241,7 +243,7 @@ export const StudentFormDialog = ({
       onSuccess();
       handleClose();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Une erreur est survenue';
+      const errorMessage = err.response?.data?.message || err.message || t('An error occurred');
 
       setError(errorMessage);
       console.error('Error saving student:', err);
@@ -272,13 +274,15 @@ export const StudentFormDialog = ({
     onClose();
   };
 
+  const sexOptions = getSexOptions(t);
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        {isEditMode ? 'Modifier un étudiant' : 'Ajouter un étudiant'}
+        {isEditMode ? t('Edit student') : t('Add student')}
         {isEditMode && student && (
           <Typography variant="caption" display="block" color="text.secondary">
-            Matricule: {student.matricule}
+            {t('Matricule')}: {student.matricule}
           </Typography>
         )}
       </DialogTitle>
@@ -299,7 +303,7 @@ export const StudentFormDialog = ({
             {/* Personal Information Section */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Informations Personnelles
+                {t('Personal Information')}
               </Typography>
             </Grid>
 
@@ -307,7 +311,7 @@ export const StudentFormDialog = ({
               <TextField
                 fullWidth
                 required
-                label="Prénom(s)"
+                label={t('First name(s)')}
                 value={formData.firstname}
                 onChange={e => handleChange('firstname', e.target.value)}
                 disabled={loading}
@@ -318,7 +322,7 @@ export const StudentFormDialog = ({
               <TextField
                 fullWidth
                 required
-                label="Nom"
+                label={t('Last name')}
                 value={formData.lastname}
                 onChange={e => handleChange('lastname', e.target.value)}
                 disabled={loading}
@@ -330,7 +334,7 @@ export const StudentFormDialog = ({
                 fullWidth
                 required
                 type="date"
-                label="Date de naissance"
+                label={t('Birth date')}
                 value={formData.birthdate}
                 onChange={e => handleChange('birthdate', e.target.value)}
                 disabled={loading}
@@ -342,7 +346,7 @@ export const StudentFormDialog = ({
               <TextField
                 fullWidth
                 required
-                label="Lieu de naissance"
+                label={t('Birthplace')}
                 value={formData.birthplace}
                 onChange={e => handleChange('birthplace', e.target.value)}
                 disabled={loading}
@@ -354,7 +358,7 @@ export const StudentFormDialog = ({
                 fullWidth
                 required
                 select
-                label="Sexe"
+                label={t('Sex')}
                 value={formData.sex}
                 onChange={e => handleChange('sex', e.target.value)}
                 disabled={loading}
@@ -370,7 +374,7 @@ export const StudentFormDialog = ({
             <Grid item xs={12} sm={8}>
               <TextField
                 fullWidth
-                label="Nationalité"
+                label={t('Nationality')}
                 value={formData.nationality}
                 onChange={e => handleChange('nationality', e.target.value)}
                 disabled={loading}
@@ -380,7 +384,7 @@ export const StudentFormDialog = ({
             {/* Contact Information Section */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-                Coordonnées
+                {t('Contact Information')}
               </Typography>
             </Grid>
 
@@ -389,11 +393,11 @@ export const StudentFormDialog = ({
                 fullWidth
                 required
                 type="email"
-                label="Email"
+                label={t('Email')}
                 value={formData.email}
                 onChange={e => handleChange('email', e.target.value)}
                 disabled={loading}
-                helperText="Format: email@example.com"
+                helperText={t('Format: email@example.com')}
               />
             </Grid>
 
@@ -401,29 +405,29 @@ export const StudentFormDialog = ({
               <TextField
                 fullWidth
                 required
-                label="Téléphone Mobile"
+                label={t('Mobile Phone')}
                 value={formData.mobile}
                 onChange={e => handleChange('mobile', e.target.value)}
                 disabled={loading}
-                helperText="Format international: +227..."
+                helperText={t('International format: +227...')}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Téléphone Fixe"
+                label={t('Landline Phone')}
                 value={formData.phone}
                 onChange={e => handleChange('phone', e.target.value)}
                 disabled={loading}
-                helperText="Format international: +227..."
+                helperText={t('International format: +227...')}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Ville"
+                label={t('City')}
                 value={formData.city}
                 onChange={e => handleChange('city', e.target.value)}
                 disabled={loading}
@@ -433,7 +437,7 @@ export const StudentFormDialog = ({
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Adresse"
+                label={t('Address')}
                 value={formData.address}
                 onChange={e => handleChange('address', e.target.value)}
                 disabled={loading}
@@ -445,14 +449,14 @@ export const StudentFormDialog = ({
             {/* Emergency Contact Section */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-                Contact d'Urgence
+                {t('Emergency Contact')}
               </Typography>
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Nom du contact"
+                label={t('Contact name')}
                 value={formData.emergency_contact_name}
                 onChange={e => handleChange('emergency_contact_name', e.target.value)}
                 disabled={loading}
@@ -462,11 +466,11 @@ export const StudentFormDialog = ({
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Téléphone du contact"
+                label={t('Contact phone')}
                 value={formData.emergency_contact_phone}
                 onChange={e => handleChange('emergency_contact_phone', e.target.value)}
                 disabled={loading}
-                helperText="Format international: +227..."
+                helperText={t('International format: +227...')}
               />
             </Grid>
 
@@ -475,11 +479,10 @@ export const StudentFormDialog = ({
               <>
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-                    Informations Académiques
+                    {t('Academic Information')}
                   </Typography>
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    Le programme sert uniquement à générer le matricule (ex: 2026-INF-001).
-                    L'inscription pédagogique sera effectuée séparément.
+                    {t('The program is only used to generate the matricule (e.g., 2026-INF-001). Pedagogical enrollment will be done separately.')}
                   </Alert>
                 </Grid>
 
@@ -495,8 +498,8 @@ export const StudentFormDialog = ({
                       <TextField
                         {...params}
                         required
-                        label="Programme (pour génération matricule)"
-                        helperText="Utilisé pour générer le matricule au format ANNÉE-CODE-NUMÉRO"
+                        label={t('Program (for matricule generation)')}
+                        helperText={t('Used to generate the matricule in YEAR-CODE-NUMBER format')}
                         InputProps={{
                           ...params.InputProps,
                           endAdornment: (
@@ -517,10 +520,10 @@ export const StudentFormDialog = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={loading}>
-          Annuler
+          {t('Cancel')}
         </Button>
         <Button onClick={handleSubmit} variant="contained" disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : isEditMode ? 'Modifier' : 'Créer'}
+          {loading ? <CircularProgress size={24} /> : isEditMode ? t('Edit') : t('Create')}
         </Button>
       </DialogActions>
     </Dialog>

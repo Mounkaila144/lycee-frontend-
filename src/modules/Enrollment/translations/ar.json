@@ -28,7 +28,7 @@
     "address": "العنوان",
     "city": "المدينة",
     "country": "البلد",
-    "programme": "البرنامج",
+    "programme": "التخصص",
     "status": "الحالة",
     "created_at": "تاريخ الإنشاء",
     "updated_at": "تاريخ التعديل",
@@ -85,7 +85,7 @@
     "required": "حقل إلزامي",
     "emailFormat": "التنسيق: email@example.com",
     "phoneFormat": "التنسيق الدولي: +227...",
-    "selectProgramme": "اختر برنامجًا"
+    "selectProgramme": "اختر تخصصًا"
   },
   "validation": {
     "firstnameRequired": "الاسم الأول مطلوب",
@@ -97,7 +97,7 @@
     "mobileRequired": "الهاتف المحمول مطلوب",
     "mobileInvalid": "يجب أن يكون الهاتف المحمول بالتنسيق الدولي (+227...)",
     "phoneInvalid": "يجب أن يكون الهاتف بالتنسيق الدولي (+227...)",
-    "programmeRequired": "البرنامج مطلوب",
+    "programmeRequired": "التخصص مطلوب",
     "ageRange": "يجب أن يكون عمر الطالب بين 15 و 60 سنة"
   },
   "messages": {
@@ -142,7 +142,7 @@
     "active": "نشط",
     "suspended": "معلق",
     "graduated": "متخرج",
-    "byProgramme": "حسب البرنامج",
+    "byProgramme": "حسب التخصص",
     "bySex": "حسب الجنس",
     "recentEnrollments": "التسجيلات الأخيرة"
   },
@@ -190,7 +190,7 @@
     "summary": {
       "summary": "ملخص التسجيل",
       "student": "الطالب",
-      "program": "البرنامج",
+      "program": "التخصص",
       "semester": "الفصل الدراسي",
       "selectedModules": "الوحدات المختارة",
       "totalCredits": "إجمالي الاعتمادات",
@@ -347,7 +347,7 @@
     "all": "جميع التسجيلات",
     "search": "البحث عن تسجيل...",
     "student": "الطالب",
-    "program": "البرنامج",
+    "program": "التخصص",
     "semester": "الفصل الدراسي",
     "academicYear": "السنة الجامعية",
     "submittedAt": "تاريخ الإرسال",
@@ -427,7 +427,7 @@
     "student": "الطالب",
     "cardNumber": "رقم البطاقة",
     "academicYear": "السنة الجامعية",
-    "program": "البرنامج",
+    "program": "التخصص",
     "level": "المستوى",
     "status": "الحالة",
     "printStatus": "حالة الطباعة",
@@ -535,7 +535,7 @@
       "startDate": "تاريخ البدء",
       "endDate": "تاريخ الانتهاء",
       "status": "الحالة",
-      "targetPrograms": "البرامج المستهدفة",
+      "targetPrograms": "التخصصات المستهدفة",
       "targetLevels": "المستويات المستهدفة",
       "minEctsRequired": "الحد الأدنى من ECTS المطلوب",
       "description": "الوصف",
@@ -551,9 +551,9 @@
       },
       "activateConfirm": "هل أنت متأكد من أنك تريد تفعيل هذه الحملة؟ سيتمكن الطلاب من البدء في تقديم طلبات إعادة التسجيل.",
       "closeConfirm": "هل أنت متأكد من أنك تريد إغلاق هذه الحملة؟ لن يتم قبول طلبات جديدة.",
-      "allPrograms": "جميع البرامج",
+      "allPrograms": "جميع التخصصات",
       "allLevels": "جميع المستويات",
-      "selectPrograms": "اختر البرامج",
+      "selectPrograms": "اختر التخصصات",
       "selectLevels": "اختر المستويات",
       "messages": {
         "createSuccess": "تم إنشاء الحملة بنجاح",
@@ -609,7 +609,7 @@
       "impactUpdateLevel": "تحديث مستوى الطالب",
       "impactApplyUpdates": "تطبيق تحديثات المعلومات الشخصية",
       "redoingWarning": "هذا الطالب يعيد سنته.",
-      "reorientationInfo": "هذا الطالب يغير البرنامج (إعادة توجيه).",
+      "reorientationInfo": "هذا الطالب يغير التخصص (إعادة توجيه).",
       "success": "تم تصديق إعادة التسجيل بنجاح",
       "error": "خطأ في تصديق إعادة التسجيل"
     },
@@ -630,7 +630,7 @@
       "currentLevel": "المستوى الحالي",
       "targetLevel": "المستوى المستهدف",
       "campaignInfo": "الحملة",
-      "program": "البرنامج",
+      "program": "التخصص",
       "eligibility": "الأهلية",
       "eligibilityNotes": "ملاحظات الأهلية",
       "timeline": "الجدول الزمني",

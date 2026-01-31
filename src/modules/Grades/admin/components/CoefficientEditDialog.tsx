@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -70,6 +72,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
   clearSimulation,
   validateCoefficient,
 }) => {
+  const { t } = useTranslation('Grades');
   const [coefficient, setCoefficient] = useState<number>(1);
   const [reason, setReason] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +101,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
       const validation = validateCoefficient(value);
 
       if (!validation.valid) {
-        setError(validation.error || 'Coefficient invalide');
+        setError(validation.error || t('coefficientEditDialog.invalidCoefficient'));
       } else {
         setError(null);
       }
@@ -128,14 +131,14 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
     const validation = validateCoefficient(coefficient);
 
     if (!validation.valid) {
-      setError(validation.error || 'Coefficient invalide');
+      setError(validation.error || t('coefficientEditDialog.invalidCoefficient'));
 
       return;
     }
 
     // Require reason if notes are published
     if (evaluation.has_published_grades && !reason.trim()) {
-      setError('Une justification est requise car des notes sont publiées');
+      setError(t('coefficientEditDialog.justificationRequiredPublished'));
 
       return;
     }
@@ -164,7 +167,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={1}>
           <i className="ri-scales-line" />
-          Modifier le coefficient
+          {t('coefficientEditDialog.title')}
         </Box>
       </DialogTitle>
 
@@ -172,7 +175,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
         {/* Evaluation info */}
         <Box mb={3}>
           <Typography variant="subtitle2" color="text.secondary">
-            Évaluation
+            {t('coefficientEditDialog.evaluation')}
           </Typography>
           <Box display="flex" alignItems="center" gap={1} mt={0.5}>
             <Chip label={evaluation.type} size="small" color="primary" variant="outlined" />
@@ -180,7 +183,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
               {evaluation.name}
             </Typography>
             {evaluation.has_published_grades && (
-              <Chip label="Notes publiées" size="small" color="warning" />
+              <Chip label={t('coefficientEditDialog.gradesPublished')} size="small" color="warning" />
             )}
           </Box>
         </Box>
@@ -191,7 +194,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
         <Box display="flex" gap={4} mb={3}>
           <Box>
             <Typography variant="subtitle2" color="text.secondary">
-              Coefficient actuel
+              {t('coefficientEditDialog.currentCoefficient')}
             </Typography>
             <Typography variant="h4" color="text.secondary">
               {evaluation.coefficient.toFixed(2)}
@@ -199,7 +202,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
           </Box>
           <Box>
             <Typography variant="subtitle2" color="primary">
-              Nouveau coefficient
+              {t('coefficientEditDialog.newCoefficient')}
             </Typography>
             <Typography variant="h4" color="primary">
               {coefficient.toFixed(2)}
@@ -219,7 +222,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
         {/* Coefficient slider */}
         <Box mb={3}>
           <Typography variant="subtitle2" gutterBottom>
-            Ajuster le coefficient
+            {t('coefficientEditDialog.adjustCoefficient')}
           </Typography>
           <Slider
             value={coefficient}
@@ -235,7 +238,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
         {/* Manual input */}
         <Box mb={3}>
           <TextField
-            label="Coefficient (saisie manuelle)"
+            label={t('coefficientEditDialog.manualInput')}
             type="number"
             inputProps={{
               min: COEFFICIENT_CONSTRAINTS.MIN,
@@ -255,14 +258,14 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
         {evaluation.has_published_grades && (
           <Box mb={3}>
             <TextField
-              label="Justification de la modification *"
+              label={t('coefficientEditDialog.justificationLabel')}
               multiline
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               fullWidth
-              placeholder="Expliquez la raison de cette modification..."
-              helperText="Requise car des notes sont déjà publiées"
+              placeholder={t('coefficientEditDialog.justificationPlaceholder')}
+              helperText={t('coefficientEditDialog.justificationHelperText')}
             />
           </Box>
         )}
@@ -273,7 +276,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
         <Box>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="subtitle1" fontWeight="bold">
-              Simulation d'impact
+              {t('coefficientEditDialog.impactSimulation')}
             </Typography>
             <Button
               variant="outlined"
@@ -282,36 +285,35 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
               disabled={simulationLoading || !hasChanged}
               startIcon={simulationLoading ? <CircularProgress size={16} /> : <i className="ri-calculator-line" />}
             >
-              {simulationLoading ? 'Calcul...' : 'Simuler'}
+              {simulationLoading ? t('coefficientEditDialog.calculating') : t('coefficientEditDialog.simulate')}
             </Button>
           </Box>
 
           {!hasSimulated && !simulation && (
             <Alert severity="info">
-              Cliquez sur "Simuler" pour voir l'impact de cette modification sur les moyennes des étudiants.
+              {t('coefficientEditDialog.simulationHint')}
             </Alert>
           )}
 
           {simulation && (
             <Box>
               <Alert severity="warning" sx={{ mb: 2 }}>
-                Cette modification affectera <strong>{simulation.affected_students}</strong> étudiants.
-                Variation moyenne: <strong>{simulation.average_change >= 0 ? '+' : ''}{simulation.average_change.toFixed(2)}</strong> points.
+                {t('coefficientEditDialog.simulationWarning', { count: simulation.affected_students, change: `${simulation.average_change >= 0 ? '+' : ''}${simulation.average_change.toFixed(2)}` })}
               </Alert>
 
               {simulation.samples.length > 0 && (
                 <>
                   <Typography variant="subtitle2" gutterBottom>
-                    Exemples d'impact (5 étudiants)
+                    {t('coefficientEditDialog.impactExamples')}
                   </Typography>
                   <TableContainer component={Paper} variant="outlined">
                     <Table size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Étudiant</TableCell>
-                          <TableCell align="center">Ancienne moyenne</TableCell>
-                          <TableCell align="center">Nouvelle moyenne</TableCell>
-                          <TableCell align="center">Différence</TableCell>
+                          <TableCell>{t('coefficientEditDialog.student')}</TableCell>
+                          <TableCell align="center">{t('coefficientEditDialog.oldAverage')}</TableCell>
+                          <TableCell align="center">{t('coefficientEditDialog.newAverage')}</TableCell>
+                          <TableCell align="center">{t('coefficientEditDialog.difference')}</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -341,7 +343,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
 
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>
-          Annuler
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -349,7 +351,7 @@ export const CoefficientEditDialog: React.FC<CoefficientEditDialogProps> = ({
           disabled={!canSave}
           startIcon={saving ? <CircularProgress size={16} /> : <i className="ri-save-line" />}
         >
-          {saving ? 'Enregistrement...' : 'Enregistrer'}
+          {saving ? t('common.saving') : t('common.save')}
         </Button>
       </DialogActions>
     </Dialog>

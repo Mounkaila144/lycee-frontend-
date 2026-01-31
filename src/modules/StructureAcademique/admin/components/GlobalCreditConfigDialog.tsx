@@ -13,6 +13,7 @@ import {
   CircularProgress,
   IconButton,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { useGlobalLevelCredits } from '../hooks/useLevelCredits';
 import LevelCreditConfigTable from './LevelCreditConfigTable';
 import LevelCreditConfigDialog from './LevelCreditConfigDialog';
@@ -66,7 +67,7 @@ const GlobalCreditConfigDialog: React.FC<GlobalCreditConfigDialogProps> = ({
                 Configuration Globale des Crédits ECTS
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Valeurs par défaut pour tous les programmes
+                Valeurs par défaut pour toutes les filières
               </Typography>
             </Box>
             <IconButton onClick={onClose} size="small">

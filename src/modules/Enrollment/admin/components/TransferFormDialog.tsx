@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -43,6 +44,7 @@ const LEVELS = ['L1', 'L2', 'L3', 'M1', 'M2', 'D1', 'D2', 'D3'];
  * Dialog for creating a new transfer request
  */
 export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const { tenantId } = useTenant();
 
   // Form state
@@ -145,14 +147,14 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
       const validFiles = fileArray.filter(file => {
         // Check file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          setError(`Le fichier ${file.name} dépasse 5MB`);
+          setError(t('File {{name}} exceeds 5MB', { name: file.name }));
 
           return false;
         }
 
         // Check file type
         if (file.type !== 'application/pdf') {
-          setError(`Le fichier ${file.name} n'est pas un PDF`);
+          setError(t('File {{name}} is not a PDF', { name: file.name }));
 
           return false;
         }
@@ -173,25 +175,25 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
   const handleSubmit = async () => {
     // Validate required fields
     if (!formData.firstname || !formData.lastname || !formData.email || !formData.mobile) {
-      setError("Veuillez remplir les informations de l'étudiant (nom, prénom, email, mobile)");
+      setError(t('Please fill in student information (last name, first name, email, mobile)'));
 
       return;
     }
 
     if (!formData.origin_institution || !formData.origin_program) {
-      setError("Veuillez remplir les informations d'origine");
+      setError(t('Please fill in origin information'));
 
       return;
     }
 
     if (!formData.target_program_id || !formData.target_level || !formData.academic_year_id) {
-      setError('Veuillez sélectionner le programme et le niveau cible');
+      setError(t('Please select the target program and level'));
 
       return;
     }
 
     if (!formData.transfer_reason || formData.transfer_reason.length < 50) {
-      setError('Le motif du transfert doit contenir au moins 50 caractères');
+      setError(t('Transfer reason must contain at least 50 characters'));
 
       return;
     }
@@ -205,7 +207,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
       onSuccess();
       onClose();
     } catch (err: any) {
-      const message = err.response?.data?.message || err.message || 'Erreur lors de la création';
+      const message = err.response?.data?.message || err.message || t('Error during creation');
       setError(message);
     } finally {
       setLoading(false);
@@ -217,7 +219,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <i className="ri-exchange-line" />
-          <Typography variant="h6">Nouvelle demande de transfert</Typography>
+          <Typography variant="h6">{t('New transfer request')}</Typography>
         </Box>
       </DialogTitle>
       <DialogContent dividers>
@@ -235,13 +237,13 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
 
             {/* Personal Information */}
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-              Informations personnelles
+              {t('Personal information')}
             </Typography>
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Prénom"
+                  label={t('First name')}
                   value={formData.firstname}
                   onChange={e => handleChange('firstname', e.target.value)}
                   required
@@ -250,7 +252,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Nom"
+                  label={t('Last name')}
                   value={formData.lastname}
                   onChange={e => handleChange('lastname', e.target.value)}
                   required
@@ -259,7 +261,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Date de naissance"
+                  label={t('Birth date')}
                   type="date"
                   value={formData.birthdate}
                   onChange={e => handleChange('birthdate', e.target.value)}
@@ -270,7 +272,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Email"
+                  label={t('Email')}
                   type="email"
                   value={formData.email}
                   onChange={e => handleChange('email', e.target.value)}
@@ -280,7 +282,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Téléphone fixe"
+                  label={t('Landline phone')}
                   value={formData.phone}
                   onChange={e => handleChange('phone', e.target.value)}
                 />
@@ -288,7 +290,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Téléphone mobile"
+                  label={t('Mobile phone')}
                   value={formData.mobile}
                   onChange={e => handleChange('mobile', e.target.value)}
                   required
@@ -301,35 +303,35 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
 
             {/* Origin Information */}
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-              Établissement d'origine
+              {t('Origin institution')}
             </Typography>
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
-                  label="Établissement d'origine"
+                  label={t('Origin institution')}
                   value={formData.origin_institution}
                   onChange={e => handleChange('origin_institution', e.target.value)}
-                  placeholder="Ex: Université de Paris"
+                  placeholder={t('Ex: University of Paris')}
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Programme d'origine"
+                  label={t('Origin program')}
                   value={formData.origin_program}
                   onChange={e => handleChange('origin_program', e.target.value)}
-                  placeholder="Ex: Licence Informatique"
+                  placeholder={t('Ex: Computer Science Degree')}
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
-                  <InputLabel>Niveau d'origine</InputLabel>
+                  <InputLabel>{t('Origin level')}</InputLabel>
                   <Select
                     value={formData.origin_level}
-                    label="Niveau d'origine"
+                    label={t('Origin level')}
                     onChange={e => handleChange('origin_level', e.target.value)}
                   >
                     {LEVELS.map(level => (
@@ -343,7 +345,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="ECTS réclamés"
+                  label={t('Claimed ECTS')}
                   type="number"
                   value={formData.total_ects_claimed || ''}
                   onChange={e => handleChange('total_ects_claimed', parseInt(e.target.value) || 0)}
@@ -356,15 +358,15 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
 
             {/* Target Information */}
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-              Programme cible
+              {t('Target program')}
             </Typography>
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
-                  <InputLabel>Programme cible</InputLabel>
+                  <InputLabel>{t('Target program')}</InputLabel>
                   <Select
                     value={formData.target_program_id || ''}
-                    label="Programme cible"
+                    label={t('Target program')}
                     onChange={e => handleChange('target_program_id', e.target.value as number)}
                   >
                     {programmes.map(programme => (
@@ -377,10 +379,10 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
-                  <InputLabel>Niveau cible</InputLabel>
+                  <InputLabel>{t('Target level')}</InputLabel>
                   <Select
                     value={formData.target_level}
-                    label="Niveau cible"
+                    label={t('Target level')}
                     onChange={e => handleChange('target_level', e.target.value)}
                   >
                     {LEVELS.map(level => (
@@ -393,15 +395,15 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
-                  <InputLabel>Année académique</InputLabel>
+                  <InputLabel>{t('Academic year')}</InputLabel>
                   <Select
                     value={formData.academic_year_id || ''}
-                    label="Année académique"
+                    label={t('Academic year')}
                     onChange={e => handleChange('academic_year_id', e.target.value as number)}
                   >
                     {academicYears.map(year => (
                       <MenuItem key={year.id} value={year.id}>
-                        {year.name} {year.is_current && '(En cours)'}
+                        {year.name} {year.is_current && t('(Current)')}
                       </MenuItem>
                     ))}
                   </Select>
@@ -413,18 +415,18 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
 
             {/* Transfer Reason */}
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-              Motif du transfert
+              {t('Transfer reason')}
             </Typography>
             <TextField
               fullWidth
               multiline
               rows={4}
-              label="Motif du transfert"
+              label={t('Transfer reason')}
               value={formData.transfer_reason}
               onChange={e => handleChange('transfer_reason', e.target.value)}
-              placeholder="Expliquez les raisons de cette demande de transfert (minimum 50 caractères)"
+              placeholder={t('Explain the reasons for this transfer request (minimum 50 characters)')}
               required
-              helperText={`${formData.transfer_reason.length}/50 caractères minimum`}
+              helperText={`${formData.transfer_reason.length}/50 ${t('characters minimum')}`}
               sx={{ mb: 3 }}
             />
 
@@ -432,7 +434,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
 
             {/* Documents */}
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-              Documents justificatifs (PDF, max 5MB)
+              {t('Supporting documents (PDF, max 5MB)')}
             </Typography>
             <Box sx={{ mb: 2 }}>
               <input
@@ -445,7 +447,7 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
               />
               <label htmlFor="transfer-documents">
                 <Button variant="outlined" component="span" startIcon={<i className="ri-upload-line" />}>
-                  Ajouter des documents
+                  {t('Add documents')}
                 </Button>
               </label>
             </Box>
@@ -466,10 +468,10 @@ export const TransferFormDialog = ({ open, onClose, onSuccess }: TransferFormDia
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose} disabled={loading}>
-          Annuler
+          {t('Cancel')}
         </Button>
         <Button variant="contained" onClick={handleSubmit} disabled={loading || loadingData}>
-          {loading ? <CircularProgress size={24} /> : 'Créer la demande'}
+          {loading ? <CircularProgress size={24} /> : t('Create request')}
         </Button>
       </DialogActions>
     </Dialog>

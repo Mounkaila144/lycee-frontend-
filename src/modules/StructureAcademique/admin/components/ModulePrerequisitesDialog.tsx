@@ -22,6 +22,7 @@ import {
   MenuItem,
   Grid,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { useModulePrerequisites } from '../hooks/useModulePrerequisites';
 import { moduleService } from '../services/moduleService';
 import { useTenant } from '@/shared/lib/tenant-context';
@@ -38,6 +39,7 @@ interface ModulePrerequisitesDialogProps {
 const PREREQUISITE_TYPES: PrerequisiteType[] = ['Strict', 'Recommandé'];
 
 const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ open, onClose, module }) => {
+  const { t } = useTranslation('StructureAcademique');
   const { tenantId } = useTenant();
   const { prerequisites, loading, error, addPrerequisite, removePrerequisite } = useModulePrerequisites(
     module?.id || 0
@@ -89,7 +91,7 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
       setSelectedModule(null);
       setSelectedType('Strict');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'ajout du prérequis';
+      const errorMessage = err instanceof Error ? err.message : t('Erreur lors de l\'ajout du prérequis');
       setAddError(errorMessage);
       console.error('Error adding prerequisite:', err);
     } finally {
@@ -112,7 +114,7 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h5">Gestion des Prérequis</Typography>
+            <Typography variant="h5">{t('Gestion des Prérequis')}</Typography>
             <Typography variant="body2" color="text.secondary">
               {module.code} - {module.name}
             </Typography>
@@ -127,7 +129,7 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
         {/* Add Prerequisite Section */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" gutterBottom>
-            Ajouter un Prérequis
+            {t('Ajouter un Prérequis')}
           </Typography>
 
           {addError && (
@@ -147,8 +149,8 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Module Prérequis"
-                    placeholder="Rechercher un module..."
+                    label={t('Module Prérequis')}
+                    placeholder={t('Rechercher un module...')}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -199,16 +201,16 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
                 disabled={!selectedModule || adding}
                 sx={{ height: '56px' }}
               >
-                {adding ? <CircularProgress size={24} /> : 'Ajouter'}
+                {adding ? <CircularProgress size={24} /> : t('Ajouter')}
               </Button>
             </Grid>
           </Grid>
 
           <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Strict:</strong> L'étudiant doit avoir validé ce module avant de s'inscrire.
+              <strong>{t('Strict')}:</strong> {t('L\'étudiant doit avoir validé ce module avant de s\'inscrire.')}
               <br />
-              <strong>Recommandé:</strong> Prérequis conseillé mais non bloquant.
+              <strong>{t('Recommandé')}:</strong> {t('Prérequis conseillé mais non bloquant.')}
             </Typography>
           </Alert>
         </Box>
@@ -216,7 +218,7 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
         {/* Prerequisites List */}
         <Box>
           <Typography variant="subtitle1" gutterBottom>
-            Prérequis Actuels ({prerequisites.length})
+            {t('Prérequis Actuels')} ({prerequisites.length})
           </Typography>
 
           {loading ? (
@@ -226,7 +228,7 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
           ) : error ? (
             <Alert severity="error">{error.message}</Alert>
           ) : prerequisites.length === 0 ? (
-            <Alert severity="info">Aucun prérequis défini pour ce module.</Alert>
+            <Alert severity="info">{t('Aucun prérequis défini pour ce module.')}</Alert>
           ) : (
             <List>
               {prerequisites.map((prereq) => (
@@ -279,7 +281,7 @@ const ModulePrerequisitesDialog: React.FC<ModulePrerequisitesDialogProps> = ({ o
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Fermer</Button>
+        <Button onClick={onClose}>{t('Fermer')}</Button>
       </DialogActions>
     </Dialog>
   );

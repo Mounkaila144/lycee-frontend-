@@ -12,6 +12,7 @@ import {
   Box,
   CircularProgress,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type { Module } from '../../types/module.types';
 
 interface ModuleDeleteDialogProps {
@@ -27,6 +28,7 @@ const ModuleDeleteDialog: React.FC<ModuleDeleteDialogProps> = ({
   onSuccess,
   module,
 }) => {
+  const { t } = useTranslation('StructureAcademique');
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +44,7 @@ const ModuleDeleteDialog: React.FC<ModuleDeleteDialogProps> = ({
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');
+      setError(err instanceof Error ? err.message : t('Erreur lors de la suppression'));
       console.error('Error deleting module:', err);
     } finally {
       setDeleting(false);
@@ -56,7 +58,7 @@ const ModuleDeleteDialog: React.FC<ModuleDeleteDialogProps> = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        <Typography variant="h6">Supprimer le module</Typography>
+        <Typography variant="h6">{t('Supprimer le module')}</Typography>
       </DialogTitle>
 
       <DialogContent>
@@ -68,40 +70,40 @@ const ModuleDeleteDialog: React.FC<ModuleDeleteDialogProps> = ({
 
         {!canDelete ? (
           <Alert severity="error" sx={{ mb: 2 }}>
-            Ce module ne peut pas être supprimé car il a des inscriptions actives ou des notes saisies.
+            {t('Ce module ne peut pas être supprimé car il a des inscriptions actives ou des notes saisies.')}
           </Alert>
         ) : (
           <>
             <Typography variant="body1" gutterBottom>
-              Êtes-vous sûr de vouloir supprimer ce module ?
+              {t('Êtes-vous sûr de vouloir supprimer ce module ?')}
             </Typography>
 
             <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
               <Typography variant="body2">
-                <strong>Code:</strong> {module.code}
+                <strong>{t('Code')}:</strong> {module.code}
               </Typography>
               <Typography variant="body2">
-                <strong>Nom:</strong> {module.name}
+                <strong>{t('Nom')}:</strong> {module.name}
               </Typography>
               <Typography variant="body2">
-                <strong>Niveau:</strong> {module.level} - {module.semester}
+                <strong>{t('Niveau')}:</strong> {module.level} - {module.semester}
               </Typography>
               <Typography variant="body2">
-                <strong>Crédits ECTS:</strong> {module.credits_ects}
+                <strong>{t('Crédits ECTS')}:</strong> {module.credits_ects}
               </Typography>
             </Box>
 
             {module.enrollments_count && module.enrollments_count > 0 && (
               <Alert severity="warning" sx={{ mt: 2 }}>
                 <Typography variant="body2">
-                  <strong>Impact:</strong> {module.enrollments_count} étudiant(s) inscrit(s)
+                  <strong>{t('Impact')}:</strong> {module.enrollments_count} {t('étudiant(s) inscrit(s)')}
                 </Typography>
               </Alert>
             )}
 
             <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="body2">
-                Cette action est réversible. Le module sera archivé et pourra être restauré ultérieurement.
+                {t('Cette action est réversible. Le module sera archivé et pourra être restauré ultérieurement.')}
               </Typography>
             </Alert>
           </>
@@ -110,7 +112,7 @@ const ModuleDeleteDialog: React.FC<ModuleDeleteDialogProps> = ({
 
       <DialogActions>
         <Button onClick={onClose} disabled={deleting}>
-          Annuler
+          {t('Annuler')}
         </Button>
         <Button
           onClick={handleDelete}
@@ -119,7 +121,7 @@ const ModuleDeleteDialog: React.FC<ModuleDeleteDialogProps> = ({
           disabled={deleting || !canDelete}
           startIcon={deleting ? <CircularProgress size={16} /> : null}
         >
-          {deleting ? 'Suppression...' : 'Supprimer'}
+          {deleting ? t('Suppression...') : t('Supprimer')}
         </Button>
       </DialogActions>
     </Dialog>

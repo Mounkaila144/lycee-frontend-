@@ -14,6 +14,7 @@ import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { AcademicYear, AcademicYearFormInput } from '../../types/academicCalendar.types'
 
 const schema = object({
@@ -36,6 +37,7 @@ interface AcademicYearFormDialogProps {
 }
 
 const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: AcademicYearFormDialogProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [backendErrors, setBackendErrors] = useState<ValidationErrors>({})
@@ -77,7 +79,7 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
       const diffMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
 
       if (diffMonths < 9 || diffMonths > 12) {
-        setError('La durée de l\'année académique doit être entre 9 et 12 mois')
+        setError(t('La durée de l\'année académique doit être entre 9 et 12 mois'))
         setSubmitting(false)
         return
       }
@@ -92,10 +94,10 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
         setBackendErrors(validationErrors)
         
         // Message d'erreur général
-        const errorMessage = err.response.data.message || 'Erreur de validation'
+        const errorMessage = err.response.data.message || t('Erreur de validation')
         setError(errorMessage)
       } else {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+        setError(err instanceof Error ? err.message : t('Une erreur est survenue'))
       }
     } finally {
       setSubmitting(false)
@@ -126,7 +128,7 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{academicYear ? 'Modifier l\'année académique' : 'Nouvelle année académique'}</DialogTitle>
+      <DialogTitle>{academicYear ? t('Modifier l\'année académique') : t('Nouvelle année académique')}</DialogTitle>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <DialogContent>
           {error && (
@@ -143,8 +145,8 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
                   <TextField
                     {...field}
                     fullWidth
-                    label="Nom de l'année"
-                    placeholder="Ex: 2025-2026"
+                    label={t("Nom de l'année")}
+                    placeholder={t("Ex: 2025-2026")}
                     error={!!errors.name || !!backendErrors.name}
                     helperText={getFieldError('name')}
                     disabled={submitting}
@@ -161,7 +163,7 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
                     {...field}
                     fullWidth
                     type="date"
-                    label="Date de début"
+                    label={t("Date de début")}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.start_date || !!backendErrors.start_date}
                     helperText={getFieldError('start_date')}
@@ -179,10 +181,10 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
                     {...field}
                     fullWidth
                     type="date"
-                    label="Date de fin"
+                    label={t("Date de fin")}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.end_date || !!backendErrors.end_date}
-                    helperText={getFieldError('end_date') || 'Durée: 9-12 mois'}
+                    helperText={getFieldError('end_date') || t('Durée: 9-12 mois')}
                     disabled={submitting}
                   />
                 )}
@@ -192,10 +194,10 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} disabled={submitting}>
-            Annuler
+            {t('Annuler')}
           </Button>
           <Button type="submit" variant="contained" disabled={submitting}>
-            {submitting ? 'Enregistrement...' : 'Enregistrer'}
+            {submitting ? t('Enregistrement...') : t('Enregistrer')}
           </Button>
         </DialogActions>
       </form>

@@ -15,6 +15,7 @@ import Alert from '@mui/material/Alert'
 import Typography from '@mui/material/Typography'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { Semester, SemesterFormInput } from '../../types/academicCalendar.types'
 
 const schema = object({
@@ -41,6 +42,7 @@ interface SemesterFormDialogProps {
 }
 
 const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormDialogProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [backendErrors, setBackendErrors] = useState<ValidationErrors>({})
@@ -93,10 +95,10 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
         setBackendErrors(validationErrors)
         
         // Message d'erreur général
-        const errorMessage = err.response.data.message || 'Erreur de validation'
+        const errorMessage = err.response.data.message || t('Erreur de validation')
         setError(errorMessage)
       } else {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+        setError(err instanceof Error ? err.message : t('Une erreur est survenue'))
       }
     } finally {
       setSubmitting(false)
@@ -125,7 +127,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>{semester ? 'Modifier le semestre' : 'Nouveau semestre'}</DialogTitle>
+      <DialogTitle>{semester ? t('Modifier le semestre') : t('Nouveau semestre')}</DialogTitle>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <DialogContent>
           {error && (
@@ -142,8 +144,8 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                   <TextField
                     {...field}
                     fullWidth
-                    label="Nom du semestre"
-                    placeholder="Ex: S1, S2"
+                    label={t("Nom du semestre")}
+                    placeholder={t("Ex: S1, S2")}
                     error={!!errors.name || !!backendErrors.name}
                     helperText={getFieldError('name')}
                     disabled={submitting}
@@ -154,7 +156,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
 
             <Grid item xs={12}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Dates du semestre
+                {t('Dates du semestre')}
               </Typography>
             </Grid>
 
@@ -167,7 +169,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                     {...field}
                     fullWidth
                     type="date"
-                    label="Date de début"
+                    label={t("Date de début")}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.start_date || !!backendErrors.start_date}
                     helperText={getFieldError('start_date')}
@@ -185,7 +187,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                     {...field}
                     fullWidth
                     type="date"
-                    label="Date de fin"
+                    label={t("Date de fin")}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.end_date || !!backendErrors.end_date}
                     helperText={getFieldError('end_date')}
@@ -197,7 +199,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
 
             <Grid item xs={12}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Période des cours (optionnel)
+                {t('Période des cours (optionnel)')}
               </Typography>
             </Grid>
 
@@ -210,7 +212,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                     {...field}
                     fullWidth
                     type="date"
-                    label="Début des cours"
+                    label={t("Début des cours")}
                     InputLabelProps={{ shrink: true }}
                     error={!!backendErrors.courses_start_date}
                     helperText={getFieldError('courses_start_date')}
@@ -228,7 +230,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                     {...field}
                     fullWidth
                     type="date"
-                    label="Fin des cours"
+                    label={t("Fin des cours")}
                     InputLabelProps={{ shrink: true }}
                     error={!!backendErrors.courses_end_date}
                     helperText={getFieldError('courses_end_date')}
@@ -240,7 +242,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
 
             <Grid item xs={12}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Période des examens (optionnel)
+                {t('Période des examens (optionnel)')}
               </Typography>
             </Grid>
 
@@ -253,7 +255,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                     {...field}
                     fullWidth
                     type="date"
-                    label="Début des examens"
+                    label={t("Début des examens")}
                     InputLabelProps={{ shrink: true }}
                     error={!!backendErrors.exams_start_date}
                     helperText={getFieldError('exams_start_date')}
@@ -271,7 +273,7 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
                     {...field}
                     fullWidth
                     type="date"
-                    label="Fin des examens"
+                    label={t("Fin des examens")}
                     InputLabelProps={{ shrink: true }}
                     error={!!backendErrors.exams_end_date}
                     helperText={getFieldError('exams_end_date')}
@@ -284,10 +286,10 @@ const SemesterFormDialog = ({ open, onClose, onSubmit, semester }: SemesterFormD
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} disabled={submitting}>
-            Annuler
+            {t('Annuler')}
           </Button>
           <Button type="submit" variant="contained" disabled={submitting}>
-            {submitting ? 'Enregistrement...' : 'Enregistrer'}
+            {submitting ? t('Enregistrement...') : t('Enregistrer')}
           </Button>
         </DialogActions>
       </form>

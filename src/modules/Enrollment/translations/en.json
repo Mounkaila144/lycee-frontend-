@@ -28,7 +28,7 @@
     "address": "Address",
     "city": "City",
     "country": "Country",
-    "programme": "Programme",
+    "programme": "Field of Study",
     "status": "Status",
     "created_at": "Created At",
     "updated_at": "Updated At",
@@ -85,7 +85,7 @@
     "required": "Required field",
     "emailFormat": "Format: email@example.com",
     "phoneFormat": "International format: +227...",
-    "selectProgramme": "Select a programme"
+    "selectProgramme": "Select a field of study"
   },
   "validation": {
     "firstnameRequired": "First name is required",
@@ -97,7 +97,7 @@
     "mobileRequired": "Mobile phone is required",
     "mobileInvalid": "Mobile must be in international format (+227...)",
     "phoneInvalid": "Phone must be in international format (+227...)",
-    "programmeRequired": "Programme is required",
+    "programmeRequired": "Field of study is required",
     "ageRange": "Student must be between 15 and 60 years old"
   },
   "messages": {
@@ -142,7 +142,7 @@
     "active": "Active",
     "suspended": "Suspended",
     "graduated": "Graduated",
-    "byProgramme": "By Programme",
+    "byProgramme": "By Field of Study",
     "bySex": "By Gender",
     "recentEnrollments": "Recent Enrollments"
   },
@@ -190,7 +190,7 @@
     "summary": {
       "summary": "Enrollment Summary",
       "student": "Student",
-      "program": "Program",
+      "program": "Field of Study",
       "semester": "Semester",
       "selectedModules": "Selected Modules",
       "totalCredits": "Total Credits",
@@ -347,7 +347,7 @@
     "all": "All Enrollments",
     "search": "Search enrollment...",
     "student": "Student",
-    "program": "Program",
+    "program": "Field of Study",
     "semester": "Semester",
     "academicYear": "Academic Year",
     "submittedAt": "Submitted At",
@@ -427,7 +427,7 @@
     "student": "Student",
     "cardNumber": "Card Number",
     "academicYear": "Academic Year",
-    "program": "Program",
+    "program": "Field of Study",
     "level": "Level",
     "status": "Status",
     "printStatus": "Print Status",
@@ -535,7 +535,7 @@
       "startDate": "Start Date",
       "endDate": "End Date",
       "status": "Status",
-      "targetPrograms": "Target Programs",
+      "targetPrograms": "Target Fields of Study",
       "targetLevels": "Target Levels",
       "minEctsRequired": "Minimum ECTS Required",
       "description": "Description",
@@ -551,9 +551,9 @@
       },
       "activateConfirm": "Are you sure you want to activate this campaign? Students will be able to start submitting their reenrollments.",
       "closeConfirm": "Are you sure you want to close this campaign? New submissions will no longer be accepted.",
-      "allPrograms": "All Programs",
+      "allPrograms": "All Fields of Study",
       "allLevels": "All Levels",
-      "selectPrograms": "Select Programs",
+      "selectPrograms": "Select Fields of Study",
       "selectLevels": "Select Levels",
       "messages": {
         "createSuccess": "Campaign created successfully",
@@ -609,7 +609,7 @@
       "impactUpdateLevel": "Update the student's level",
       "impactApplyUpdates": "Apply personal information updates",
       "redoingWarning": "This student is repeating their level.",
-      "reorientationInfo": "This student is changing programs (reorientation).",
+      "reorientationInfo": "This student is changing field of study (reorientation).",
       "success": "Reenrollment validated successfully",
       "error": "Error validating reenrollment"
     },
@@ -630,7 +630,7 @@
       "currentLevel": "Current Level",
       "targetLevel": "Target Level",
       "campaignInfo": "Campaign",
-      "program": "Program",
+      "program": "Field of Study",
       "eligibility": "Eligibility",
       "eligibilityNotes": "Eligibility Notes",
       "timeline": "Timeline",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import {
   Box,
   Card,
@@ -77,7 +78,7 @@ const statusLabels: Record<OptionStatus, string> = {
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'code', label: 'Code', defaultVisible: true },
   { id: 'name', label: 'Nom', defaultVisible: true },
-  { id: 'programme', label: 'Programme', defaultVisible: true },
+  { id: 'programme', label: 'Filière', defaultVisible: true },
   { id: 'level', label: 'Niveau', defaultVisible: true },
   { id: 'capacity', label: 'Capacité', defaultVisible: true },
   { id: 'period', label: 'Période de choix', defaultVisible: true },
@@ -254,7 +255,7 @@ export const OptionList = () => {
       }),
       columnHelper.accessor('programme_id', {
         id: 'programme',
-        header: 'Programme',
+        header: 'Filière',
         cell: ({ row }) => (
           <Chip
             label={row.original.program?.code || `#${row.original.programme_id}`}
@@ -405,7 +406,7 @@ export const OptionList = () => {
             fields={[
               {
                 icon: 'ri-book-line',
-                label: 'Programme',
+                label: 'Filière',
                 value: option.program?.code || `#${option.programme_id}`,
               },
               {
@@ -462,10 +463,10 @@ export const OptionList = () => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Programme</InputLabel>
+                <InputLabel>Filière</InputLabel>
                 <Select
                   value={filters.programme_id}
-                  label="Programme"
+                  label="Filière"
                   onChange={(e) => handleFilterChange('programme_id', e.target.value)}
                 >
                   <MenuItem value="">Tous</MenuItem>

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import {
   Box,
   Stepper,
@@ -30,21 +33,22 @@ interface GradeImportWizardProps {
   onCancel?: () => void;
 }
 
-const steps = [
-  'Télécharger le template',
-  'Uploader le fichier',
-  'Valider le fichier',
-  'Prévisualiser',
-  'Importer',
-];
-
 export default function GradeImportWizard({
   evaluationId,
   evaluationName,
   onComplete,
   onCancel,
 }: GradeImportWizardProps) {
+  const { t } = useTranslation('Grades');
   const { tenantId: rawTenantId } = useTenant();
+
+  const steps = [
+    t('gradeImportWizard.stepDownloadTemplate'),
+    t('gradeImportWizard.stepUploadFile'),
+    t('gradeImportWizard.stepValidateFile'),
+    t('gradeImportWizard.stepPreview'),
+    t('gradeImportWizard.stepImport'),
+  ];
   const tenantId = rawTenantId ?? undefined;
 
   const [activeStep, setActiveStep] = useState(0);
@@ -150,15 +154,14 @@ export default function GradeImportWizard({
         return (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Télécharger le template Excel
+              {t('gradeImportWizard.downloadTemplateTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Téléchargez le template Excel pré-rempli avec la liste des étudiants et les colonnes
-              d'évaluation configurées.
+              {t('gradeImportWizard.downloadTemplateDescription')}
             </Typography>
 
             <FormControl component="fieldset" sx={{ mb: 3 }}>
-              <FormLabel component="legend">Options du template</FormLabel>
+              <FormLabel component="legend">{t('gradeImportWizard.templateOptions')}</FormLabel>
               <FormControlLabel
                 control={
                   <Radio
@@ -166,7 +169,7 @@ export default function GradeImportWizard({
                     onChange={() => setIncludeExisting(false)}
                   />
                 }
-                label="Template vide (pour nouvelle saisie)"
+                label={t('gradeImportWizard.emptyTemplate')}
               />
               <FormControlLabel
                 control={
@@ -175,7 +178,7 @@ export default function GradeImportWizard({
                     onChange={() => setIncludeExisting(true)}
                   />
                 }
-                label="Template avec notes existantes (pour modification)"
+                label={t('gradeImportWizard.templateWithExisting')}
               />
             </FormControl>
 
@@ -185,12 +188,12 @@ export default function GradeImportWizard({
               onClick={handleDownloadTemplate}
               disabled={isDownloadingTemplate}
             >
-              {isDownloadingTemplate ? 'Téléchargement...' : 'Télécharger le template'}
+              {isDownloadingTemplate ? t('gradeImportWizard.downloading') : t('gradeImportWizard.downloadTemplate')}
             </Button>
 
             {downloadTemplateError && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                Erreur lors du téléchargement du template
+                {t('gradeImportWizard.downloadError')}
               </Alert>
             )}
           </Box>
@@ -200,10 +203,10 @@ export default function GradeImportWizard({
         return (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Uploader le fichier Excel
+              {t('gradeImportWizard.uploadFileTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Sélectionnez le fichier Excel rempli à importer. Format accepté: .xlsx, .xls (max 5MB)
+              {t('gradeImportWizard.uploadFileDescription')}
             </Typography>
 
             <Button
@@ -212,7 +215,7 @@ export default function GradeImportWizard({
               startIcon={<i className='ri-upload-cloud-line' />}
               sx={{ mb: 2 }}
             >
-              Choisir un fichier
+              {t('gradeImportWizard.chooseFile')}
               <input
                 type="file"
                 hidden
@@ -223,32 +226,32 @@ export default function GradeImportWizard({
 
             {uploadedFile && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                Fichier sélectionné: {uploadedFile.name}
+                {t('gradeImportWizard.fileSelected', { name: uploadedFile.name })}
               </Alert>
             )}
 
             {isValidatingFile && (
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
                 <CircularProgress size={20} sx={{ mr: 2 }} />
-                <Typography>Validation du fichier en cours...</Typography>
+                <Typography>{t('gradeImportWizard.validatingFile')}</Typography>
               </Box>
             )}
 
             {validateFileError && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                Erreur lors de la validation du fichier
+                {t('gradeImportWizard.validationError')}
               </Alert>
             )}
 
             {validationResult && !validationResult.valid && (
               <Alert severity="error" sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  Fichier invalide
+                  {t('gradeImportWizard.invalidFile')}
                 </Typography>
                 {validationResult.missing_columns && validationResult.missing_columns.length > 0 && (
                   <>
                     <Typography variant="body2">
-                      Colonnes manquantes: {validationResult.missing_columns.join(', ')}
+                      {t('gradeImportWizard.missingColumns', { columns: validationResult.missing_columns.join(', ') })}
                     </Typography>
                   </>
                 )}
@@ -257,7 +260,7 @@ export default function GradeImportWizard({
 
             {validationResult && validationResult.valid && (
               <Alert severity="success" sx={{ mt: 2 }}>
-                Fichier valide! Cliquez sur "Suivant" pour prévisualiser.
+                {t('gradeImportWizard.validFile')}
               </Alert>
             )}
           </Box>
@@ -267,10 +270,10 @@ export default function GradeImportWizard({
         return (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Prévisualiser les données
+              {t('gradeImportWizard.previewDataTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Vérifiez les données avant l'import. Les 100 premières lignes sont affichées.
+              {t('gradeImportWizard.previewDataDescription')}
             </Typography>
 
             {isPreviewingFile && (
@@ -281,7 +284,7 @@ export default function GradeImportWizard({
 
             {previewFileError && (
               <Alert severity="error">
-                Erreur lors de la prévisualisation du fichier
+                {t('gradeImportWizard.previewError')}
               </Alert>
             )}
 
@@ -295,14 +298,14 @@ export default function GradeImportWizard({
         return (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Options d'import
+              {t('gradeImportWizard.importOptionsTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Choisissez le mode d'import selon votre besoin.
+              {t('gradeImportWizard.importOptionsDescription')}
             </Typography>
 
             <FormControl component="fieldset" sx={{ mb: 3 }}>
-              <FormLabel component="legend">Mode d'import</FormLabel>
+              <FormLabel component="legend">{t('gradeImportWizard.importMode')}</FormLabel>
               <RadioGroup
                 value={importMode}
                 onChange={(e) => setImportMode(e.target.value as 'add' | 'update' | 'overwrite')}
@@ -312,9 +315,9 @@ export default function GradeImportWizard({
                   control={<Radio />}
                   label={
                     <Box>
-                      <Typography variant="body1">Ajout</Typography>
+                      <Typography variant="body1">{t('gradeImportWizard.modeAdd')}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Ajouter uniquement les notes qui n'existent pas encore
+                        {t('gradeImportWizard.modeAddDescription')}
                       </Typography>
                     </Box>
                   }
@@ -324,9 +327,9 @@ export default function GradeImportWizard({
                   control={<Radio />}
                   label={
                     <Box>
-                      <Typography variant="body1">Mise à jour</Typography>
+                      <Typography variant="body1">{t('gradeImportWizard.modeUpdate')}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Mettre à jour uniquement les notes qui ont changé
+                        {t('gradeImportWizard.modeUpdateDescription')}
                       </Typography>
                     </Box>
                   }
@@ -336,9 +339,9 @@ export default function GradeImportWizard({
                   control={<Radio />}
                   label={
                     <Box>
-                      <Typography variant="body1">Écrasement</Typography>
+                      <Typography variant="body1">{t('gradeImportWizard.modeOverwrite')}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Remplacer toutes les notes existantes
+                        {t('gradeImportWizard.modeOverwriteDescription')}
                       </Typography>
                     </Box>
                   }
@@ -353,12 +356,12 @@ export default function GradeImportWizard({
               onClick={handleExecuteImport}
               disabled={isExecutingImport}
             >
-              {isExecutingImport ? 'Import en cours...' : 'Lancer l\'import'}
+              {isExecutingImport ? t('gradeImportWizard.importing') : t('gradeImportWizard.startImport')}
             </Button>
 
             {executeImportError && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                Erreur lors de l'import des notes
+                {t('gradeImportWizard.importError')}
               </Alert>
             )}
           </Box>
@@ -368,17 +371,16 @@ export default function GradeImportWizard({
         return (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Import terminé
+              {t('gradeImportWizard.importCompleteTitle')}
             </Typography>
 
             {executeImportResult?.async ? (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body1" gutterBottom>
-                  Import en cours de traitement en arrière-plan
+                  {t('gradeImportWizard.asyncProcessing')}
                 </Typography>
                 <Typography variant="body2">
-                  Environ {executeImportResult.estimated_rows} lignes à traiter. Vous serez notifié
-                  une fois l'import terminé.
+                  {t('gradeImportWizard.asyncEstimate', { rows: executeImportResult.estimated_rows })}
                 </Typography>
               </Alert>
             ) : executeImportResult?.data ? (
@@ -387,10 +389,10 @@ export default function GradeImportWizard({
 
             <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
               <Button variant="outlined" onClick={handleReset}>
-                Nouvel import
+                {t('gradeImportWizard.newImport')}
               </Button>
               <Button variant="contained" onClick={onComplete}>
-                Terminer
+                {t('gradeImportWizard.finish')}
               </Button>
             </Box>
           </Box>
@@ -405,7 +407,7 @@ export default function GradeImportWizard({
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          Import Excel des Notes - {evaluationName}
+          {t('gradeImportWizard.title', { name: evaluationName })}
         </Typography>
 
         <Stepper activeStep={activeStep} sx={{ my: 4 }}>
@@ -420,19 +422,19 @@ export default function GradeImportWizard({
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
           <Button onClick={onCancel} disabled={isExecutingImport}>
-            Annuler
+            {t('common.cancel')}
           </Button>
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             {activeStep > 0 && activeStep < 4 && (
               <Button onClick={handleBack} disabled={isExecutingImport}>
-                Retour
+                {t('common.back')}
               </Button>
             )}
 
             {activeStep === 2 && validationResult?.valid && (
               <Button variant="contained" onClick={handlePreview} disabled={isPreviewingFile}>
-                {isPreviewingFile ? 'Chargement...' : 'Prévisualiser'}
+                {isPreviewingFile ? t('common.loading') : t('gradeImportWizard.preview')}
               </Button>
             )}
           </Box>

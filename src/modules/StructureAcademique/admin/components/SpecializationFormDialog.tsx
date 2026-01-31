@@ -19,6 +19,7 @@ import FormHelperText from '@mui/material/FormHelperText'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Switch from '@mui/material/Switch'
 import Grid from '@mui/material/Grid'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import type { Specialization, SpecializationType, SelectionMode, AcademicLevel } from '../../types/specialization.types'
 
 const schema = object({
@@ -56,6 +57,7 @@ const SpecializationFormDialog = ({
   programmes,
   responsables = []
 }: SpecializationFormDialogProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const {
     control,
     handleSubmit,
@@ -127,7 +129,7 @@ const SpecializationFormDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{specialization ? 'Edit Specialization' : 'Create Specialization'}</DialogTitle>
+      <DialogTitle>{specialization ? t('Modifier la spécialisation') : t('Créer une spécialisation')}</DialogTitle>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <DialogContent>
           <Grid container spacing={2}>
@@ -190,9 +192,9 @@ const SpecializationFormDialog = ({
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth error={!!errors.programme_id}>
-                    <InputLabel>Programme</InputLabel>
-                    <Select {...field} label="Programme" disabled={isSubmitting}>
-                      <MenuItem value={0}>Select Programme</MenuItem>
+                    <InputLabel>{t('Filière')}</InputLabel>
+                    <Select {...field} label={t('Filière')} disabled={isSubmitting}>
+                      <MenuItem value={0}>{t('Sélectionner une filière')}</MenuItem>
                       {programmes.map(prog => (
                         <MenuItem key={prog.id} value={prog.id}>
                           {prog.code} - {prog.name}
@@ -211,8 +213,8 @@ const SpecializationFormDialog = ({
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth error={!!errors.available_from_level}>
-                    <InputLabel>Available From Level</InputLabel>
-                    <Select {...field} label="Available From Level" disabled={isSubmitting}>
+                    <InputLabel>{t('Disponible à partir du niveau')}</InputLabel>
+                    <Select {...field} label={t('Disponible à partir du niveau')} disabled={isSubmitting}>
                       <MenuItem value="L1">L1 (Licence 1)</MenuItem>
                       <MenuItem value="L2">L2 (Licence 2)</MenuItem>
                       <MenuItem value="L3">L3 (Licence 3)</MenuItem>
@@ -238,7 +240,7 @@ const SpecializationFormDialog = ({
                     onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                     fullWidth
                     type="number"
-                    label="Capacity (optional)"
+                    label={t('Capacité (optionnel)')}
                     error={!!errors.capacity}
                     helperText={errors.capacity?.message}
                     disabled={isSubmitting}
@@ -258,7 +260,7 @@ const SpecializationFormDialog = ({
                     onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                     fullWidth
                     type="number"
-                    label="Min Average Required (optional)"
+                    label={t('Moyenne minimale requise (optionnel)')}
                     inputProps={{ step: 0.01 }}
                     error={!!errors.min_average_required}
                     helperText={errors.min_average_required?.message}
@@ -274,15 +276,15 @@ const SpecializationFormDialog = ({
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth error={!!errors.responsable_id}>
-                    <InputLabel>Responsable (optional)</InputLabel>
+                    <InputLabel>{t('Responsable (optionnel)')}</InputLabel>
                     <Select
                       {...field}
                       value={field.value || ''}
                       onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                      label="Responsable (optional)"
+                      label={t('Responsable (optionnel)')}
                       disabled={isSubmitting}
                     >
-                      <MenuItem value="">None</MenuItem>
+                      <MenuItem value="">{t('Aucun')}</MenuItem>
                       {responsables.map(resp => (
                         <MenuItem key={resp.id} value={resp.id}>
                           {resp.username} ({resp.email})
@@ -304,7 +306,7 @@ const SpecializationFormDialog = ({
                     {...field}
                     fullWidth
                     type="date"
-                    label="Application Start Date"
+                    label={t('Date de début des candidatures')}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.application_start_date}
                     helperText={errors.application_start_date?.message}
@@ -323,7 +325,7 @@ const SpecializationFormDialog = ({
                     {...field}
                     fullWidth
                     type="date"
-                    label="Application End Date"
+                    label={t('Date de fin des candidatures')}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.application_end_date}
                     helperText={errors.application_end_date?.message}
@@ -356,8 +358,8 @@ const SpecializationFormDialog = ({
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth error={!!errors.selection_mode}>
-                    <InputLabel>Selection Mode</InputLabel>
-                    <Select {...field} label="Selection Mode" disabled={isSubmitting}>
+                    <InputLabel>{t('Mode de sélection')}</InputLabel>
+                    <Select {...field} label={t('Mode de sélection')} disabled={isSubmitting}>
                       <MenuItem value="Exclusive">Exclusive</MenuItem>
                       <MenuItem value="Multiple">Multiple</MenuItem>
                     </Select>
@@ -374,7 +376,7 @@ const SpecializationFormDialog = ({
                 render={({ field }) => (
                   <FormControlLabel
                     control={<Switch {...field} checked={field.value} disabled={isSubmitting} />}
-                    label="Active"
+                    label={t('Actif')}
                   />
                 )}
               />
@@ -383,10 +385,10 @@ const SpecializationFormDialog = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={isSubmitting}>
-            Cancel
+            {t('Annuler')}
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save'}
+            {isSubmitting ? t('Enregistrement...') : t('Enregistrer')}
           </Button>
         </DialogActions>
       </form>

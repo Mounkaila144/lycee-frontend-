@@ -23,6 +23,7 @@ import {
   DialogActions,
   Button
 } from '@mui/material'
+import { useTranslation } from '@/shared/i18n/use-translation'
 import { useEvaluationTemplates } from '../hooks/useEvaluationConfig'
 import type { EvaluationTemplate } from '../../types/evaluationConfig.types'
 
@@ -31,6 +32,7 @@ interface EvaluationTemplateListProps {
 }
 
 const EvaluationTemplateList = ({ onEdit }: EvaluationTemplateListProps) => {
+  const { t } = useTranslation('StructureAcademique')
   const { templates, loading, error, deleteTemplate, toggleActive, refetch } = useEvaluationTemplates(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [templateToDelete, setTemplateToDelete] = useState<EvaluationTemplate | null>(null)
@@ -85,7 +87,7 @@ const EvaluationTemplateList = ({ onEdit }: EvaluationTemplateListProps) => {
   if (error) {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
-        Erreur lors du chargement des templates : {error}
+        {t('Erreur lors du chargement des templates')} : {error}
       </Alert>
     )
   }
@@ -94,10 +96,10 @@ const EvaluationTemplateList = ({ onEdit }: EvaluationTemplateListProps) => {
     return (
       <Box sx={{ textAlign: 'center', py: 4 }}>
         <Typography variant="body1" color="text.secondary" gutterBottom>
-          Aucun template d'évaluation
+          {t('Aucun template d\'évaluation')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Créez votre premier template pour configurer rapidement vos modules
+          {t('Créez votre premier template pour configurer rapidement vos modules')}
         </Typography>
       </Box>
     )
@@ -109,12 +111,12 @@ const EvaluationTemplateList = ({ onEdit }: EvaluationTemplateListProps) => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell><strong>Nom</strong></TableCell>
-              <TableCell><strong>Description</strong></TableCell>
-              <TableCell align="center"><strong>Évaluations</strong></TableCell>
-              <TableCell align="center"><strong>Total Coef.</strong></TableCell>
-              <TableCell align="center"><strong>Actif</strong></TableCell>
-              <TableCell align="right"><strong>Actions</strong></TableCell>
+              <TableCell><strong>{t('Nom')}</strong></TableCell>
+              <TableCell><strong>{t('Description')}</strong></TableCell>
+              <TableCell align="center"><strong>{t('Évaluations')}</strong></TableCell>
+              <TableCell align="center"><strong>{t('Total Coef.')}</strong></TableCell>
+              <TableCell align="center"><strong>{t('Actif')}</strong></TableCell>
+              <TableCell align="right"><strong>{t('Actions')}</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

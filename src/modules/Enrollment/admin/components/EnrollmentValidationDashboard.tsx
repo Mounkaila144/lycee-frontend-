@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -46,7 +47,7 @@ const columnHelper = createColumnHelper<EnrollmentWithAction>();
 
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'student', label: 'Étudiant', defaultVisible: true },
-  { id: 'program', label: 'Programme', defaultVisible: true },
+  { id: 'program', label: 'Filière', defaultVisible: true },
   { id: 'level', label: 'Niveau', defaultVisible: true },
   { id: 'total_modules', label: 'Modules', defaultVisible: true },
   { id: 'total_ects', label: 'ECTS', defaultVisible: true },
@@ -248,7 +249,7 @@ export const EnrollmentValidationDashboard = () => {
       }),
       columnHelper.accessor('program', {
         id: 'program',
-        header: 'Programme',
+        header: 'Filière',
         cell: ({ row }) => (
           <Box>
             <Typography variant="body2" noWrap>
@@ -403,7 +404,7 @@ export const EnrollmentValidationDashboard = () => {
           fields={[
             {
               icon: 'ri-book-line',
-              label: 'Programme',
+              label: 'Filière',
               value: enrollment.program?.name || '-',
             },
             {

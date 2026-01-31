@@ -25,6 +25,7 @@ import {
   Paper,
   Chip,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { useMaquetteGeneration } from '../hooks/useMaquette';
 import type { Programme } from '../../types/programme.types';
 import type {
@@ -136,7 +137,7 @@ export const MaquetteGenerationDialog: React.FC<
                   onChange={(e) => setScope(e.target.value as MaquetteScope)}
                   disabled={isGenerating}
                 >
-                  <MenuItem value="programme">Programme complet</MenuItem>
+                  <MenuItem value="programme">Filière complète</MenuItem>
                   <MenuItem value="level">Par niveau</MenuItem>
                   <MenuItem value="semester">Par semestre</MenuItem>
                 </Select>

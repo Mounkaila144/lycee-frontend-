@@ -181,7 +181,7 @@ export const ProgramDistributionChart: React.FC<ProgramDistributionChartProps> =
           <Table size="small" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell>Programme</TableCell>
+                <TableCell>Filière</TableCell>
                 <TableCell align="center">Effectif</TableCell>
                 <TableCell align="center">H/F</TableCell>
                 <TableCell align="center">Taux Remp.</TableCell>

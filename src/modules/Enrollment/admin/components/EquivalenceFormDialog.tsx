@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -36,11 +37,11 @@ interface EquivalenceFormDialogProps {
   equivalence?: Equivalence | null;
 }
 
-const EQUIVALENCE_TYPES: { value: EquivalenceType; label: string }[] = [
-  { value: 'Full', label: 'Équivalence totale' },
-  { value: 'Partial', label: 'Équivalence partielle' },
-  { value: 'None', label: "Pas d'équivalence" },
-  { value: 'Exemption', label: 'Dispense' },
+const getEquivalenceTypes = (t: (key: string) => string): { value: EquivalenceType; label: string }[] => [
+  { value: 'Full', label: t('Full equivalence') },
+  { value: 'Partial', label: t('Partial equivalence') },
+  { value: 'None', label: t('No equivalence') },
+  { value: 'Exemption', label: t('Exemption') },
 ];
 
 /**
@@ -54,6 +55,7 @@ export const EquivalenceFormDialog = ({
   transfer,
   equivalence,
 }: EquivalenceFormDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const { tenantId } = useTenant();
   const { createEquivalence, updateEquivalence } = useEquivalences(transfer.id);
   const isEditing = !!equivalence;
@@ -184,19 +186,19 @@ export const EquivalenceFormDialog = ({
   const handleSubmit = async () => {
     // Validate required fields
     if (!formData.origin_module_name.trim()) {
-      setError("Le nom du module d'origine est requis");
+      setError(t('Origin module name is required'));
 
       return;
     }
 
     if (!formData.origin_ects || formData.origin_ects <= 0) {
-      setError("Le nombre d'ECTS d'origine est requis");
+      setError(t('Origin ECTS count is required'));
 
       return;
     }
 
     if (!formData.equivalence_type) {
-      setError("Le type d'équivalence est requis");
+      setError(t('Equivalence type is required'));
 
       return;
     }
@@ -219,12 +221,14 @@ export const EquivalenceFormDialog = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      const message = err.response?.data?.message || err.message || "Erreur lors de l'enregistrement";
+      const message = err.response?.data?.message || err.message || t('Error during save');
       setError(message);
     } finally {
       setLoading(false);
     }
   };
+
+  const EQUIVALENCE_TYPES = getEquivalenceTypes(t);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -232,7 +236,7 @@ export const EquivalenceFormDialog = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <i className="ri-exchange-line" />
           <Typography variant="h6">
-            {isEditing ? "Modifier l'équivalence" : 'Ajouter une équivalence'}
+            {isEditing ? t('Edit equivalence') : t('Add equivalence')}
           </Typography>
         </Box>
       </DialogTitle>
@@ -246,13 +250,13 @@ export const EquivalenceFormDialog = ({
 
           {/* Origin Module Information */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-            Module d'origine
+            {t('Origin module')}
           </Typography>
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 8 }}>
               <TextField
                 fullWidth
-                label="Nom du module"
+                label={t('Module name')}
                 value={formData.origin_module_name}
                 onChange={e => handleChange('origin_module_name', e.target.value)}
                 required
@@ -261,7 +265,7 @@ export const EquivalenceFormDialog = ({
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 fullWidth
-                label="Code"
+                label={t('Code')}
                 value={formData.origin_module_code || ''}
                 onChange={e => handleChange('origin_module_code', e.target.value)}
               />
@@ -269,7 +273,7 @@ export const EquivalenceFormDialog = ({
             <Grid size={{ xs: 6, sm: 3 }}>
               <TextField
                 fullWidth
-                label="ECTS"
+                label={t('ECTS')}
                 type="number"
                 value={formData.origin_ects || ''}
                 onChange={e => handleChange('origin_ects', parseInt(e.target.value) || 0)}
@@ -280,7 +284,7 @@ export const EquivalenceFormDialog = ({
             <Grid size={{ xs: 6, sm: 3 }}>
               <TextField
                 fullWidth
-                label="Heures"
+                label={t('Hours')}
                 type="number"
                 value={formData.origin_hours || ''}
                 onChange={e => handleChange('origin_hours', parseInt(e.target.value) || 0)}
@@ -290,7 +294,7 @@ export const EquivalenceFormDialog = ({
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 fullWidth
-                label="Note obtenue /20"
+                label={t('Grade obtained /20')}
                 type="number"
                 value={formData.origin_grade !== null ? formData.origin_grade : ''}
                 onChange={e => handleChange('origin_grade', e.target.value ? parseFloat(e.target.value) : null)}
@@ -303,7 +307,7 @@ export const EquivalenceFormDialog = ({
 
           {/* Target Module and Equivalence Type */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-            Équivalence
+            {t('Equivalence')}
           </Typography>
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -315,8 +319,8 @@ export const EquivalenceFormDialog = ({
                 renderInput={params => (
                   <TextField
                     {...params}
-                    label="Module cible"
-                    placeholder="Rechercher un module..."
+                    label={t('Target module')}
+                    placeholder={t('Search for a module...')}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -329,15 +333,15 @@ export const EquivalenceFormDialog = ({
                   />
                 )}
                 loading={loadingModules}
-                noOptionsText="Aucun module trouvé"
+                noOptionsText={t('No module found')}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth required>
-                <InputLabel>Type d'équivalence</InputLabel>
+                <InputLabel>{t('Equivalence type')}</InputLabel>
                 <Select
                   value={formData.equivalence_type}
-                  label="Type d'équivalence"
+                  label={t('Equivalence type')}
                   onChange={e => handleChange('equivalence_type', e.target.value as EquivalenceType)}
                 >
                   {EQUIVALENCE_TYPES.map(type => (
@@ -352,7 +356,7 @@ export const EquivalenceFormDialog = ({
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label="Pourcentage d'équivalence"
+                  label={t('Equivalence percentage')}
                   type="number"
                   value={formData.equivalence_percentage || ''}
                   onChange={e => handleChange('equivalence_percentage', parseInt(e.target.value) || 0)}
@@ -364,7 +368,7 @@ export const EquivalenceFormDialog = ({
             <Grid size={{ xs: 6, sm: 3 }}>
               <TextField
                 fullWidth
-                label="ECTS accordés"
+                label={t('Granted ECTS')}
                 type="number"
                 value={formData.granted_ects || ''}
                 onChange={e => handleChange('granted_ects', parseInt(e.target.value) || 0)}
@@ -375,7 +379,7 @@ export const EquivalenceFormDialog = ({
             <Grid size={{ xs: 6, sm: 3 }}>
               <TextField
                 fullWidth
-                label="Note accordée /20"
+                label={t('Granted grade /20')}
                 type="number"
                 value={formData.granted_grade !== null ? formData.granted_grade : ''}
                 onChange={e => handleChange('granted_grade', e.target.value ? parseFloat(e.target.value) : null)}
@@ -388,25 +392,25 @@ export const EquivalenceFormDialog = ({
 
           {/* Notes */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-            Notes / Commentaires
+            {t('Notes / Comments')}
           </Typography>
           <TextField
             fullWidth
             multiline
             rows={3}
-            label="Notes"
+            label={t('Notes')}
             value={formData.notes || ''}
             onChange={e => handleChange('notes', e.target.value)}
-            placeholder="Ajoutez des commentaires ou justifications pour cette équivalence..."
+            placeholder={t('Add comments or justifications for this equivalence...')}
           />
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} disabled={loading}>
-          Annuler
+          {t('Cancel')}
         </Button>
         <Button variant="contained" onClick={handleSubmit} disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : isEditing ? 'Mettre à jour' : 'Ajouter'}
+          {loading ? <CircularProgress size={24} /> : isEditing ? t('Update') : t('Add')}
         </Button>
       </DialogActions>
     </Dialog>

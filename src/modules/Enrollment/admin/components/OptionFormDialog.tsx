@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import {
   Dialog,
   DialogTitle,
@@ -194,11 +195,11 @@ export const OptionFormDialog = ({
               <Controller
                 name="programme_id"
                 control={control}
-                rules={{ required: 'Le programme est requis' }}
+                rules={{ required: 'La filière est requise' }}
                 render={({ field }) => (
                   <FormControl fullWidth error={!!errors.programme_id}>
-                    <InputLabel>Programme</InputLabel>
-                    <Select {...field} label="Programme">
+                    <InputLabel>Filière</InputLabel>
+                    <Select {...field} label="Filière">
                       {programmes.map((prog) => (
                         <MenuItem key={prog.id} value={prog.id}>
                           {prog.code} - {prog.libelle}

@@ -24,6 +24,7 @@ import {
   TextField,
   Chip,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { useCoreCurriculum, useCoreCurriculumMutations } from '../hooks/useCurriculum';
 import { useModules } from '../hooks/useModules';
 import type { Programme, Module } from '../../types';

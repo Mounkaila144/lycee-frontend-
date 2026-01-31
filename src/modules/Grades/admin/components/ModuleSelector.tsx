@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -50,6 +52,7 @@ export const ModuleSelector: React.FC<ModuleSelectorProps> = ({
   semesterId,
   onModuleChange,
 }) => {
+  const { t } = useTranslation('Grades');
   const { tenantId: rawTenantId } = useTenant();
   const tenantId = rawTenantId ?? undefined;
 
@@ -79,7 +82,7 @@ export const ModuleSelector: React.FC<ModuleSelectorProps> = ({
       setModules(response.data.data);
     } catch (err) {
       console.error('Error fetching modules:', err);
-      setError('Erreur lors du chargement des modules');
+      setError(t('moduleSelector.loadError'));
     } finally {
       setLoading(false);
     }
@@ -101,7 +104,7 @@ export const ModuleSelector: React.FC<ModuleSelectorProps> = ({
 
   return (
     <FormControl fullWidth>
-      <InputLabel id="module-selector-label">Sélectionner un module</InputLabel>
+      <InputLabel id="module-selector-label">{t('moduleSelector.selectModule')}</InputLabel>
       <Select
         labelId="module-selector-label"
         value={selectedModuleId ?? ''}
@@ -111,12 +114,12 @@ export const ModuleSelector: React.FC<ModuleSelectorProps> = ({
 
           onModuleChange(moduleId, moduleData);
         }}
-        label="Sélectionner un module"
+        label={t('moduleSelector.selectModule')}
         disabled={loading || !semesterId}
         endAdornment={loading ? <CircularProgress size={20} sx={{ mr: 2 }} /> : null}
       >
         <MenuItem value="">
-          <em>Aucun module sélectionné</em>
+          <em>{t('moduleSelector.noModuleSelected')}</em>
         </MenuItem>
         {modules.map((module) => (
           <MenuItem key={module.id} value={module.id}>

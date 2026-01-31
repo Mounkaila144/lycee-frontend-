@@ -160,7 +160,7 @@ const defaultTranslations: NonNullable<PedagogicalEnrollmentWizardProps['transla
   summary: {
     summary: 'Récapitulatif de l\'inscription',
     student: 'Étudiant',
-    program: 'Programme',
+    program: 'Filière',
     semester: 'Semestre',
     selectedModules: 'Modules sélectionnés',
     totalCredits: 'Total crédits',

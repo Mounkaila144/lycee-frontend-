@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 // MUI Imports
 import Dialog from '@mui/material/Dialog';
@@ -70,6 +71,7 @@ export const StudentStatusChangeDialog = ({
   student,
   onSuccess,
 }: StudentStatusChangeDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   // Form state - ensure all values are always defined (never undefined)
   const [newStatus, setNewStatus] = useState<StudentStatus | ''>('');
   const [reason, setReason] = useState<string>('');
@@ -116,12 +118,12 @@ export const StudentStatusChangeDialog = ({
       const maxSize = 2 * 1024 * 1024; // 2MB
 
       if (!allowedTypes.includes(file.type)) {
-        setFormError('Format de fichier non supporté. Utilisez PDF, JPG ou PNG.');
+        setFormError(t('Unsupported file format. Use PDF, JPG or PNG.'));
         return;
       }
 
       if (file.size > maxSize) {
-        setFormError('Le fichier ne doit pas dépasser 2 Mo.');
+        setFormError(t('File must not exceed 2 MB.'));
         return;
       }
 
@@ -149,7 +151,7 @@ export const StudentStatusChangeDialog = ({
           onSuccess?.();
         },
         onError: (error: Error) => {
-          setFormError(error.message || 'Erreur lors du changement de statut');
+          setFormError(error.message || t('Error changing status'));
         },
       }
     );
@@ -174,7 +176,7 @@ export const StudentStatusChangeDialog = ({
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box className="flex justify-between items-center">
-          <Typography variant="h5">Changer le Statut</Typography>
+          <Typography variant="h5">{t('Change Status')}</Typography>
           <IconButton onClick={handleClose} size="small" disabled={isChangingStatus}>
             <i className="ri-close-line" />
           </IconButton>
@@ -185,14 +187,14 @@ export const StudentStatusChangeDialog = ({
         {/* Current Status */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-            Étudiant
+            {t('Student')}
           </Typography>
           <Typography variant="h6">
             {student.firstname} {student.lastname}
           </Typography>
           <Box className="flex items-center gap-2" sx={{ mt: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Statut actuel:
+              {t('Current status')}:
             </Typography>
             <Chip
               label={student.status}
@@ -206,8 +208,8 @@ export const StudentStatusChangeDialog = ({
         {/* No transitions available */}
         {allowedStatuses.length === 0 && (
           <Alert severity="info" sx={{ mb: 3 }}>
-            <AlertTitle>Statut final</AlertTitle>
-            Le statut "{student.status}" est un statut final. Aucune transition n'est autorisée.
+            <AlertTitle>{t('Final status')}</AlertTitle>
+            {t('The status "{{status}}" is a final status. No transitions are allowed.', { status: student.status })}
           </Alert>
         )}
 
@@ -218,7 +220,7 @@ export const StudentStatusChangeDialog = ({
             <TextField
               select
               fullWidth
-              label="Nouveau statut"
+              label={t('New status')}
               value={newStatus || ''}
               onChange={(e) => handleStatusChange(e.target.value as StudentStatus)}
               sx={{ mb: 3 }}
@@ -251,7 +253,7 @@ export const StudentStatusChangeDialog = ({
                 }
                 sx={{ mb: 3 }}
               >
-                <AlertTitle>Impacts du changement</AlertTitle>
+                <AlertTitle>{t('Change impacts')}</AlertTitle>
                 <ul style={{ margin: 0, paddingLeft: 20 }}>
                   {statusImpacts[newStatus].map((impact, index) => (
                     <li key={index}>{impact}</li>
@@ -263,13 +265,13 @@ export const StudentStatusChangeDialog = ({
             {/* Reason */}
             <TextField
               fullWidth
-              label="Motif du changement"
+              label={t('Reason for change')}
               value={reason || ''}
               onChange={(e) => setReason(e.target.value || '')}
               multiline
               rows={3}
               required
-              helperText={`${(reason || '').length}/1000 caractères (minimum 10)`}
+              helperText={`${(reason || '').length}/1000 ${t('characters (minimum 10)')}`}
               error={(reason || '').length > 0 && (reason || '').length < 10}
               sx={{ mb: 3 }}
               inputProps={{ maxLength: 1000 }}
@@ -279,7 +281,7 @@ export const StudentStatusChangeDialog = ({
             <TextField
               fullWidth
               type="date"
-              label="Date effective"
+              label={t('Effective date')}
               value={effectiveDate || new Date().toISOString().split('T')[0]}
               onChange={(e) => setEffectiveDate(e.target.value || new Date().toISOString().split('T')[0])}
               InputLabelProps={{ shrink: true }}
@@ -293,7 +295,7 @@ export const StudentStatusChangeDialog = ({
             {/* Document Upload */}
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Document justificatif (optionnel)
+                {t('Supporting document (optional)')}
               </Typography>
               <input
                 type="file"
@@ -309,11 +311,11 @@ export const StudentStatusChangeDialog = ({
                   startIcon={<i className="ri-upload-2-line" />}
                   disabled={isChangingStatus}
                 >
-                  Télécharger un document
+                  {t('Upload a document')}
                 </Button>
               </label>
               <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                PDF, JPG ou PNG (max 2 Mo)
+                {t('PDF, JPG or PNG (max 2 MB)')}
               </Typography>
 
               {document && (
@@ -340,7 +342,7 @@ export const StudentStatusChangeDialog = ({
 
       <DialogActions>
         <Button onClick={handleClose} color="secondary" disabled={isChangingStatus}>
-          Annuler
+          {t('Cancel')}
         </Button>
         {allowedStatuses.length > 0 && (
           <Button
@@ -355,7 +357,7 @@ export const StudentStatusChangeDialog = ({
               )
             }
           >
-            {isChangingStatus ? 'Enregistrement...' : 'Confirmer le changement'}
+            {isChangingStatus ? t('Saving...') : t('Confirm change')}
           </Button>
         )}
       </DialogActions>

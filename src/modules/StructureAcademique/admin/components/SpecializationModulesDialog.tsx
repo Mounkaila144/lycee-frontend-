@@ -30,6 +30,7 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import {
   useSpecializationModules,
   useSpecializationModuleMutations,
@@ -65,6 +66,7 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
 export const SpecializationModulesDialog: React.FC<
   SpecializationModulesDialogProps
 > = ({ open, onClose, specialization }) => {
+  const { t } = useTranslation('StructureAcademique');
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [moduleType, setModuleType] =
     useState<SpecializationModuleType>('Obligatoire');
@@ -106,7 +108,7 @@ export const SpecializationModulesDialog: React.FC<
   const handleRemoveModule = async (moduleId: number) => {
     if (
       !confirm(
-        'Êtes-vous sûr de vouloir retirer ce module de la spécialité ?'
+        t('Êtes-vous sûr de vouloir retirer ce module de la spécialité ?')
       )
     )
       return;
@@ -134,7 +136,7 @@ export const SpecializationModulesDialog: React.FC<
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        Modules de Spécialité - {specialization.name}
+        {t('Modules de Spécialité')} - {specialization.name}
       </DialogTitle>
 
       <DialogContent>
@@ -142,19 +144,17 @@ export const SpecializationModulesDialog: React.FC<
           {/* Info */}
           <Alert severity="info">
             <Typography variant="body2" gutterBottom>
-              <strong>Modules Obligatoires</strong> : Tous les étudiants de
-              cette spécialité doivent suivre ces modules.
+              <strong>{t('Modules Obligatoires')}</strong> : {t('Tous les étudiants de cette spécialité doivent suivre ces modules.')}
             </Typography>
             <Typography variant="body2">
-              <strong>Modules Optionnels</strong> : Les étudiants choisissent
-              parmi ces modules selon les contraintes définies.
+              <strong>{t('Modules Optionnels')}</strong> : {t('Les étudiants choisissent parmi ces modules selon les contraintes définies.')}
             </Typography>
           </Alert>
 
           {/* Add Module Section */}
           <Box>
             <Typography variant="subtitle2" gutterBottom>
-              Ajouter un module à la spécialité
+              {t('Ajouter un module à la spécialité')}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Autocomplete
@@ -168,8 +168,8 @@ export const SpecializationModulesDialog: React.FC<
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Sélectionner un module"
-                    placeholder="Rechercher..."
+                    label={t('Sélectionner un module')}
+                    placeholder={t('Rechercher...')}
                   />
                 )}
                 disabled={isAdding}
@@ -195,10 +195,10 @@ export const SpecializationModulesDialog: React.FC<
                   <TextField
                     fullWidth
                     type="number"
-                    label="Capacité (places)"
+                    label={t('Capacité (places)')}
                     value={capacity}
                     onChange={(e) => setCapacity(e.target.value ? Number(e.target.value) : '')}
-                    placeholder="Laisser vide = illimité"
+                    placeholder={t('Laisser vide = illimité')}
                     disabled={isAdding}
                   />
                 )}
@@ -209,7 +209,7 @@ export const SpecializationModulesDialog: React.FC<
                   disabled={!selectedModule || isAdding}
                   sx={{ minWidth: 120 }}
                 >
-                  {isAdding ? <CircularProgress size={24} /> : 'Ajouter'}
+                  {isAdding ? <CircularProgress size={24} /> : t('Ajouter')}
                 </Button>
               </Box>
             </Box>
@@ -219,9 +219,9 @@ export const SpecializationModulesDialog: React.FC<
           <Box>
             <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
               <Tab
-                label={`Obligatoires (${obligatoryModules.length})`}
+                label={`${t('Obligatoires')} (${obligatoryModules.length})`}
               />
-              <Tab label={`Optionnels (${electiveModules.length})`} />
+              <Tab label={`${t('Optionnels')} (${electiveModules.length})`} />
             </Tabs>
 
             {isLoading && (
@@ -233,7 +233,7 @@ export const SpecializationModulesDialog: React.FC<
             {error && (
               <Alert severity="error" sx={{ my: 2 }}>
                 <Typography variant="body2" fontWeight="medium" gutterBottom>
-                  Erreur lors du chargement des modules
+                  {t('Erreur lors du chargement des modules')}
                 </Typography>
                 <Typography variant="caption" component="div">
                   {error}
@@ -251,7 +251,7 @@ export const SpecializationModulesDialog: React.FC<
             <TabPanel value={tabValue} index={0}>
               {obligatoryModules.length === 0 ? (
                 <Alert severity="warning">
-                  Aucun module obligatoire pour cette spécialité
+                  {t('Aucun module obligatoire pour cette spécialité')}
                 </Alert>
               ) : (
                 <List>
@@ -310,7 +310,7 @@ export const SpecializationModulesDialog: React.FC<
             <TabPanel value={tabValue} index={1}>
               {electiveModules.length === 0 ? (
                 <Alert severity="warning">
-                  Aucun module optionnel pour cette spécialité
+                  {t('Aucun module optionnel pour cette spécialité')}
                 </Alert>
               ) : (
                 <List>
@@ -383,7 +383,7 @@ export const SpecializationModulesDialog: React.FC<
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Fermer</Button>
+        <Button onClick={onClose}>{t('Fermer')}</Button>
       </DialogActions>
     </Dialog>
   );

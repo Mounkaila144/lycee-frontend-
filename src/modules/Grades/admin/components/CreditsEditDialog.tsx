@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -60,6 +62,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
   saving,
   validateCredits,
 }) => {
+  const { t } = useTranslation('Grades');
   const [credits, setCredits] = useState<number>(1);
   const [reason, setReason] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
       const validation = validateCredits(value);
 
       if (!validation.valid) {
-        setError(validation.error || 'Crédits invalides');
+        setError(validation.error || t('creditsEditDialog.invalidCredits'));
       } else {
         setError(null);
       }
@@ -98,14 +101,14 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
     const validation = validateCredits(credits);
 
     if (!validation.valid) {
-      setError(validation.error || 'Crédits invalides');
+      setError(validation.error || t('creditsEditDialog.invalidCredits'));
 
       return;
     }
 
     // Require reason if credits are locked
     if (creditsLocked && !reason.trim()) {
-      setError('Une justification est requise car les crédits sont verrouillés');
+      setError(t('creditsEditDialog.justificationRequiredLocked'));
 
       return;
     }
@@ -132,7 +135,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={1}>
           <i className="ri-award-line" />
-          Modifier les crédits ECTS
+          {t('creditsEditDialog.title')}
         </Box>
       </DialogTitle>
 
@@ -140,14 +143,14 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         {/* Module info */}
         <Box mb={3}>
           <Typography variant="subtitle2" color="text.secondary">
-            Module
+            {t('creditsEditDialog.module')}
           </Typography>
           <Box display="flex" alignItems="center" gap={1} mt={0.5}>
             <Typography variant="body1" fontWeight="medium">
               {moduleName}
             </Typography>
             {creditsLocked && (
-              <Chip label="Verrouillé" size="small" color="warning" icon={<i className="ri-lock-line" />} />
+              <Chip label={t('creditsEditDialog.locked')} size="small" color="warning" icon={<i className="ri-lock-line" />} />
             )}
           </Box>
         </Box>
@@ -158,7 +161,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         <Box display="flex" gap={4} mb={3}>
           <Box>
             <Typography variant="subtitle2" color="text.secondary">
-              Crédits actuels
+              {t('creditsEditDialog.currentCredits')}
             </Typography>
             <Typography variant="h4" color="text.secondary">
               {currentCredits} ECTS
@@ -166,7 +169,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
           </Box>
           <Box>
             <Typography variant="subtitle2" color="primary">
-              Nouveaux crédits
+              {t('creditsEditDialog.newCredits')}
             </Typography>
             <Typography variant="h4" color="primary">
               {credits} ECTS
@@ -186,7 +189,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         {/* Credits slider */}
         <Box mb={3}>
           <Typography variant="subtitle2" gutterBottom>
-            Ajuster les crédits ECTS
+            {t('creditsEditDialog.adjustCredits')}
           </Typography>
           <Slider
             value={credits}
@@ -202,7 +205,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         {/* Manual input */}
         <Box mb={3}>
           <TextField
-            label="Crédits ECTS (saisie manuelle)"
+            label={t('creditsEditDialog.manualInput')}
             type="number"
             inputProps={{
               min: CREDITS_CONSTRAINTS.MIN,
@@ -221,8 +224,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         {/* Semester recommendation */}
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            <strong>Recommandation:</strong> La somme des crédits ECTS d'un semestre devrait être de{' '}
-            <strong>{CREDITS_CONSTRAINTS.SEMESTER_RECOMMENDED} ECTS</strong>.
+            <strong>{t('creditsEditDialog.recommendation')}:</strong> {t('creditsEditDialog.semesterRecommendation', { credits: CREDITS_CONSTRAINTS.SEMESTER_RECOMMENDED })}
           </Typography>
         </Alert>
 
@@ -230,14 +232,14 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         {creditsLocked && (
           <Box mb={3}>
             <TextField
-              label="Justification de la modification *"
+              label={t('creditsEditDialog.justificationLabel')}
               multiline
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               fullWidth
-              placeholder="Expliquez la raison de cette modification..."
-              helperText="Requise car les crédits sont verrouillés"
+              placeholder={t('creditsEditDialog.justificationPlaceholder')}
+              helperText={t('creditsEditDialog.justificationHelperText')}
             />
           </Box>
         )}
@@ -246,8 +248,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
         {hasChanged && (
           <Alert severity="warning">
             <Typography variant="body2">
-              <strong>Attention:</strong> La modification des crédits ECTS entraînera le recalcul automatique
-              des moyennes de semestre pour tous les étudiants inscrits à ce module.
+              <strong>{t('common.warning')}:</strong> {t('creditsEditDialog.recalculationWarning')}
             </Typography>
           </Alert>
         )}
@@ -255,7 +256,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
 
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>
-          Annuler
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -263,7 +264,7 @@ export const CreditsEditDialog: React.FC<CreditsEditDialogProps> = ({
           disabled={!canSave}
           startIcon={saving ? <CircularProgress size={16} /> : <i className="ri-save-line" />}
         >
-          {saving ? 'Enregistrement...' : 'Enregistrer'}
+          {saving ? t('common.saving') : t('common.save')}
         </Button>
       </DialogActions>
     </Dialog>

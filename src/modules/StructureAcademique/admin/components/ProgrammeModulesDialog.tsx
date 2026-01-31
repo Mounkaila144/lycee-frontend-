@@ -18,6 +18,7 @@ import {
   Alert,
   Divider,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { useProgrammeModules } from '../hooks/useProgrammeModules';
 import ProgrammeModuleSelector from './ProgrammeModuleSelector';
 import { calculateModuleStats } from '../../types/programmeModule.types';
@@ -36,6 +37,7 @@ const ProgrammeModulesDialog: React.FC<ProgrammeModulesDialogProps> = ({
   programme,
   onSuccess,
 }) => {
+  const { t } = useTranslation('StructureAcademique');
   const {
     modules,
     availableModules,
@@ -86,7 +88,7 @@ const ProgrammeModulesDialog: React.FC<ProgrammeModulesDialogProps> = ({
       onSuccess?.();
       onClose();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur lors de la sauvegarde';
+      const message = err instanceof Error ? err.message : t('Erreur lors de la sauvegarde');
       setSaveError(message);
     } finally {
       setSaving(false);
@@ -118,7 +120,7 @@ const ProgrammeModulesDialog: React.FC<ProgrammeModulesDialogProps> = ({
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h5">Gérer les Modules</Typography>
+            <Typography variant="h5">{t('Gérer les Modules')}</Typography>
             {programme && (
               <Typography variant="body2" color="text.secondary">
                 {programme.code} - {programme.libelle}
@@ -159,36 +161,36 @@ const ProgrammeModulesDialog: React.FC<ProgrammeModulesDialogProps> = ({
                 <Divider sx={{ my: 3 }} />
                 <Box>
                   <Typography variant="subtitle2" gutterBottom>
-                    Statistiques
+                    {t('Statistiques')}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Total modules
+                        {t('Total modules')}
                       </Typography>
                       <Typography variant="h6">{stats.total}</Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Crédits ECTS
+                        {t('Crédits ECTS')}
                       </Typography>
                       <Typography variant="h6">{stats.total_credits}</Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Obligatoires
+                        {t('Obligatoires')}
                       </Typography>
                       <Typography variant="h6">{stats.by_type.Obligatoire}</Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Optionnels
+                        {t('Optionnels')}
                       </Typography>
                       <Typography variant="h6">{stats.by_type.Optionnel}</Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Éliminatoires
+                        {t('Éliminatoires')}
                       </Typography>
                       <Typography variant="h6" color="error.main">
                         {stats.eliminatory_count}
@@ -204,7 +206,7 @@ const ProgrammeModulesDialog: React.FC<ProgrammeModulesDialogProps> = ({
 
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>
-          Annuler
+          {t('Annuler')}
         </Button>
         <Button
           onClick={handleSave}
@@ -212,7 +214,7 @@ const ProgrammeModulesDialog: React.FC<ProgrammeModulesDialogProps> = ({
           disabled={saving || loading || loadingAvailable}
           startIcon={saving ? <CircularProgress size={20} /> : null}
         >
-          {saving ? 'Enregistrement...' : 'Enregistrer'}
+          {saving ? t('Enregistrement...') : t('Enregistrer')}
         </Button>
       </DialogActions>
     </Dialog>

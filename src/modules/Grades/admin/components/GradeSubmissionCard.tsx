@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import {
   Card,
   CardContent,
@@ -43,6 +46,7 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
   tenantId,
   onSubmitSuccess,
 }) => {
+  const { t } = useTranslation('Grades');
   const [showDialog, setShowDialog] = useState(false);
 
   // Hooks
@@ -99,18 +103,18 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
   const getStatusLabel = (status?: string) => {
     switch (status) {
       case 'Draft':
-        return 'Brouillon';
+        return t('gradeSubmissionCard.statusDraft');
       case 'Submitted':
       case 'Pending':
-        return 'En attente de validation';
+        return t('gradeSubmissionCard.statusPending');
       case 'Approved':
-        return 'Validé';
+        return t('gradeSubmissionCard.statusApproved');
       case 'Rejected':
-        return 'Rejeté';
+        return t('gradeSubmissionCard.statusRejected');
       case 'Published':
-        return 'Publié';
+        return t('gradeSubmissionCard.statusPublished');
       default:
-        return 'Non soumis';
+        return t('gradeSubmissionCard.statusNotSubmitted');
     }
   };
 
@@ -130,7 +134,7 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
     <>
       <Card>
         <CardHeader
-          title="Soumission pour Validation"
+          title={t('gradeSubmissionCard.title')}
           action={
             submissionStatus?.status && (
               <Chip
@@ -157,21 +161,21 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
               sx={{ mb: 2 }}
             >
               <AlertTitle>
-                {submissionStatus.status === 'Rejected' && 'Notes rejetées'}
-                {submissionStatus.status === 'Approved' && 'Notes validées'}
-                {submissionStatus.status === 'Published' && 'Notes publiées'}
+                {submissionStatus.status === 'Rejected' && t('gradeSubmissionCard.gradesRejected')}
+                {submissionStatus.status === 'Approved' && t('gradeSubmissionCard.gradesApproved')}
+                {submissionStatus.status === 'Published' && t('gradeSubmissionCard.gradesPublished')}
                 {(submissionStatus.status === 'Pending' ||
                   submissionStatus.status === 'Submitted') &&
-                  'En attente de validation'}
+                  t('gradeSubmissionCard.awaitingValidation')}
               </AlertTitle>
               {submissionStatus.submitted_at && (
                 <Typography variant="body2">
-                  Soumis le {new Date(submissionStatus.submitted_at).toLocaleDateString('fr-FR')}
+                  {t('gradeSubmissionCard.submittedOn', { date: new Date(submissionStatus.submitted_at).toLocaleDateString('fr-FR') })}
                 </Typography>
               )}
               {submissionStatus.validated_at && (
                 <Typography variant="body2">
-                  Validé le {new Date(submissionStatus.validated_at).toLocaleDateString('fr-FR')}
+                  {t('gradeSubmissionCard.validatedOn', { date: new Date(submissionStatus.validated_at).toLocaleDateString('fr-FR') })}
                 </Typography>
               )}
             </Alert>
@@ -181,12 +185,12 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
           {statistics && (
             <Box mb={3}>
               <Typography variant="subtitle2" gutterBottom>
-                Résumé des notes saisies
+                {t('gradeSubmissionCard.gradesSummary')}
               </Typography>
               <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={2}>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Notes saisies
+                    {t('gradeSubmissionCard.gradesEntered')}
                   </Typography>
                   <Typography variant="h6">
                     {statistics.entered_count}/{statistics.count}
@@ -194,13 +198,13 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Moyenne
+                    {t('gradeSubmissionCard.average')}
                   </Typography>
                   <Typography variant="h6">{statistics.average.toFixed(2)}/20</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Taux de réussite
+                    {t('gradeSubmissionCard.passRate')}
                   </Typography>
                   <Typography variant="h6">{statistics.pass_rate.toFixed(1)}%</Typography>
                 </Box>
@@ -212,7 +216,7 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
           {submissionStatus?.pre_check && (
             <Box mb={2}>
               <Typography variant="subtitle2" gutterBottom>
-                Vérifications
+                {t('gradeSubmissionCard.verifications')}
               </Typography>
               <List dense>
                 {submissionStatus.pre_check.checks.all_grades_entered && (
@@ -220,7 +224,7 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
                     <ListItemIcon>
                       <span>✅</span>
                     </ListItemIcon>
-                    <ListItemText primary="Toutes les notes sont saisies" />
+                    <ListItemText primary={t('gradeSubmissionCard.allGradesEntered')} />
                   </ListItem>
                 )}
                 {!submissionStatus.pre_check.checks.all_grades_entered && (
@@ -228,7 +232,7 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
                     <ListItemIcon>
                       <span>❌</span>
                     </ListItemIcon>
-                    <ListItemText primary="Certaines notes manquantes" />
+                    <ListItemText primary={t('gradeSubmissionCard.someGradesMissing')} />
                   </ListItem>
                 )}
                 {submissionStatus.pre_check.checks.valid_grade_range && (
@@ -236,7 +240,7 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
                     <ListItemIcon>
                       <span>✅</span>
                     </ListItemIcon>
-                    <ListItemText primary="Toutes les notes sont valides (0-20)" />
+                    <ListItemText primary={t('gradeSubmissionCard.allGradesValid')} />
                   </ListItem>
                 )}
                 {submissionStatus.pre_check.errors.map((error, idx) => (
@@ -268,12 +272,12 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
                 onClick={() => setShowDialog(true)}
                 disabled={submissionMutation.isPending}
               >
-                📤 Soumettre pour validation
+                {t('gradeSubmissionCard.submitForValidation')}
               </Button>
             )}
             {!canSubmit && submissionStatus?.status === 'Draft' && (
               <Alert severity="info">
-                ℹ️ Complétez la saisie des notes avant de soumettre
+                {t('gradeSubmissionCard.completeGradesFirst')}
               </Alert>
             )}
           </Box>
@@ -282,40 +286,39 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
 
       {/* Confirmation Dialog */}
       <Dialog open={showDialog} onClose={() => setShowDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Confirmer la soumission</DialogTitle>
+        <DialogTitle>{t('gradeSubmissionCard.confirmDialogTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="info" sx={{ mb: 2 }}>
-            <AlertTitle>Attention</AlertTitle>
-            Une fois soumises, vous ne pourrez plus modifier les notes jusqu'à la décision du
-            responsable pédagogique.
+            <AlertTitle>{t('common.warning')}</AlertTitle>
+            {t('gradeSubmissionCard.confirmDialogMessage')}
           </Alert>
 
           {statistics && (
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Résumé des notes
+                {t('gradeSubmissionCard.gradesSummary')}
               </Typography>
               <Divider sx={{ my: 1 }} />
               <Box display="flex" justifyContent="space-between" my={1}>
-                <Typography variant="body2">Nombre de notes:</Typography>
+                <Typography variant="body2">{t('gradeSubmissionCard.gradesCount')}:</Typography>
                 <Typography variant="body2" fontWeight="bold">
                   {statistics.entered_count}
                 </Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" my={1}>
-                <Typography variant="body2">Moyenne:</Typography>
+                <Typography variant="body2">{t('gradeSubmissionCard.average')}:</Typography>
                 <Typography variant="body2" fontWeight="bold">
                   {statistics.average.toFixed(2)}/20
                 </Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" my={1}>
-                <Typography variant="body2">Taux de réussite:</Typography>
+                <Typography variant="body2">{t('gradeSubmissionCard.passRate')}:</Typography>
                 <Typography variant="body2" fontWeight="bold">
                   {statistics.pass_rate.toFixed(1)}%
                 </Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" my={1}>
-                <Typography variant="body2">Absents:</Typography>
+                <Typography variant="body2">{t('gradeSubmissionCard.absents')}:</Typography>
                 <Typography variant="body2" fontWeight="bold">
                   {statistics.absent_count}
                 </Typography>
@@ -324,19 +327,19 @@ export const GradeSubmissionCard: React.FC<GradeSubmissionCardProps> = ({
           )}
 
           <Typography variant="body2" color="text.secondary" mt={2}>
-            Êtes-vous sûr de vouloir soumettre ces notes pour validation?
+            {t('gradeSubmissionCard.confirmQuestion')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowDialog(false)} disabled={submissionMutation.isPending}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
             onClick={handleSubmit}
             disabled={submissionMutation.isPending}
           >
-            {submissionMutation.isPending ? '⏳ Soumission...' : '📤 Soumettre'}
+            {submissionMutation.isPending ? t('gradeSubmissionCard.submitting') : t('gradeSubmissionCard.submit')}
           </Button>
         </DialogActions>
       </Dialog>

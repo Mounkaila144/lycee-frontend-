@@ -15,6 +15,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type { CreditValidationReport } from '../../types/levelCredit.types';
 
 interface CreditValidationReportProps {

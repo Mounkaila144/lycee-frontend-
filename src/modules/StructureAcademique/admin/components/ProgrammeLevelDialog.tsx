@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Box,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { ProgrammeLevelSelector } from './ProgrammeLevelSelector';
 import { useProgrammeLevels } from '../hooks/useProgrammeLevels';
 import type { Programme } from '../../types/programme.types';
@@ -33,6 +34,7 @@ export const ProgrammeLevelDialog: React.FC<ProgrammeLevelDialogProps> = ({
   programme,
   onSuccess,
 }) => {
+  const { t } = useTranslation('StructureAcademique');
   const { levels, loading, error, associateLevels } = useProgrammeLevels(programme?.id);
   const [selectedLevels, setSelectedLevels] = useState<ProgrammeLevel[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -57,7 +59,7 @@ export const ProgrammeLevelDialog: React.FC<ProgrammeLevelDialogProps> = ({
       onSuccess?.();
       onClose();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la sauvegarde';
+      const errorMessage = err instanceof Error ? err.message : t('Erreur lors de la sauvegarde');
       setSubmitError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -78,7 +80,7 @@ export const ProgrammeLevelDialog: React.FC<ProgrammeLevelDialogProps> = ({
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        Gérer les niveaux - {programme.libelle}
+        {t('Gérer les niveaux')} - {programme.libelle}
       </DialogTitle>
 
       <DialogContent>
@@ -96,8 +98,8 @@ export const ProgrammeLevelDialog: React.FC<ProgrammeLevelDialogProps> = ({
 
         {!loading && !error && !canModify && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Les niveaux ne peuvent pas être modifiés pour un programme actif.
-            Désactivez d'abord le programme.
+            {t('Les niveaux ne peuvent pas être modifiés pour un programme actif.')}
+            {t('Désactivez d\'abord le programme.')}
           </Alert>
         )}
 
@@ -114,14 +116,14 @@ export const ProgrammeLevelDialog: React.FC<ProgrammeLevelDialogProps> = ({
 
       <DialogActions>
         <Button onClick={handleClose} disabled={submitting}>
-          Annuler
+          {t('Annuler')}
         </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
           disabled={!canModify || submitting || selectedLevels.length === 0}
         >
-          {submitting ? 'Enregistrement...' : 'Enregistrer'}
+          {submitting ? t('Enregistrement...') : t('Enregistrer')}
         </Button>
       </DialogActions>
     </Dialog>

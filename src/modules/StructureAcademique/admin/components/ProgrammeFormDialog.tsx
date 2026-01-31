@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Autocomplete from '@mui/material/Autocomplete';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type { Programme, ProgrammeFormData, ProgrammeType } from '../../types/programme.types';
 import { useProgrammesContext } from './ProgrammeList';
 import type { User } from '@/modules/UsersGuard/types/user.types';
@@ -31,6 +32,7 @@ interface ProgrammeFormDialogProps {
 const programmeTypes: ProgrammeType[] = ['Licence', 'Master', 'Doctorat'];
 
 const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode = false }: ProgrammeFormDialogProps) => {
+  const { t } = useTranslation('StructureAcademique');
   const { createProgramme, updateProgramme, loading, users, loadingUsers } = useProgrammesContext();
   const { tenantId } = useTenant();
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +158,7 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
 
     // Validation: responsable_id est requis
     if (!formData.responsable_id) {
-      setError('Le responsable du programme est obligatoire');
+      setError(t('Le responsable du programme est obligatoire'));
       return;
     }
 
@@ -196,7 +198,7 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
       
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      setError(err instanceof Error ? err.message : t('Une erreur est survenue'));
     }
   };
 
@@ -209,7 +211,7 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <form onSubmit={handleSubmit}>
-        <DialogTitle>{isEditMode ? 'Modifier le programme' : 'Nouveau programme'}</DialogTitle>
+        <DialogTitle>{isEditMode ? t('Modifier le programme') : t('Nouveau programme')}</DialogTitle>
 
         <DialogContent>
           {error && (
@@ -220,31 +222,31 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
-              label="Code"
+              label={t('Code')}
               required
               value={formData.code}
               onChange={(e) => handleChange('code', e.target.value)}
               disabled={loading}
-              helperText="Code unique du programme (ex: INF-L)"
+              helperText={t('Code unique du programme (ex: INF-L)')}
             />
 
             <TextField
-              label="Libellé"
+              label={t('Libellé')}
               required
               value={formData.libelle}
               onChange={(e) => handleChange('libelle', e.target.value)}
               disabled={loading}
-              helperText="Nom complet du programme"
+              helperText={t('Nom complet du programme')}
             />
 
             <TextField
               select
-              label="Type"
+              label={t('Type')}
               required
               value={formData.type}
               onChange={(e) => handleChange('type', e.target.value as ProgrammeType)}
               disabled={loading}
-              helperText="Le type détermine automatiquement la durée du programme"
+              helperText={t('Le type détermine automatiquement la durée du programme')}
             >
               {programmeTypes.map((type) => (
                 <MenuItem key={type} value={type}>
@@ -254,16 +256,16 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
             </TextField>
 
             <TextField
-              label="Durée (années)"
+              label={t('Durée (années)')}
               type="number"
               required
               value={formData.duree_annees}
               disabled={true}
               slotProps={{ htmlInput: { min: 1, max: 8 } }}
               helperText={
-                formData.type === 'Licence' ? 'Licence = 3 ans (fixe)' :
-                formData.type === 'Master' ? 'Master = 2 ans (fixe)' :
-                'Doctorat = 3 ans (fixe)'
+                formData.type === 'Licence' ? t('Licence = 3 ans (fixe)') :
+                formData.type === 'Master' ? t('Master = 2 ans (fixe)') :
+                t('Doctorat = 3 ans (fixe)')
               }
             />
 
@@ -280,9 +282,9 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Responsable du programme"
+                  label={t('Responsable du programme')}
                   required
-                  helperText="Sélectionnez l'enseignant responsable du programme"
+                  helperText={t('Sélectionnez l\'enseignant responsable du programme')}
                   error={!selectedResponsable && formData.responsable_id === null}
                   slotProps={{
                     input: {
@@ -300,13 +302,13 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
             />
 
             <TextField
-              label="Description"
+              label={t('Description')}
               multiline
               rows={4}
               value={formData.description || ''}
               onChange={(e) => handleChange('description', e.target.value || null)}
               disabled={loading}
-              helperText="Description détaillée du programme (optionnel)"
+              helperText={t('Description détaillée du programme (optionnel)')}
             />
 
             <ProgrammeLevelSelector
@@ -320,10 +322,10 @@ const ProgrammeFormDialog = ({ open, onClose, onSuccess, programme, isEditMode =
 
         <DialogActions>
           <Button onClick={handleClose} disabled={loading}>
-            Annuler
+            {t('Annuler')}
           </Button>
           <Button type="submit" variant="contained" disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : isEditMode ? 'Modifier' : 'Créer'}
+            {loading ? <CircularProgress size={24} /> : isEditMode ? t('Modifier') : t('Créer')}
           </Button>
         </DialogActions>
       </form>

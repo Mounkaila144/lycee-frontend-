@@ -28,7 +28,7 @@
     "address": "Adresse",
     "city": "Ville",
     "country": "Pays",
-    "programme": "Programme",
+    "programme": "Filière",
     "status": "Statut",
     "created_at": "Créé le",
     "updated_at": "Modifié le",
@@ -85,7 +85,7 @@
     "required": "Champ obligatoire",
     "emailFormat": "Format: email@example.com",
     "phoneFormat": "Format international: +227...",
-    "selectProgramme": "Sélectionnez un programme"
+    "selectProgramme": "Sélectionnez une filière"
   },
   "validation": {
     "firstnameRequired": "Le prénom est obligatoire",
@@ -97,7 +97,7 @@
     "mobileRequired": "Le téléphone mobile est obligatoire",
     "mobileInvalid": "Le mobile doit être au format international (+227...)",
     "phoneInvalid": "Le téléphone doit être au format international (+227...)",
-    "programmeRequired": "Le programme est obligatoire",
+    "programmeRequired": "La filière est obligatoire",
     "ageRange": "L'étudiant doit avoir entre 15 et 60 ans"
   },
   "messages": {
@@ -142,7 +142,7 @@
     "active": "Actifs",
     "suspended": "Suspendus",
     "graduated": "Diplômés",
-    "byProgramme": "Par programme",
+    "byProgramme": "Par filière",
     "bySex": "Par sexe",
     "recentEnrollments": "Inscriptions récentes"
   },
@@ -190,7 +190,7 @@
     "summary": {
       "summary": "Récapitulatif de l'inscription",
       "student": "Étudiant",
-      "program": "Programme",
+      "program": "Filière",
       "semester": "Semestre",
       "selectedModules": "Modules sélectionnés",
       "totalCredits": "Total crédits",
@@ -347,7 +347,7 @@
     "all": "Toutes les inscriptions",
     "search": "Rechercher une inscription...",
     "student": "Étudiant",
-    "program": "Formation",
+    "program": "Filière",
     "semester": "Semestre",
     "academicYear": "Année académique",
     "submittedAt": "Soumis le",
@@ -427,7 +427,7 @@
     "student": "Étudiant",
     "cardNumber": "N° Carte",
     "academicYear": "Année académique",
-    "program": "Formation",
+    "program": "Filière",
     "level": "Niveau",
     "status": "Statut",
     "printStatus": "Impression",
@@ -535,7 +535,7 @@
       "startDate": "Date de début",
       "endDate": "Date de fin",
       "status": "Statut",
-      "targetPrograms": "Programmes concernés",
+      "targetPrograms": "Filières concernées",
       "targetLevels": "Niveaux concernés",
       "minEctsRequired": "ECTS minimum requis",
       "description": "Description",
@@ -551,9 +551,9 @@
       },
       "activateConfirm": "Êtes-vous sûr de vouloir activer cette campagne ? Les étudiants pourront commencer à soumettre leurs réinscriptions.",
       "closeConfirm": "Êtes-vous sûr de vouloir clôturer cette campagne ? Les nouvelles soumissions ne seront plus acceptées.",
-      "allPrograms": "Tous les programmes",
+      "allPrograms": "Toutes les filières",
       "allLevels": "Tous les niveaux",
-      "selectPrograms": "Sélectionnez les programmes",
+      "selectPrograms": "Sélectionnez les filières",
       "selectLevels": "Sélectionnez les niveaux",
       "messages": {
         "createSuccess": "Campagne créée avec succès",
@@ -609,7 +609,7 @@
       "impactUpdateLevel": "Mettre à jour le niveau de l'étudiant",
       "impactApplyUpdates": "Appliquer les mises à jour des informations personnelles",
       "redoingWarning": "Cet étudiant redouble son niveau.",
-      "reorientationInfo": "Cet étudiant change de programme (réorientation).",
+      "reorientationInfo": "Cet étudiant change de filière (réorientation).",
       "success": "Réinscription validée avec succès",
       "error": "Erreur lors de la validation"
     },
@@ -630,7 +630,7 @@
       "currentLevel": "Niveau actuel",
       "targetLevel": "Niveau cible",
       "campaignInfo": "Campagne",
-      "program": "Programme",
+      "program": "Filière",
       "eligibility": "Éligibilité",
       "eligibilityNotes": "Notes d'éligibilité",
       "timeline": "Chronologie",

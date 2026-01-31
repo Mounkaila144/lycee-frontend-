@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -41,6 +43,7 @@ export const SemesterSelector: React.FC<SemesterSelectorProps> = ({
   selectedSemesterId,
   onSemesterChange,
 }) => {
+  const { t } = useTranslation('Grades');
   const { tenantId: rawTenantId } = useTenant();
   const tenantId = rawTenantId ?? undefined;
 
@@ -62,7 +65,7 @@ export const SemesterSelector: React.FC<SemesterSelectorProps> = ({
       setSemesters(response.data.data);
     } catch (err) {
       console.error('Error fetching semesters:', err);
-      setError('Erreur lors du chargement des semestres');
+      setError(t('semesterSelector.loadError'));
     } finally {
       setLoading(false);
     }
@@ -82,17 +85,17 @@ export const SemesterSelector: React.FC<SemesterSelectorProps> = ({
 
   return (
     <FormControl fullWidth>
-      <InputLabel id="semester-selector-label">Sélectionner un semestre</InputLabel>
+      <InputLabel id="semester-selector-label">{t('semesterSelector.selectSemester')}</InputLabel>
       <Select
         labelId="semester-selector-label"
         value={selectedSemesterId ?? ''}
         onChange={(e) => onSemesterChange(e.target.value ? Number(e.target.value) : null)}
-        label="Sélectionner un semestre"
+        label={t('semesterSelector.selectSemester')}
         disabled={loading}
         endAdornment={loading ? <CircularProgress size={20} sx={{ mr: 2 }} /> : null}
       >
         <MenuItem value="">
-          <em>Aucun semestre sélectionné</em>
+          <em>{t('semesterSelector.noSemesterSelected')}</em>
         </MenuItem>
         {semesters.map((semester) => (
           <MenuItem key={semester.id} value={semester.id}>

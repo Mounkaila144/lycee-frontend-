@@ -78,7 +78,7 @@ export const ProgramsByTypeChart: React.FC<ProgramsByTypeChartProps> = ({ data }
             Total
           </Typography>
           <Typography variant="body2" fontWeight="medium">
-            {total} programmes
+            {total} filières
           </Typography>
         </Box>
       </Box>

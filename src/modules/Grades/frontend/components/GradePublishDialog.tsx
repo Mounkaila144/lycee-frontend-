@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -56,6 +59,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
   completenessChecking,
   error,
 }) => {
+  const { t } = useTranslation('Grades');
   const [notifyStudents, setNotifyStudents] = useState(true);
   const [publishSuccess, setPublishSuccess] = useState(false);
 
@@ -96,7 +100,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={1}>
           <i className="ri-send-plane-line" style={{ color: '#1976d2' }} />
-          <Typography variant="h6">Publier les notes</Typography>
+          <Typography variant="h6">{t('gradePublishDialog.title')}</Typography>
         </Box>
       </DialogTitle>
 
@@ -115,7 +119,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
         {/* Success */}
         {publishSuccess && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Les notes ont été publiées avec succès !
+            {t('gradePublishDialog.publishSuccess')}
           </Alert>
         )}
 
@@ -142,8 +146,8 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
               sx={{ mb: 2 }}
             >
               {completenessResult.is_complete
-                ? 'Toutes les notes ont été saisies. Vous pouvez publier.'
-                : `${completenessResult.missing_count} note(s) manquante(s). La publication est bloquée.`}
+                ? t('gradePublishDialog.allGradesEntered')
+                : t('gradePublishDialog.missingGrades', { count: completenessResult.missing_count })}
             </Alert>
 
             {/* Summary */}
@@ -153,8 +157,8 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
                   <i className="ri-checkbox-circle-fill" style={{ color: '#4caf50' }} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={`${completenessResult.entered_count} note(s) saisie(s)`}
-                  secondary={`sur ${completenessResult.total_students} étudiant(s)`}
+                  primary={t('gradePublishDialog.gradesEntered', { count: completenessResult.entered_count })}
+                  secondary={t('gradePublishDialog.outOfStudents', { count: completenessResult.total_students })}
                 />
               </ListItem>
               {completenessResult.missing_count > 0 && (
@@ -163,8 +167,8 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
                     <i className="ri-close-circle-fill" style={{ color: '#f44336' }} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={`${completenessResult.missing_count} note(s) manquante(s)`}
-                    secondary="Ces étudiants n'ont ni note ni statut absent"
+                    primary={t('gradePublishDialog.gradesMissing', { count: completenessResult.missing_count })}
+                    secondary={t('gradePublishDialog.noGradeOrAbsent')}
                   />
                 </ListItem>
               )}
@@ -173,7 +177,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
                   <i className="ri-error-warning-fill" style={{ color: '#ff9800' }} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={`${completenessResult.absent_count} étudiant(s) absent(s)`}
+                  primary={t('gradePublishDialog.studentsAbsent', { count: completenessResult.absent_count })}
                 />
               </ListItem>
             </List>
@@ -185,8 +189,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
               <>
                 <Alert severity="info" icon={<i className="ri-lock-line" />} sx={{ mb: 2 }}>
                   <Typography variant="body2">
-                    <strong>Attention :</strong> Une fois publiées, les notes seront visibles
-                    par les étudiants et ne pourront plus être modifiées sans demande de correction.
+                    <strong>{t('common.warning')}:</strong> {t('gradePublishDialog.publishWarning')}
                   </Typography>
                 </Alert>
 
@@ -202,7 +205,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
                     <Box display="flex" alignItems="center" gap={0.5}>
                       <i className="ri-notification-3-line" style={{ fontSize: 18 }} />
                       <Typography variant="body2">
-                        Notifier les étudiants de la publication
+                        {t('gradePublishDialog.notifyStudents')}
                       </Typography>
                     </Box>
                   }
@@ -215,7 +218,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
 
       <DialogActions>
         <Button onClick={handleClose} disabled={publishing}>
-          {publishSuccess ? 'Fermer' : 'Annuler'}
+          {publishSuccess ? t('common.close') : t('common.cancel')}
         </Button>
         {!publishSuccess && (
           <Button
@@ -231,7 +234,7 @@ export const GradePublishDialog: React.FC<GradePublishDialogProps> = ({
               )
             }
           >
-            {publishing ? 'Publication...' : 'Publier les notes'}
+            {publishing ? t('gradePublishDialog.publishing') : t('gradePublishDialog.publishGrades')}
           </Button>
         )}
       </DialogActions>

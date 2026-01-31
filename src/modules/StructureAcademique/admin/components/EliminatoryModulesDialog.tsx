@@ -192,7 +192,7 @@ const EliminatoryModulesDialog: React.FC<EliminatoryModulesDialogProps> = ({
         ) : error ? (
           <Alert severity="error">{error.message}</Alert>
         ) : eliminatoryModules.length === 0 ? (
-          <Alert severity="warning">Aucun module éliminatoire défini pour ce programme.</Alert>
+          <Alert severity="warning">Aucun module éliminatoire défini pour cette filière.</Alert>
         ) : (
           <Box>
             <Typography variant="subtitle1" gutterBottom>

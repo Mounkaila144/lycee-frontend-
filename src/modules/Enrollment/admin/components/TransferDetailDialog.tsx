@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -118,6 +119,7 @@ const formatDate = (dateString: string | null | undefined) => {
  * Dialog for viewing transfer details
  */
 export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer, onOpenEquivalences }: TransferDetailDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const { transfer: detailedTransfer, loading, refresh } = useTransferDetails(initialTransfer?.id || null);
 
   // Refresh when dialog opens
@@ -142,7 +144,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
               <i className="ri-exchange-line" />
             </Avatar>
             <Box>
-              <Typography variant="h6">Détails du transfert</Typography>
+              <Typography variant="h6">{t('Transfer details')}</Typography>
               <Typography variant="body2" color="textSecondary">
                 {transfer.transfer_number}
               </Typography>
@@ -166,7 +168,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                       <i className="ri-user-line" style={{ marginRight: 8 }} />
-                      Informations du candidat
+                      {t('Candidate information')}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                       <Avatar sx={{ width: 56, height: 56, fontSize: '1.5rem' }}>
@@ -186,7 +188,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                       </Box>
                     </Box>
                     <Typography variant="body2">
-                      <strong>Date de naissance:</strong> {formatDate(transfer.birthdate)?.split(',')[0]}
+                      <strong>{t('Birth date')}:</strong> {formatDate(transfer.birthdate)?.split(',')[0]}
                     </Typography>
                     {transfer.student && (
                       <Box sx={{ mt: 2 }}>
@@ -205,26 +207,26 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                       <i className="ri-building-line" style={{ marginRight: 8 }} />
-                      Établissement d'origine
+                      {t('Origin institution')}
                     </Typography>
                     <List dense disablePadding>
                       <ListItem disablePadding sx={{ py: 0.5 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <i className="ri-school-line" />
                         </ListItemIcon>
-                        <ListItemText primary={transfer.origin_institution} secondary="Établissement" />
+                        <ListItemText primary={transfer.origin_institution} secondary={t('Institution')} />
                       </ListItem>
                       <ListItem disablePadding sx={{ py: 0.5 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <i className="ri-book-line" />
                         </ListItemIcon>
-                        <ListItemText primary={transfer.origin_program} secondary="Programme" />
+                        <ListItemText primary={transfer.origin_program} secondary={t('Program')} />
                       </ListItem>
                       <ListItem disablePadding sx={{ py: 0.5 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <i className="ri-graduation-cap-line" />
                         </ListItemIcon>
-                        <ListItemText primary={transfer.origin_level} secondary="Niveau" />
+                        <ListItemText primary={transfer.origin_level} secondary={t('Level')} />
                       </ListItem>
                     </List>
                   </CardContent>
@@ -235,26 +237,26 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                       <i className="ri-arrow-right-circle-line" style={{ marginRight: 8 }} />
-                      Programme cible
+                      {t('Target program')}
                     </Typography>
                     <List dense disablePadding>
                       <ListItem disablePadding sx={{ py: 0.5 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <i className="ri-book-line" />
                         </ListItemIcon>
-                        <ListItemText primary={transfer.target_program?.name || '-'} secondary="Programme" />
+                        <ListItemText primary={transfer.target_program?.name || '-'} secondary={t('Program')} />
                       </ListItem>
                       <ListItem disablePadding sx={{ py: 0.5 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <i className="ri-graduation-cap-line" />
                         </ListItemIcon>
-                        <ListItemText primary={transfer.target_level} secondary="Niveau" />
+                        <ListItemText primary={transfer.target_level} secondary={t('Level')} />
                       </ListItem>
                       <ListItem disablePadding sx={{ py: 0.5 }}>
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <i className="ri-calendar-line" />
                         </ListItemIcon>
-                        <ListItemText primary={transfer.academic_year?.name || '-'} secondary="Année académique" />
+                        <ListItemText primary={transfer.academic_year?.name || '-'} secondary={t('Academic year')} />
                       </ListItem>
                     </List>
                   </CardContent>
@@ -268,17 +270,17 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                       <i className="ri-award-line" style={{ marginRight: 8 }} />
-                      Bilan ECTS
+                      {t('ECTS Summary')}
                     </Typography>
                     <Box sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">ECTS réclamés:</Typography>
+                        <Typography variant="body2">{t('Claimed ECTS')}:</Typography>
                         <Typography variant="body2" fontWeight={600}>
                           {transfer.total_ects_claimed}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">ECTS accordés:</Typography>
+                        <Typography variant="body2">{t('Granted ECTS')}:</Typography>
                         <Typography variant="body2" fontWeight={600} color="success.main">
                           {transfer.total_ects_granted}
                         </Typography>
@@ -286,7 +288,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                       {transfer.total_ects_claimed > 0 && (
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="caption" color="textSecondary">
-                            Progression: {Math.round((transfer.total_ects_granted / transfer.total_ects_claimed) * 100)}%
+                            {t('Progress')}: {Math.round((transfer.total_ects_granted / transfer.total_ects_claimed) * 100)}%
                           </Typography>
                           <LinearProgress
                             variant="determinate"
@@ -300,7 +302,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                     {transfer.equivalence_statistics && (
                       <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
                         <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
-                          Statistiques équivalences
+                          {t('Equivalences statistics')}
                         </Typography>
                         <Grid container spacing={1}>
                           <Grid size={6}>
@@ -326,7 +328,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                       <i className="ri-file-text-line" style={{ marginRight: 8 }} />
-                      Motif du transfert
+                      {t('Transfer reason')}
                     </Typography>
                     <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                       {transfer.transfer_reason}
@@ -362,7 +364,7 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                     <CardContent>
                       <Typography variant="subtitle1" fontWeight={600} color="error" sx={{ mb: 2 }}>
                         <i className="ri-close-circle-line" style={{ marginRight: 8 }} />
-                        Motif du rejet
+                        {t('Rejection reason')}
                       </Typography>
                       <Typography variant="body2">{transfer.rejection_reason}</Typography>
                     </CardContent>
@@ -375,13 +377,13 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
                     <CardContent>
                       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                         <i className="ri-user-star-line" style={{ marginRight: 8 }} />
-                        Informations de révision
+                        {t('Review information')}
                       </Typography>
                       <Typography variant="body2">
-                        <strong>Révisé par:</strong> {transfer.reviewer.name}
+                        <strong>{t('Reviewed by')}:</strong> {transfer.reviewer.name}
                       </Typography>
                       <Typography variant="body2">
-                        <strong>Date:</strong> {formatDate(transfer.reviewed_at)}
+                        <strong>{t('Date')}:</strong> {formatDate(transfer.reviewed_at)}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -451,11 +453,11 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
             <Box sx={{ mt: 3 }}>
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                 <i className="ri-time-line" style={{ marginRight: 8 }} />
-                Historique
+                {t('History')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Chip label={`Créée: ${formatDate(transfer.created_at)}`} size="small" variant="outlined" />
-                {transfer.reviewed_at && <Chip label={`Révisée: ${formatDate(transfer.reviewed_at)}`} size="small" variant="outlined" />}
+                <Chip label={`${t('Created')}: ${formatDate(transfer.created_at)}`} size="small" variant="outlined" />
+                {transfer.reviewed_at && <Chip label={`${t('Reviewed')}: ${formatDate(transfer.reviewed_at)}`} size="small" variant="outlined" />}
               </Box>
             </Box>
           </Box>
@@ -464,10 +466,10 @@ export const TransferDetailDialog = ({ open, onClose, transfer: initialTransfer,
       <DialogActions sx={{ p: 2 }}>
         {onOpenEquivalences && (transfer.status === 'Under_Review' || transfer.status === 'Equivalences_Proposed') && (
           <Button variant="outlined" color="secondary" onClick={onOpenEquivalences} startIcon={<i className="ri-exchange-line" />}>
-            Gérer les équivalences
+            {t('Manage equivalences')}
           </Button>
         )}
-        <Button onClick={onClose}>Fermer</Button>
+        <Button onClick={onClose}>{t('Close')}</Button>
       </DialogActions>
     </Dialog>
   );

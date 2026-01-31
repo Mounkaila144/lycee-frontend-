@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -68,6 +70,8 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
   onEditCoefficient,
   onViewHistory,
 }) => {
+  const { t } = useTranslation('Grades');
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
@@ -79,7 +83,7 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
   if (!evaluations || evaluations.length === 0) {
     return (
       <Alert severity="info">
-        Aucune évaluation configurée pour ce module. Utilisez un template ou créez des évaluations manuellement.
+        {t('coefficientTable.noEvaluations')}
       </Alert>
     );
   }
@@ -91,13 +95,13 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Type</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Nom</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Coefficient</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Note max</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Notes saisies</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Statut</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>{t('coefficientTable.type')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>{t('coefficientTable.name')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>{t('coefficientTable.coefficient')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>{t('coefficientTable.maxGrade')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>{t('coefficientTable.gradesEntered')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>{t('coefficientTable.status')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>{t('coefficientTable.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -144,17 +148,17 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
                 {/* Statut */}
                 <TableCell align="center">
                   {evaluation.has_published_grades ? (
-                    <Chip label="Publiée" size="small" color="success" />
+                    <Chip label={t('coefficientTable.published')} size="small" color="success" />
                   ) : evaluation.has_grades ? (
-                    <Chip label="Brouillon" size="small" color="warning" />
+                    <Chip label={t('coefficientTable.draft')} size="small" color="warning" />
                   ) : (
-                    <Chip label="Vide" size="small" variant="outlined" />
+                    <Chip label={t('coefficientTable.empty')} size="small" variant="outlined" />
                   )}
                 </TableCell>
 
                 {/* Actions */}
                 <TableCell align="right">
-                  <Tooltip title={evaluation.can_modify_coefficient ? 'Modifier coefficient' : 'Modification requiert approbation'}>
+                  <Tooltip title={evaluation.can_modify_coefficient ? t('coefficientTable.editCoefficient') : t('coefficientTable.requiresApproval')}>
                     <span>
                       <IconButton
                         size="small"
@@ -166,7 +170,7 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
                       </IconButton>
                     </span>
                   </Tooltip>
-                  <Tooltip title="Historique">
+                  <Tooltip title={t('coefficientTable.history')}>
                     <IconButton size="small" onClick={() => onViewHistory(evaluation.id)}>
                       <i className="ri-history-line" />
                     </IconButton>
@@ -179,7 +183,7 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
             <TableRow sx={{ backgroundColor: '#e3f2fd' }}>
               <TableCell colSpan={2}>
                 <Typography variant="body2" fontWeight="bold">
-                  Total coefficients
+                  {t('coefficientTable.totalCoefficients')}
                 </Typography>
               </TableCell>
               <TableCell align="center">
@@ -196,12 +200,12 @@ export const CoefficientTable: React.FC<CoefficientTableProps> = ({
       {/* Legend */}
       <Box display="flex" gap={2} mt={2} flexWrap="wrap">
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Chip label="Publiée" size="small" color="success" />
-          <Typography variant="caption">Notes publiées (modification nécessite approbation)</Typography>
+          <Chip label={t('coefficientTable.published')} size="small" color="success" />
+          <Typography variant="caption">{t('coefficientTable.publishedLegend')}</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Chip label="Brouillon" size="small" color="warning" />
-          <Typography variant="caption">Notes en brouillon</Typography>
+          <Chip label={t('coefficientTable.draft')} size="small" color="warning" />
+          <Typography variant="caption">{t('coefficientTable.draftLegend')}</Typography>
         </Box>
       </Box>
     </Box>

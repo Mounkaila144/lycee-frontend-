@@ -64,7 +64,7 @@ const levelLabels: Record<AcademicLevel, string> = {
 // Available columns configuration
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'student', label: 'Etudiant', defaultVisible: true },
-  { id: 'programme', label: 'Programme', defaultVisible: true },
+  { id: 'programme', label: 'Filière', defaultVisible: true },
   { id: 'level', label: 'Niveau', defaultVisible: true },
   { id: 'semester', label: 'Semestre', defaultVisible: true },
   { id: 'status', label: 'Statut', defaultVisible: true },
@@ -263,7 +263,7 @@ const AdministrativeEnrollmentListTable = () => {
       }),
       columnHelper.accessor('programme', {
         id: 'programme',
-        header: 'Programme',
+        header: 'Filière',
         cell: ({ row }) => {
           const programme = row.original.programme;
 
@@ -367,10 +367,10 @@ const AdministrativeEnrollmentListTable = () => {
   const filterComponents = (
     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
       <FormControl size="small" sx={{ minWidth: 200 }}>
-        <InputLabel>Programme</InputLabel>
+        <InputLabel>Filière</InputLabel>
         <Select
           value={programmeFilter}
-          label="Programme"
+          label="Filière"
           onChange={e => handleProgrammeFilterChange(e.target.value as number | '')}
         >
           <MenuItem value="">Tous</MenuItem>
@@ -483,7 +483,7 @@ const AdministrativeEnrollmentListTable = () => {
             fields={[
               {
                 icon: 'ri-book-line',
-                label: 'Programme',
+                label: 'Filière',
                 value: programme?.libelle || '-',
               },
               {

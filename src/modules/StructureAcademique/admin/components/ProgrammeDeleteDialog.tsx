@@ -9,6 +9,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type { Programme } from '../../types/programme.types';
 import { useProgrammesContext } from './ProgrammeList';
 
@@ -20,6 +21,7 @@ interface ProgrammeDeleteDialogProps {
 }
 
 const ProgrammeDeleteDialog = ({ open, onClose, onSuccess, programme }: ProgrammeDeleteDialogProps) => {
+  const { t } = useTranslation('StructureAcademique');
   const { deleteProgramme, loading } = useProgrammesContext();
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ const ProgrammeDeleteDialog = ({ open, onClose, onSuccess, programme }: Programm
       await deleteProgramme(programme.id);
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      setError(err instanceof Error ? err.message : t('Une erreur est survenue'));
     }
   };
 
@@ -45,7 +47,7 @@ const ProgrammeDeleteDialog = ({ open, onClose, onSuccess, programme }: Programm
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Supprimer le programme</DialogTitle>
+      <DialogTitle>{t('Supprimer la filière')}</DialogTitle>
 
       <DialogContent>
         {error && (
@@ -55,22 +57,22 @@ const ProgrammeDeleteDialog = ({ open, onClose, onSuccess, programme }: Programm
         )}
 
         <DialogContentText>
-          Êtes-vous sûr de vouloir supprimer le programme <strong>{programme.libelle}</strong> ({programme.code}) ?
+          {t('Êtes-vous sûr de vouloir supprimer la filière')} <strong>{programme.libelle}</strong> ({programme.code}) ?
         </DialogContentText>
 
         {programme.students_count && programme.students_count > 0 && (
           <Alert severity="warning" sx={{ mt: 2 }}>
-            Attention : Ce programme a {programme.students_count} étudiant(s) inscrit(s).
+            {t('Attention : Cette filière a')} {programme.students_count} {t('étudiant(s) inscrit(s).')}
           </Alert>
         )}
       </DialogContent>
 
       <DialogActions>
         <Button onClick={handleClose} disabled={loading}>
-          Annuler
+          {t('Annuler')}
         </Button>
         <Button onClick={handleDelete} color="error" variant="contained" disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : 'Supprimer'}
+          {loading ? <CircularProgress size={24} /> : t('Supprimer')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from '@/shared/i18n/use-translation';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -49,9 +50,10 @@ interface ReenrollmentCreateDialogProps {
   onSuccess: () => void;
 }
 
-const steps = ['Sélectionner campagne', 'Sélectionner étudiant', 'Vérifier éligibilité', 'Confirmer'];
+const getSteps = (t: (key: string) => string) => [t('Select campaign'), t('Select student'), t('Check eligibility'), t('Confirm')];
 
 export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: ReenrollmentCreateDialogProps) => {
+  const { t } = useTranslation('Enrollment');
   const { tenantId } = useTenant();
   const { campaigns, loading: loadingCampaigns } = useReenrollmentCampaigns({ status: 'Active', per_page: 100 });
   const { eligibility, loading: checkingEligibility, checkEligibility, clearEligibility } = useEligibilityCheck();
@@ -137,9 +139,9 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
       });
       setActiveStep(3);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de la vérification');
+      setError(err.response?.data?.message || t('Error during verification'));
     }
-  }, [selectedStudent, selectedCampaign, checkEligibility]);
+  }, [selectedStudent, selectedCampaign, checkEligibility, t]);
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
@@ -161,11 +163,13 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de la création');
+      setError(err.response?.data?.message || t('Error during creation'));
     } finally {
       setSubmitting(false);
     }
-  }, [selectedStudent, selectedCampaign, isRedoing, hasAcceptedRules, tenantId, onSuccess, onClose]);
+  }, [selectedStudent, selectedCampaign, isRedoing, hasAcceptedRules, tenantId, onSuccess, onClose, t]);
+
+  const steps = getSteps(t);
 
   // Navigation handlers
   const handleNext = () => {
@@ -205,7 +209,7 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Nouvelle Réinscription</DialogTitle>
+      <DialogTitle>{t('New Reenrollment')}</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
@@ -226,13 +230,13 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
           {activeStep === 0 && (
             <Box>
               <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Sélectionnez une campagne de réinscription active
+                {t('Select an active reenrollment campaign')}
               </Typography>
               <FormControl fullWidth>
-                <InputLabel>Campagne</InputLabel>
+                <InputLabel>{t('Campaign')}</InputLabel>
                 <Select
                   value={selectedCampaign?.id || ''}
-                  label="Campagne"
+                  label={t('Campaign')}
                   onChange={e => {
                     const campaign = campaigns.find(c => c.id === e.target.value);
                     setSelectedCampaign(campaign || null);
@@ -255,7 +259,7 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
               </FormControl>
               {campaigns.filter(c => c.status === 'Active').length === 0 && (
                 <Alert severity="warning" sx={{ mt: 2 }}>
-                  Aucune campagne active. Veuillez d&apos;abord activer une campagne.
+                  {t('No active campaign. Please activate a campaign first.')}
                 </Alert>
               )}
             </Box>
@@ -265,7 +269,7 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
           {activeStep === 1 && (
             <Box>
               <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Recherchez et sélectionnez un étudiant
+                {t('Search and select a student')}
               </Typography>
               <Autocomplete
                 options={studentOptions}
@@ -277,8 +281,8 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
                 renderInput={params => (
                   <TextField
                     {...params}
-                    label="Rechercher un étudiant"
-                    placeholder="Matricule, nom ou prénom..."
+                    label={t('Search for a student')}
+                    placeholder={t('Matricule, last name or first name...')}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -302,11 +306,11 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
                     </Box>
                   </li>
                 )}
-                noOptionsText="Tapez au moins 2 caractères pour rechercher"
+                noOptionsText={t('Type at least 2 characters to search')}
               />
               {selectedStudent && (
                 <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-                  <Typography variant="subtitle2">Étudiant sélectionné:</Typography>
+                  <Typography variant="subtitle2">{t('Selected student')}:</Typography>
                   <Typography>
                     {selectedStudent.full_name}
                   </Typography>
@@ -322,20 +326,20 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
           {activeStep === 2 && (
             <Box>
               <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Vérification de l&apos;éligibilité de l&apos;étudiant
+                {t('Student eligibility verification')}
               </Typography>
               <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, mb: 2 }}>
-                <Typography variant="subtitle2">Récapitulatif:</Typography>
+                <Typography variant="subtitle2">{t('Summary')}:</Typography>
                 <Typography variant="body2">
-                  <strong>Campagne:</strong> {selectedCampaign?.name}
+                  <strong>{t('Campaign')}:</strong> {selectedCampaign?.name}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Étudiant:</strong> {selectedStudent?.full_name} (
+                  <strong>{t('Student')}:</strong> {selectedStudent?.full_name} (
                   {selectedStudent?.matricule})
                 </Typography>
               </Box>
               <Alert severity="info">
-                Cliquez sur &quot;Suivant&quot; pour vérifier l&apos;éligibilité de l&apos;étudiant.
+                {t('Click "Next" to verify student eligibility.')}
               </Alert>
             </Box>
           )}
@@ -351,42 +355,42 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
                 <>
                   <Alert severity={eligibility.is_eligible ? 'success' : 'warning'} sx={{ mb: 2 }}>
                     {eligibility.is_eligible
-                      ? "L'étudiant est éligible pour cette campagne"
-                      : "L'étudiant n'est pas éligible - vous pouvez quand même créer la demande"}
+                      ? t('The student is eligible for this campaign')
+                      : t('The student is not eligible - you can still create the request')}
                   </Alert>
 
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                    Résultats des vérifications:
+                    {t('Verification results')}:
                   </Typography>
                   <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, mb: 2 }}>
-                    {renderEligibilityCheck('Statut actif', eligibility.is_active)}
-                    {renderEligibilityCheck('Inscription précédente', eligibility.has_previous_enrollment)}
+                    {renderEligibilityCheck(t('Active status'), eligibility.is_active)}
+                    {renderEligibilityCheck(t('Previous enrollment'), eligibility.has_previous_enrollment)}
                     {renderEligibilityCheck(
-                      `ECTS minimum (${eligibility.validated_ects}/${eligibility.required_ects})`,
+                      `${t('Minimum ECTS')} (${eligibility.validated_ects}/${eligibility.required_ects})`,
                       eligibility.has_min_ects
                     )}
-                    {renderEligibilityCheck('Apurement financier', eligibility.financial_clearance)}
-                    {renderEligibilityCheck('Pas d\'exclusion disciplinaire', eligibility.no_disciplinary_exclusion)}
-                    {renderEligibilityCheck('Programme éligible', eligibility.program_eligible)}
-                    {renderEligibilityCheck('Niveau éligible', eligibility.level_eligible)}
+                    {renderEligibilityCheck(t('Financial clearance'), eligibility.financial_clearance)}
+                    {renderEligibilityCheck(t('No disciplinary exclusion'), eligibility.no_disciplinary_exclusion)}
+                    {renderEligibilityCheck(t('Eligible program'), eligibility.program_eligible)}
+                    {renderEligibilityCheck(t('Eligible level'), eligibility.level_eligible)}
                   </Box>
 
                   <Divider sx={{ my: 2 }} />
 
                   <FormControlLabel
                     control={<Checkbox checked={isRedoing} onChange={e => setIsRedoing(e.target.checked)} />}
-                    label="Redoublement (l'étudiant reste au même niveau)"
+                    label={t('Repeating year (student stays at same level)')}
                   />
 
                   <FormControlLabel
                     control={
                       <Checkbox checked={hasAcceptedRules} onChange={e => setHasAcceptedRules(e.target.checked)} />
                     }
-                    label="L'étudiant accepte le règlement intérieur"
+                    label={t('The student accepts the internal regulations')}
                   />
                 </>
               ) : (
-                <Alert severity="error">Erreur lors de la vérification de l&apos;éligibilité</Alert>
+                <Alert severity="error">{t('Error verifying eligibility')}</Alert>
               )}
             </Box>
           )}
@@ -394,16 +398,16 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={submitting}>
-          Annuler
+          {t('Cancel')}
         </Button>
         {activeStep > 0 && (
           <Button onClick={handleBack} disabled={submitting}>
-            Retour
+            {t('Back')}
           </Button>
         )}
         {activeStep < 3 ? (
           <Button variant="contained" onClick={handleNext} disabled={!canProceed() || checkingEligibility}>
-            {activeStep === 2 ? 'Vérifier' : 'Suivant'}
+            {activeStep === 2 ? t('Verify') : t('Next')}
           </Button>
         ) : (
           <Button
@@ -413,7 +417,7 @@ export const ReenrollmentCreateDialog = ({ open, onClose, onSuccess }: Reenrollm
             disabled={!canProceed() || submitting}
             startIcon={submitting ? <CircularProgress size={20} /> : null}
           >
-            Créer la réinscription
+            {t('Create reenrollment')}
           </Button>
         )}
       </DialogActions>

@@ -13,6 +13,7 @@ import {
   Typography,
   Grid,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type { AcademicLevel, LevelCreditConfiguration, LevelCreditFormData } from '../../types/levelCredit.types';
 
 interface LevelCreditConfigDialogProps {

@@ -22,6 +22,7 @@ import {
   ListItemText,
   Divider,
 } from '@mui/material';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import { progressionService } from '../services/progressionService';
 import { useTenant } from '@/shared/lib/tenant-context';
 import type { ProgressionResult } from '../../types/progression.types';

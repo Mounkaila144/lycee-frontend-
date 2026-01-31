@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type { ProgressionRule } from '../../types/progression.types';
 import { getTransitionLabel } from '../../types/progression.types';
 import { DataTable, StandardMobileCard } from '@/components/shared/DataTable';
@@ -32,7 +33,7 @@ interface ProgressionRuleListTableProps {
 }
 
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
-  { id: 'program', label: 'Programme', defaultVisible: true },
+  { id: 'program', label: 'Filière', defaultVisible: true },
   { id: 'transition', label: 'Transition', defaultVisible: true },
   { id: 'min_credits', label: 'Crédits Min', defaultVisible: true },
   { id: 'max_debt', label: 'Dette Max', defaultVisible: true },
@@ -53,6 +54,7 @@ const ProgressionRuleListTable: React.FC<ProgressionRuleListTableProps> = ({
   onDeleteRule,
   onRefresh,
 }) => {
+  const { t } = useTranslation('StructureAcademique')
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [selectedRule, setSelectedRule] = useState<ProgressionRule | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -130,7 +132,7 @@ const ProgressionRuleListTable: React.FC<ProgressionRuleListTableProps> = ({
       }),
       columnHelper.accessor('programme_id', {
         id: 'program',
-        header: 'Programme',
+        header: 'Filière',
         cell: ({ row }) => {
           if (!row.original.programme_id) {
             return (

@@ -24,7 +24,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
       children: [
         {
           id: 'structure-programmes',
-          label: 'Programmes',
+          label: 'Filières',
           route: '/admin/structure/programmes',
           icon: {
             type: 'emoji',

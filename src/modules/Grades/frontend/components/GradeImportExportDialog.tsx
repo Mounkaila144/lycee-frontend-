@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
+
+import { useTranslation } from '@/shared/i18n/use-translation';
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -86,6 +89,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
   importError,
   resetImport,
 }) => {
+  const { t } = useTranslation('Grades');
   const [tabValue, setTabValue] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [overwriteExisting, setOverwriteExisting] = useState(false);
@@ -162,7 +166,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Import/Export Notes - {evaluationName}</Typography>
+          <Typography variant="h6">{t('gradeImportExportDialog.title', { name: evaluationName })}</Typography>
           <IconButton onClick={handleClose} disabled={importing || exporting}>
             <i className="ri-close-line" />
           </IconButton>
@@ -173,12 +177,12 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
         <Tabs value={tabValue} onChange={handleTabChange}>
           <Tab
             icon={<i className="ri-download-line" style={{ fontSize: 20 }} />}
-            label="Exporter"
+            label={t('gradeImportExportDialog.export')}
             iconPosition="start"
           />
           <Tab
             icon={<i className="ri-upload-line" style={{ fontSize: 20 }} />}
-            label="Importer"
+            label={t('gradeImportExportDialog.import')}
             iconPosition="start"
           />
         </Tabs>
@@ -187,7 +191,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
         <TabPanel value={tabValue} index={0}>
           {exportError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              Erreur lors de l'export: {exportError.message}
+              {t('gradeImportExportDialog.exportError', { error: exportError.message })}
             </Alert>
           )}
 
@@ -197,10 +201,10 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                   <Typography variant="subtitle1" fontWeight="bold">
-                    Template de saisie
+                    {t('gradeImportExportDialog.entryTemplate')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Fichier Excel avec la liste des étudiants et colonnes de notes
+                    {t('gradeImportExportDialog.entryTemplateDescription')}
                   </Typography>
                 </Box>
                 <Button
@@ -215,7 +219,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                   onClick={() => onExportTemplate(evaluationId)}
                   disabled={exporting}
                 >
-                  Télécharger
+                  {t('gradeImportExportDialog.download')}
                 </Button>
               </Box>
             </Paper>
@@ -225,10 +229,10 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                   <Typography variant="subtitle1" fontWeight="bold">
-                    Liste des absents
+                    {t('gradeImportExportDialog.absentList')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Export de la liste des étudiants marqués absents
+                    {t('gradeImportExportDialog.absentListDescription')}
                   </Typography>
                 </Box>
                 <Button
@@ -243,7 +247,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                   onClick={() => onExportAbsents(evaluationId)}
                   disabled={exporting}
                 >
-                  Télécharger
+                  {t('gradeImportExportDialog.download')}
                 </Button>
               </Box>
             </Paper>
@@ -254,7 +258,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
         <TabPanel value={tabValue} index={1}>
           {importError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              Erreur lors de l'import: {importError.message}
+              {t('gradeImportExportDialog.importError', { error: importError.message })}
             </Alert>
           )}
 
@@ -264,8 +268,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
               severity={importResult.errors > 0 ? 'warning' : 'success'}
               sx={{ mb: 2 }}
             >
-              Import terminé: {importResult.imported} importées, {importResult.updated} mises à jour,{' '}
-              {importResult.skipped} ignorées, {importResult.errors} erreurs
+              {t('gradeImportExportDialog.importComplete', { imported: importResult.imported, updated: importResult.updated, skipped: importResult.skipped, errors: importResult.errors })}
             </Alert>
           )}
 
@@ -302,10 +305,10 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                     style={{ fontSize: 48, color: '#9e9e9e', display: 'block', marginBottom: 8 }}
                   />
                   <Typography variant="subtitle1">
-                    Cliquez ou glissez un fichier ici
+                    {t('gradeImportExportDialog.dropFileHere')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Formats acceptés: .xlsx, .xls, .csv
+                    {t('gradeImportExportDialog.acceptedFormats')}
                   </Typography>
                 </>
               )}
@@ -318,19 +321,19 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
               {/* Preview Summary */}
               <Box display="flex" gap={2} mb={2} flexWrap="wrap">
                 <Chip
-                  label={`${importPreview.total_rows} lignes`}
+                  label={t('gradeImportExportDialog.rowsCount', { count: importPreview.total_rows })}
                   color="default"
                 />
                 <Chip
                   icon={<i className="ri-checkbox-circle-fill" style={{ color: '#4caf50' }} />}
-                  label={`${importPreview.valid_rows} valides`}
+                  label={t('gradeImportExportDialog.validCount', { count: importPreview.valid_rows })}
                   color="success"
                   variant="outlined"
                 />
                 {importPreview.warning_rows > 0 && (
                   <Chip
                     icon={<i className="ri-error-warning-fill" style={{ color: '#ff9800' }} />}
-                    label={`${importPreview.warning_rows} avertissements`}
+                    label={t('gradeImportExportDialog.warningsCount', { count: importPreview.warning_rows })}
                     color="warning"
                     variant="outlined"
                   />
@@ -338,7 +341,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                 {importPreview.error_rows > 0 && (
                   <Chip
                     icon={<i className="ri-close-circle-fill" style={{ color: '#f44336' }} />}
-                    label={`${importPreview.error_rows} erreurs`}
+                    label={t('gradeImportExportDialog.errorsCount', { count: importPreview.error_rows })}
                     color="error"
                     variant="outlined"
                   />
@@ -350,12 +353,12 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Statut</TableCell>
-                      <TableCell>Matricule</TableCell>
-                      <TableCell>Nom</TableCell>
-                      <TableCell>Note</TableCell>
-                      <TableCell>Absent</TableCell>
-                      <TableCell>Messages</TableCell>
+                      <TableCell>{t('gradeImportExportDialog.status')}</TableCell>
+                      <TableCell>{t('gradeImportExportDialog.matricule')}</TableCell>
+                      <TableCell>{t('gradeImportExportDialog.name')}</TableCell>
+                      <TableCell>{t('gradeImportExportDialog.grade')}</TableCell>
+                      <TableCell>{t('gradeImportExportDialog.absent')}</TableCell>
+                      <TableCell>{t('gradeImportExportDialog.messages')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -375,7 +378,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                         <TableCell>{row.matricule}</TableCell>
                         <TableCell>{row.student_name}</TableCell>
                         <TableCell>{row.score !== null ? row.score : '-'}</TableCell>
-                        <TableCell>{row.is_absent ? 'Oui' : 'Non'}</TableCell>
+                        <TableCell>{row.is_absent ? t('common.yes') : t('common.no')}</TableCell>
                         <TableCell>
                           {row.errors.length > 0 && (
                             <Typography variant="caption" color="error">
@@ -396,7 +399,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
 
               {importPreview.preview.length > 50 && (
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                  Affichage des 50 premières lignes sur {importPreview.total_rows}
+                  {t('gradeImportExportDialog.showingFirst50', { total: importPreview.total_rows })}
                 </Typography>
               )}
 
@@ -409,7 +412,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                       onChange={(e) => setOverwriteExisting(e.target.checked)}
                     />
                   }
-                  label="Écraser les notes existantes"
+                  label={t('gradeImportExportDialog.overwriteExisting')}
                 />
               </Box>
             </>
@@ -419,7 +422,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
 
       <DialogActions>
         <Button onClick={handleClose} disabled={importing || exporting}>
-          {importResult ? 'Fermer' : 'Annuler'}
+          {importResult ? t('common.close') : t('common.cancel')}
         </Button>
 
         {tabValue === 1 && importPreview && !importResult && (
@@ -431,7 +434,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
               }}
               disabled={importing}
             >
-              Changer de fichier
+              {t('gradeImportExportDialog.changeFile')}
             </Button>
             <Button
               variant="contained"
@@ -445,7 +448,7 @@ export const GradeImportExportDialog: React.FC<GradeImportExportDialogProps> = (
                 )
               }
             >
-              {importing ? 'Import en cours...' : 'Importer'}
+              {importing ? t('gradeImportExportDialog.importing') : t('gradeImportExportDialog.import')}
             </Button>
           </>
         )}

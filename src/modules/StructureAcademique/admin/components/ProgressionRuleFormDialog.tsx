@@ -32,6 +32,7 @@ import {
   custom,
 } from 'valibot';
 import type { InferInput } from 'valibot';
+import { useTranslation } from '@/shared/i18n/use-translation';
 import type {
   ProgressionRule,
   ProgressionRuleFormData,
@@ -84,6 +85,7 @@ const ProgressionRuleFormDialog: React.FC<ProgressionRuleFormDialogProps> = ({
   isEditMode = false,
   programmes = [],
 }) => {
+  const { t } = useTranslation('StructureAcademique')
   const {
     control,
     handleSubmit,
@@ -185,9 +187,9 @@ const ProgressionRuleFormDialog: React.FC<ProgressionRuleFormDialogProps> = ({
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Programme"
-                        placeholder={value === null ? "Règle globale (tous les programmes)" : "Sélectionner un programme"}
-                        helperText={value === null ? "Cette règle s'applique à tous les programmes" : "Règle spécifique à ce programme"}
+                        label="Filière"
+                        placeholder={value === null ? "Règle globale (toutes les filières)" : "Sélectionner une filière"}
+                        helperText={value === null ? "Cette règle s'applique à toutes les filières" : "Règle spécifique à cette filière"}
                         error={!!errors.programme_id}
                       />
                     )}
