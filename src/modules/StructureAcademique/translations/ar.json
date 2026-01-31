@@ -81,10 +81,7 @@
   "activated": "تفعيل",
   "deactivated": "إلغاء التفعيل",
   "Importer": "استيراد",
-  "Exporter": "تصدير"
-}
-
-,
+  "Exporter": "تصدير",
   "Gérer les niveaux": "إدارة المستويات",
   "Niveaux disponibles pour": "المستويات المتاحة لـ",
   "Aucun niveau prédéfini pour le type": "لا توجد مستويات محددة مسبقًا للنوع",

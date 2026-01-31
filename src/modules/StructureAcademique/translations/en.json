@@ -81,10 +81,7 @@
   "activated": "Activation",
   "deactivated": "Deactivation",
   "Importer": "Import",
-  "Exporter": "Export"
-}
-
-,
+  "Exporter": "Export",
   "Gérer les niveaux": "Manage Levels",
   "Niveaux disponibles pour": "Available levels for",
   "Aucun niveau prédéfini pour le type": "No predefined levels for type",
