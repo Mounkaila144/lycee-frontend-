@@ -42,8 +42,11 @@ const ClientProviders = (props: Props) => {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
-            refetchOnWindowFocus: false
+            staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh
+            gcTime: 30 * 60 * 1000, // 30 minutes - cache garbage collection
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            retry: 1, // Only retry once on failure
           }
         }
       })

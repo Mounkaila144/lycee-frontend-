@@ -89,25 +89,9 @@ export const Sidebar: React.FC = () => {
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
-  // Debug: Track component lifecycle
-  React.useEffect(() => {
-    const mountId = Math.random().toString(36).substr(2, 9);
-    console.log(`🟢 [Sidebar] MOUNTED - ID: ${mountId}`);
-
-    return () => {
-      console.log(`🔴 [Sidebar] UNMOUNTED - ID: ${mountId}`);
-    };
-  }, []);
-
-  // Track state changes
-  React.useEffect(() => {
-    console.log('📊 [Sidebar] State:', { isLoading, menusCount: menus?.length });
-  }, [isLoading, menus?.length]);
-
   // Ouvrir automatiquement le deuxième menu (index 1) par défaut - Run only once when menus are loaded
   React.useEffect(() => {
     if (menus.length > 1 && menus[1].children && menus[1].children.length > 0 && expandedMenus.size === 0) {
-      console.log('🔽 [Sidebar] Auto-expanding second menu:', menus[1].label);
       setExpandedMenus(new Set([menus[1].id]));
     }
   }, [menus.length]); // Only depend on menus.length, not the entire menus array

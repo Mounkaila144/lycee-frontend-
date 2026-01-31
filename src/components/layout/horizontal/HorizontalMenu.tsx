@@ -8,7 +8,7 @@ import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Me
 // Component Imports
 import HorizontalNav, { Menu } from '@menu/horizontal-menu'
 import VerticalNavContent from './VerticalNavContent'
-import ModuleMenu from '../vertical/ModuleMenu'
+import HorizontalModuleMenu from './HorizontalModuleMenu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
@@ -78,7 +78,7 @@ const HorizontalMenu = ({ dictionary }: { dictionary: Awaited<ReturnType<typeof 
           renderExpandedMenuItemIcon: { icon: <i className='ri-circle-fill' /> }
         }}
       >
-        <ModuleMenu />
+        <HorizontalModuleMenu />
       </Menu>
     </HorizontalNav>
   )

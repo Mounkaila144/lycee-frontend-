@@ -95,7 +95,6 @@ const updateStoredToken = (token: string): void => {
         localStorage.setItem('auth_token', token);
     }
 
-    console.log('🔑 [API Client] Token updated in storage');
 };
 
 /**
@@ -117,8 +116,6 @@ const performTokenRefresh = async (context: AuthContext): Promise<RefreshTokenRe
     const endpoint = context === 'superadmin'
         ? '/superadmin/auth/refresh'
         : '/admin/auth/refresh';
-
-    console.log('🔄 [API Client] Attempting token refresh for context:', context);
 
     // Get current token to send with refresh request
     const currentToken = getAuthToken();
@@ -190,13 +187,6 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
                 // Add auth token
                 const token = getAuthToken();
 
-                console.log('🔑 [API Client] Token check:', {
-                    hasToken: !!token,
-                    tokenPrefix: token ? token.substring(0, 20) + '...' : 'none',
-                    url: config.url,
-                    isSuperadmin: isSuperadminContext()
-                });
-
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
@@ -208,8 +198,6 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
                     if (tenantId) {
                         config.headers['X-Tenant-ID'] = tenantId;
                     }
-
-                    console.log('🏢 [API Client] Tenant ID:', tenantId);
                 }
 
                 // Add Accept-Language header with current locale
@@ -238,18 +226,13 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
 
             const requestUrl = originalRequest?.url || '';
 
-            console.log('🚫 [API Client] 401 error on:', requestUrl);
-
             // Check if this endpoint is excluded from token refresh
             if (tokenRefreshManager.isExcludedEndpoint(requestUrl)) {
-                console.log('⏭️ [API Client] Endpoint excluded from refresh:', requestUrl);
-
                 return Promise.reject(error);
             }
 
             // Check if this request has already been retried
             if (originalRequest._retry) {
-                console.log('🔁 [API Client] Request already retried, logging out');
                 handleLogout();
 
                 return Promise.reject(error);
@@ -264,8 +247,6 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
                 // Attempt to refresh the token
                 const newToken = await tokenRefreshManager.refreshToken(context);
 
-                console.log('🔄 [API Client] Retrying request with new token');
-
                 // Update the original request with the new token
                 if (originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -276,7 +257,6 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
                 // Retry the original request
                 return client(originalRequest);
             } catch (refreshError) {
-                console.error('❌ [API Client] Token refresh failed:', refreshError);
                 handleLogout();
 
                 return Promise.reject(refreshError);
