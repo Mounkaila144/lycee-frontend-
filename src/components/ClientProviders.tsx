@@ -15,6 +15,7 @@ import { SidebarProvider } from '@/shared/lib/sidebar-context'
 import { PermissionsProvider } from '@/shared/contexts'
 import { LanguageProvider } from '@/shared/lib/language-context'
 import { TranslationProvider } from '@/shared/i18n/translation-provider'
+import { LanguageSynchronizer } from '@/components/LanguageSynchronizer'
 
 type Props = {
   children: ReactNode
@@ -56,6 +57,7 @@ const ClientProviders = (props: Props) => {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <TranslationProvider>
+          <LanguageSynchronizer />
           <TenantProvider>
             <PermissionsProvider>
               <SidebarProvider>
