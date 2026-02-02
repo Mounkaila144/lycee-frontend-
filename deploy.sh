@@ -60,7 +60,7 @@ git pull origin master
 
 # Installer/mettre à jour les dépendances
 log "Vérification des dépendances..."
-npm ci
+npm install --production=false
 
 # Build du projet
 log "Build du projet (cela peut prendre quelques minutes)..."
