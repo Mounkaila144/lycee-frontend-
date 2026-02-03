@@ -5,7 +5,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
   menus: [
     {
       id: 'users',
-      label: ' bello 7',
+      label: ' bello 8',
       route: '/admin/users',
       icon: {
         type: 'emoji',
