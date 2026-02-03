@@ -81,3 +81,5 @@ const themeConfig: Config = {
 }
 
 export default themeConfig
+
+// Auto-deployment test - 2026-02-03
