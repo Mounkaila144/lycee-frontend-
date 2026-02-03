@@ -4,7 +4,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
   module: 'Users',
   menus: [
     {
-      id: 'users bello 1',
+      id: 'users bello 7',
       label: 'Users',
       route: '/admin/users',
       icon: {
