@@ -1,6 +1,6 @@
 const http = require('http');
 const crypto = require('crypto');
-const { execSync } = require('child_process');
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -72,34 +72,28 @@ const server = http.createServer((req, res) => {
           if (branch === 'master') {
             log('🚀 Démarrage du déploiement...');
 
-            try {
-              // Exécuter le script de déploiement
-              const output = execSync(`bash ${DEPLOY_SCRIPT}`, {
-                encoding: 'utf-8',
-                cwd: __dirname
-              });
+            // Répondre immédiatement à GitHub (évite le timeout)
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              status: 'accepted',
+              message: 'Deployment started in background'
+            }));
 
-              log('✅ Déploiement réussi');
-              log(output);
-
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({
-                status: 'success',
-                message: 'Deployment completed successfully'
-              }));
-            } catch (error) {
-              log('❌ Erreur lors du déploiement:');
-              log(error.message);
-              log(error.stdout || '');
-              log(error.stderr || '');
-
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({
-                status: 'error',
-                message: 'Deployment failed',
-                error: error.message
-              }));
-            }
+            // Exécuter le script de déploiement en arrière-plan
+            exec(`bash ${DEPLOY_SCRIPT}`, {
+              cwd: __dirname,
+              maxBuffer: 10 * 1024 * 1024 // 10MB buffer pour les gros logs
+            }, (error, stdout, stderr) => {
+              if (error) {
+                log('❌ Erreur lors du déploiement:');
+                log(error.message);
+                if (stdout) log(stdout);
+                if (stderr) log(stderr);
+              } else {
+                log('✅ Déploiement réussi');
+                if (stdout) log(stdout);
+              }
+            });
           } else {
             log(`⏭️  Branche ${branch} ignorée (déploiement uniquement sur master)`);
             res.writeHead(200, { 'Content-Type': 'application/json' });
