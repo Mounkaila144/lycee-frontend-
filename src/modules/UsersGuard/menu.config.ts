@@ -5,7 +5,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
   menus: [
     {
       id: 'users',
-      label: 'users1',
+      label: 'users2',
       route: '/admin/users',
       icon: {
         type: 'emoji',
