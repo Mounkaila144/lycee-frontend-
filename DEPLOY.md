@@ -1,303 +1,276 @@
-# Guide de Configuration du Déploiement Continu
+# Guide de Déploiement Continu avec GitHub Actions
 
-Ce guide explique comment configurer le système de déploiement continu pour ce projet.
+Ce guide explique comment le système de déploiement continu fonctionne avec GitHub Actions.
 
 ## 📋 Vue d'ensemble
 
 Le système fonctionne comme suit :
 1. Vous faites un `git push` sur la branche `master`
-2. GitHub envoie un webhook à votre serveur
-3. Le serveur webhook reçoit la notification et exécute le script de déploiement
-4. Le script fait `git pull`, `pnpm build`, et redémarre PM2
+2. GitHub Actions se déclenche automatiquement
+3. Le workflow se connecte au serveur via SSH
+4. Le script `deploy.sh` est exécuté : `git pull`, `npm build`, et redémarrage PM2
+5. Vous recevez une notification du résultat dans l'onglet Actions de GitHub
 
-## 🔧 Installation
+## ✅ Avantages de GitHub Actions
 
-### 1. Créer les répertoires nécessaires
+- **Intégration native** : Logs centralisés dans GitHub
+- **Sécurité** : Pas de serveur webhook à maintenir
+- **Fiabilité** : Retries automatiques en cas d'échec
+- **Visibilité** : Interface graphique pour suivre les déploiements
+- **Notifications** : Alertes automatiques par email
 
-```bash
-mkdir -p /var/www/gestion-scolaire-front/logs
-```
+## 🔧 Configuration Initiale
 
-### 2. Rendre le script de déploiement exécutable
+### 1. Clé SSH (déjà configurée)
 
-```bash
-chmod +x /var/www/gestion-scolaire-front/deploy.sh
-```
-
-### 3. Générer un secret sécurisé
-
-```bash
-openssl rand -hex 32
-```
-
-Copiez le résultat et mettez-le dans :
-- Le fichier `.env.webhook` (variable `WEBHOOK_SECRET`)
-- Le fichier `ecosystem.config.js` (dans l'app `webhook-server`, variable `WEBHOOK_SECRET`)
-
-⚠️ **IMPORTANT** : Ce secret doit être le même dans les deux fichiers ET dans la configuration du webhook GitHub !
-
-### 4. Démarrer les services avec PM2
+Une clé SSH dédiée a été créée pour GitHub Actions :
 
 ```bash
-cd /var/www/gestion-scolaire-front
+# Clé publique dans authorized_keys
+~/.ssh/github_actions.pub
 
-# Arrêter l'ancienne instance si elle existe
-pm2 delete school-frontend 2>/dev/null || true
-
-# Démarrer avec le nouveau fichier ecosystem
-pm2 start ecosystem.config.js
-
-# Sauvegarder la configuration PM2
-pm2 save
-
-# S'assurer que PM2 démarre au boot
-pm2 startup
+# Clé privée ajoutée aux secrets GitHub
+~/.ssh/github_actions
 ```
 
-### 5. Vérifier que tout fonctionne
+### 2. Secrets GitHub (requis)
+
+Les secrets suivants doivent être configurés dans GitHub :
+
+**Repository** → **Settings** → **Secrets and variables** → **Actions**
+
+| Secret | Valeur | Description |
+|--------|--------|-------------|
+| `SSH_HOST` | `school.ptrniger.com` | Domaine du serveur |
+| `SSH_USER` | `root` | Utilisateur SSH |
+| `SSH_PRIVATE_KEY` | *(clé privée complète)* | Clé SSH pour connexion |
+| `SSH_PORT` | `22` | Port SSH (optionnel) |
+
+### 3. Workflow GitHub Actions
+
+Le workflow est défini dans `.github/workflows/deploy.yml` et :
+
+- Se déclenche sur **push vers master**
+- Utilise l'action `appleboy/ssh-action` pour se connecter au serveur
+- Exécute le script `deploy.sh`
+- Affiche le résultat dans l'onglet Actions
+
+## 🚀 Utilisation
+
+### Déployer une nouvelle version
 
 ```bash
-# Vérifier l'état des processus
-pm2 status
-
-# Vérifier les logs du webhook
-pm2 logs webhook-server --lines 50
-
-# Tester l'endpoint de santé
-curl http://localhost:9000/health
+git add .
+git commit -m "feat: nouvelle fonctionnalité"
+git push origin master
 ```
 
-## 🔒 Configuration du Webhook sur GitHub
+Le déploiement se lance automatiquement ! 🎉
 
-### 1. Aller dans les paramètres du repository
+### Suivre le déploiement
 
-1. Ouvrez votre repository sur GitHub
-2. Allez dans **Settings** → **Webhooks** → **Add webhook**
+1. Allez sur votre repository GitHub
+2. Cliquez sur l'onglet **Actions**
+3. Vous verrez le workflow "Deploy to Production" en cours
+4. Cliquez dessus pour voir les logs en temps réel
 
-### 2. Configurer le webhook
+### Redéployer une version précédente
 
-- **Payload URL** : `http://VOTRE_SERVEUR_IP:9002/webhook`
-  - Remplacez `VOTRE_SERVEUR_IP` par l'IP publique de votre serveur
-  - Ou utilisez un nom de domaine si vous en avez un
+1. Allez dans l'onglet **Actions**
+2. Trouvez le workflow que vous voulez redéployer
+3. Cliquez sur **Re-run jobs**
 
-- **Content type** : `application/json`
+## 📝 Script de Déploiement
 
-- **Secret** : Collez le secret généré à l'étape 3 de l'installation
-
-- **Which events would you like to trigger this webhook?**
-  - Sélectionnez "Just the `push` event"
-
-- **Active** : Cochez la case
-
-- Cliquez sur **Add webhook**
-
-### 3. Tester le webhook
-
-GitHub envoie automatiquement un événement "ping" lors de la création. Vous pouvez vérifier :
+Le script `deploy.sh` effectue les opérations suivantes :
 
 ```bash
-# Voir les logs du serveur webhook
-pm2 logs webhook-server
-
-# Ou voir le fichier de log directement
-tail -f /var/www/gestion-scolaire-front/webhook.log
+1. Vérification de la branche (doit être master)
+2. Fetch des modifications depuis Git
+3. Stash des modifications locales si nécessaire
+4. Pull des dernières modifications
+5. Installation des dépendances (npm ci)
+6. Build du projet (npm run build)
+7. Redémarrage PM2
+8. Restauration des modifications locales
 ```
 
-Vous devriez voir un message `🏓 Ping reçu de GitHub`.
-
-## 🔐 Sécurité : Utiliser un Reverse Proxy (Recommandé)
-
-### Pourquoi ?
-
-- Éviter d'exposer directement le port 9000
-- Utiliser HTTPS pour sécuriser les communications
-- Meilleure gestion des certificats SSL
-
-### Configuration avec Nginx
-
-Ajoutez cette configuration à votre Nginx :
-
-```nginx
-server {
-    listen 80;
-    server_name webhook.votre-domaine.com;
-
-    # Redirection vers HTTPS
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name webhook.votre-domaine.com;
-
-    ssl_certificate /etc/letsencrypt/live/webhook.votre-domaine.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/webhook.votre-domaine.com/privkey.pem;
-
-    location /webhook {
-        proxy_pass http://localhost:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Puis rechargez Nginx :
+### Logs de déploiement
 
 ```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-Dans ce cas, l'URL du webhook GitHub sera : `https://webhook.votre-domaine.com/webhook`
-
-**Note:** Dans la configuration Nginx ci-dessus, remplacez `http://localhost:9000` par `http://localhost:9002`
-
-## 📊 Surveillance et Logs
-
-### Logs du déploiement
-
-```bash
-# Voir les logs de déploiement
+# Voir les logs du script de déploiement
 tail -f /var/www/gestion-scolaire-front/deploy.log
 
-# Voir les logs du webhook
-tail -f /var/www/gestion-scolaire-front/webhook.log
-
-# Logs PM2
-pm2 logs
-pm2 logs webhook-server
+# Voir les logs de l'application PM2
 pm2 logs school-frontend
 ```
 
-### Commandes utiles
+## 🔍 Dépannage
 
-```bash
-# Redémarrer le serveur webhook
-pm2 restart webhook-server
+### Le workflow échoue avec "Permission denied"
 
-# Redémarrer l'application
-pm2 restart school-frontend
-
-# Voir l'état détaillé
-pm2 info webhook-server
-pm2 info school-frontend
-
-# Voir les métriques en temps réel
-pm2 monit
-```
-
-## 🧪 Test manuel du déploiement
-
-Pour tester le script de déploiement sans passer par GitHub :
-
-```bash
-cd /var/www/gestion-scolaire-front
-bash deploy.sh
-```
-
-## ❌ Dépannage
-
-### Le webhook ne reçoit rien
-
-1. Vérifiez que le serveur webhook est en cours d'exécution :
-   ```bash
-   pm2 status webhook-server
-   ```
-
-2. Vérifiez que le port est ouvert :
-   ```bash
-   sudo netstat -tlnp | grep 9002
-   ```
-
-3. Vérifiez le firewall :
-   ```bash
-   sudo ufw status
-   # Si nécessaire, ouvrir le port
-   sudo ufw allow 9002
-   ```
-
-4. Testez depuis GitHub :
-   - Allez dans Settings → Webhooks
-   - Cliquez sur votre webhook
-   - Cliquez sur "Recent Deliveries"
-   - Vérifiez le statut de la dernière livraison
-
-### Erreur de signature invalide
-
-- Vérifiez que le secret est identique dans :
-  - `.env.webhook`
-  - `ecosystem.config.js`
-  - Configuration du webhook GitHub
+- Vérifiez que la clé SSH privée est correctement configurée dans les secrets GitHub
+- Vérifiez que la clé publique est dans `~/.ssh/authorized_keys`
 
 ### Le build échoue
 
+- Vérifiez les logs dans l'onglet Actions sur GitHub
+- Vérifiez les logs locaux : `cat /var/www/gestion-scolaire-front/deploy.log`
+- Vérifiez que les dépendances sont à jour
+
+### L'application ne redémarre pas
+
 ```bash
-# Vérifier les logs
-tail -f /var/www/gestion-scolaire-front/deploy.log
+# Vérifier le statut PM2
+pm2 status
 
-# Vérifier l'espace disque
-df -h
+# Redémarrer manuellement
+pm2 restart school-frontend
 
-# Vérifier les permissions
-ls -la /var/www/gestion-scolaire-front
+# Voir les logs d'erreur
+pm2 logs school-frontend --err
 ```
 
-### PM2 ne redémarre pas
+## 🏗️ Architecture
 
-```bash
-# Vérifier que l'app existe
-pm2 list
+### Structure des fichiers
 
-# Forcer le redémarrage
-pm2 restart school-frontend --update-env
+```
+/var/www/gestion-scolaire-front/
+├── .github/
+│   └── workflows/
+│       ├── deploy.yml          # Workflow GitHub Actions
+│       └── README.md            # Documentation workflow
+├── deploy.sh                    # Script de déploiement
+├── ecosystem.config.js          # Configuration PM2
+├── deploy.log                   # Logs de déploiement
+└── logs/                        # Logs de l'application
+    ├── app-error.log
+    ├── app-out.log
+    └── app-combined.log
 ```
 
-## 🔄 Mise à jour du système
+### Configuration PM2
 
-Si vous modifiez les fichiers de configuration :
+```javascript
+{
+  name: 'school-frontend',
+  script: 'npm',
+  args: 'start',
+  env: {
+    NODE_ENV: 'production',
+    PORT: 3000
+  }
+}
+```
+
+### Configuration Apache
+
+Apache proxifie les requêtes :
+- `/api/*` → Laravel backend
+- `/storage/*` → Fichiers Laravel
+- `/*` → Next.js (port 3000)
+
+## 📊 Monitoring
+
+### Vérifier l'état de l'application
 
 ```bash
-# Après modification de ecosystem.config.js
-pm2 delete all
-pm2 start ecosystem.config.js
+# Statut PM2
+pm2 status
+
+# Informations détaillées
+pm2 info school-frontend
+
+# Métriques en temps réel
+pm2 monit
+```
+
+### Logs en temps réel
+
+```bash
+# Tous les logs
+pm2 logs school-frontend
+
+# Seulement les erreurs
+pm2 logs school-frontend --err
+
+# Dernières 100 lignes
+pm2 logs school-frontend --lines 100
+```
+
+## 🔄 Rollback Manuel
+
+En cas de problème, vous pouvez revenir à une version précédente :
+
+```bash
+cd /var/www/gestion-scolaire-front
+
+# Voir les derniers commits
+git log --oneline -10
+
+# Revenir à un commit précédent
+git checkout <commit-hash>
+
+# Rebuild et redémarrer
+npm ci
+npm run build
+pm2 restart school-frontend
+```
+
+## 🛠️ Maintenance
+
+### Mettre à jour Node.js ou npm
+
+```bash
+# Vérifier la version actuelle
+node -v
+npm -v
+
+# Après mise à jour, redémarrer l'app
+pm2 restart school-frontend
+```
+
+### Nettoyer les anciens builds
+
+```bash
+cd /var/www/gestion-scolaire-front
+
+# Nettoyer le cache
+npm cache clean --force
+
+# Supprimer node_modules et réinstaller
+rm -rf node_modules .next
+npm ci
+npm run build
+pm2 restart school-frontend
+```
+
+### Sauvegarder la configuration PM2
+
+```bash
+# Sauvegarder l'état actuel
 pm2 save
 
-# Après modification de webhook-server.js
-pm2 restart webhook-server
-
-# Après modification de deploy.sh
-chmod +x deploy.sh
+# Configurer le démarrage automatique
+pm2 startup
 ```
 
-## 📝 Notes importantes
-
-- Le déploiement se fait **uniquement sur la branche master**
-- Le build peut prendre quelques minutes
-- Pendant le build, l'application continue de fonctionner
-- Le redémarrage PM2 provoque une courte interruption (< 1 seconde)
-- Les logs sont conservés dans le dossier `logs/`
-- Pensez à monitorer l'espace disque (les logs peuvent grossir)
-
-## 🎯 Workflow recommandé
-
-1. Développez sur une branche de feature
-2. Testez localement
-3. Créez une Pull Request vers master
-4. Après review et merge, le déploiement se fait automatiquement
-5. Vérifiez les logs pour confirmer le succès du déploiement
-
-## 🚀 Améliorations futures possibles
+## 🚀 Améliorations Futures
 
 - [ ] Notifications Slack/Discord lors des déploiements
 - [ ] Tests automatiques avant déploiement
 - [ ] Rollback automatique en cas d'erreur
 - [ ] Déploiement Blue/Green pour zero-downtime
 - [ ] Health check après déploiement
-- [ ] Intégration avec un système de monitoring (Sentry, New Relic, etc.)
+- [ ] Intégration avec un système de monitoring (Sentry, New Relic)
+
+## 📚 Ressources
+
+- [Documentation GitHub Actions](https://docs.github.com/en/actions)
+- [Documentation PM2](https://pm2.keymetrics.io/docs/)
+- [Documentation Next.js Deployment](https://nextjs.org/docs/deployment)
 
 ---
 
-**Dernière mise à jour** : 2026-02-03 14:28 - Système de déploiement automatique avec réponse asynchrone ✅
+**Dernière mise à jour** : 2026-02-04 - Migration vers GitHub Actions ✅
