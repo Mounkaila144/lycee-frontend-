@@ -28,6 +28,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.webhook
 
 # vercel
 .vercel
@@ -43,3 +44,8 @@ src/assets/iconify-icons/generated-icons.css
 # IDE
 .idea/
 .vscode/
+
+# Deployment logs
+deploy.log
+webhook.log
+logs/
