@@ -1,31 +1,15 @@
 #!/bin/bash
-
-# Script de déploiement serveur
-# Le build est fait par GitHub Actions, on ne fait que reload PM2
-
 set -e
 
-PROJECT_DIR="/var/www/gestion-scolaire-front"
-PM2_APP_NAME="school-frontend"
-LOG_FILE="$PROJECT_DIR/deploy.log"
+cd /var/www/gestion-scolaire-front
 
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
-}
+echo "[$(date '+%H:%M:%S')] 📥 Pull..."
+git pull -q
 
-log "========================================="
-log "🚀 Déploiement (build fait par GitHub Actions)"
-log "========================================="
+echo "[$(date '+%H:%M:%S')] 🔨 Build..."
+npm run build --silent
 
-cd "$PROJECT_DIR"
+echo "[$(date '+%H:%M:%S')] 🔄 Reload..."
+pm2 reload school-frontend
 
-# Pull
-log "📥 Git pull..."
-git pull origin master -q
-
-# Reload PM2
-log "🔄 PM2 reload..."
-pm2 reload "$PM2_APP_NAME" --update-env
-
-log "✅ Déploiement terminé!"
-log "Les fichiers .next ont été synced par GitHub Actions"
+echo "[$(date '+%H:%M:%S')] ✅ Done!"
