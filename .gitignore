@@ -43,3 +43,7 @@ src/assets/iconify-icons/generated-icons.css
 # IDE
 .idea/
 .vscode/
+
+# Deployment logs
+deploy.log
+logs/
