@@ -29,8 +29,8 @@ import '@/app/globals.css'
 import '@assets/iconify-icons/generated-icons.css'
 
 export const metadata = {
-  title: 'Carpentry - Material Next.js Admin Template',
-  description: 'Carpentry - Material Next.js Admin Template'
+  title: 'Jandoo - Gestion Scolaire',
+  description: 'Jandoo - Plateforme de gestion scolaire intelligente'
 }
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
