@@ -340,7 +340,7 @@ const LandingPage = ({ lang }: Props) => {
       {/* ═══ HERO SECTION ═══ */}
       <Box
         sx={{
-          pt: { xs: 14, md: 18 },
+          pt: { xs: 24, md: 18 },
           pb: { xs: 8, md: 12 },
           background: `linear-gradient(135deg, ${JANDOO_BLUE}08 0%, ${JANDOO_BLUE}15 50%, ${JANDOO_RED}08 100%)`
         }}
