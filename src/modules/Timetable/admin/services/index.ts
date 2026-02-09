@@ -1,0 +1,15 @@
+export { timetableService } from './timetableService';
+export { roomService } from './roomService';
+export { optimizationService } from './optimizationService';
+export { duplicationService } from './duplicationService';
+export { exceptionService } from './exceptionService';
+export { groupTimetableViewService } from './groupTimetableViewService';
+export { roomOccupationViewService } from './roomOccupationViewService';
+export { notificationCenterService } from './notificationCenterService';
+export { cancellationService } from './cancellationService';
+export { teacherReplacementService } from './teacherReplacementService';
+export { reminderService } from './reminderService';
+export { pdfExportService } from './pdfExportService';
+export { occupancyStatsService } from './occupancyStatsService';
+export { teacherWorkloadService } from './teacherWorkloadService';
+export { roomUtilizationService } from './roomUtilizationService';

@@ -235,7 +235,7 @@ export const ModuleCoefficientConfig: React.FC<ModuleCoefficientConfigProps> = (
                 </Typography>
                 <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
                   <Typography variant="h3" color="primary">
-                    {moduleData?.credits_ects !== undefined ? moduleData.credits_ects : (selectedModuleData?.credits_ects ?? 0)}
+                    {selectedModuleData?.credits_ects ?? moduleData?.credits_ects ?? 0}
                   </Typography>
                   <Box>
                     <Tooltip title={t('moduleCoefficientConfig.editCredits')}>

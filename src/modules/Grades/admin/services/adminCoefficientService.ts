@@ -38,6 +38,8 @@ class AdminCoefficientService {
 
   /**
    * Get module coefficients configuration
+   * Backend returns: { data: EvalArray[], total_coefficient: number }
+   * We transform this into a ModuleCoefficients object
    */
   async getModuleCoefficients(
     moduleId: number,
@@ -45,12 +47,49 @@ class AdminCoefficientService {
     tenantId?: string
   ): Promise<ModuleCoefficients> {
     const client = createApiClient(tenantId);
-    const response = await client.get<ApiResponse<ModuleCoefficients>>(
+    const response = await client.get<{
+      data: Array<{
+        id: number;
+        name: string;
+        type: string;
+        coefficient: string | number;
+        max_score: string | number;
+        order: number;
+        status: string;
+      }>;
+      total_coefficient: number;
+    }>(
       `${this.baseUrl}/modules/${moduleId}/coefficients`,
       { params: { semester_id: semesterId } }
     );
 
-    return response.data.data;
+    const rawEvals = response.data.data || [];
+    const hasPublished = rawEvals.some((e) => e.status === 'Published');
+
+    const evaluations: ModuleCoefficients['evaluations'] = rawEvals.map((e) => ({
+      id: e.id,
+      type: e.type as any,
+      name: e.name,
+      coefficient: parseFloat(String(e.coefficient)),
+      max_score: parseFloat(String(e.max_score)),
+      is_locked: e.status === 'Published',
+      has_grades: e.status !== 'Empty',
+      has_published_grades: e.status === 'Published',
+      can_modify_coefficient: e.status !== 'Published',
+      grades_count: 0,
+    }));
+
+    return {
+      id: moduleId,
+      code: '',
+      name: '',
+      credits_ects: 0,
+      credits_locked: false,
+      total_coefficients: response.data.total_coefficient ?? 0,
+      evaluations,
+      has_published_grades: hasPublished,
+      can_modify: !hasPublished,
+    };
   }
 
   /**

@@ -2,6 +2,7 @@
  * Grades Module - Grade Types
  * Types for grade management and entry
  */
+import type { AbsenceType, AbsenceRecord } from './absence.types';
 
 /**
  * Grade Entity
@@ -20,6 +21,10 @@ export interface Grade {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+
+  // Absence tracking
+  absence_type?: AbsenceType | null;
+  absence?: AbsenceRecord | null;
 
   // Relations
   student?: GradeStudent;
@@ -51,6 +56,7 @@ export interface StudentGradeEntry {
   grade: Grade | null;
   score: number | null;
   is_absent: boolean;
+  absence_type: AbsenceType | null;
   comment: string | null;
   is_modified: boolean;
 }
@@ -81,6 +87,7 @@ export interface GradeEntryItem {
   student_id: number;
   score: number | null;
   is_absent: boolean;
+  absence_type?: AbsenceType | null;
   comment?: string;
 }
 
@@ -133,6 +140,8 @@ export interface Evaluation {
   module?: EvaluationModule;
   grades_count?: number;
   students_count?: number;
+  // Backend returns this from moduleEvaluations endpoint
+  grades_published?: number;
 }
 
 /**
@@ -285,6 +294,113 @@ export interface ImportGradesResult {
     matricule: string;
     error: string;
   }>;
+}
+
+/**
+ * Module Grade (calculated module average per student)
+ * Matches backend: Modules/NotesEvaluations/Entities/ModuleGrade.php
+ */
+export interface ModuleGrade {
+  student_id: number;
+  module_id: number;
+  semester_id: number;
+  average: number | null;
+  is_final: boolean;
+  missing_evaluations_count: number;
+  status: 'Provisoire' | 'Final' | 'ABS';
+  rank: number | null;
+  total_ranked: number | null;
+  calculated_at: string | null;
+  compensation_applied_at: string | null;
+  student?: GradeStudent;
+}
+
+/**
+ * Module averages response from API
+ */
+export interface ModuleAveragesResponse {
+  module_id: number;
+  module_name: string;
+  semester_id: number;
+  averages: ModuleGrade[];
+  class_average: number | null;
+  pass_rate: number | null;
+  total_students: number;
+  calculated_count: number;
+}
+
+/**
+ * Semester Result (calculated semester average per student)
+ * Matches backend: Modules/NotesEvaluations/Entities/SemesterResult.php
+ */
+export interface SemesterResult {
+  student_id: number;
+  semester_id: number;
+  average: number | null;
+  is_final: boolean;
+  is_validated: boolean;
+  global_status: 'validated' | 'partially_validated' | 'to_retake' | 'deferred';
+  validated_modules_count: number;
+  compensated_modules_count: number;
+  failed_modules_count: number;
+  total_credits: number;
+  acquired_credits: number;
+  missing_credits: number;
+  success_rate: number;
+  rank: number | null;
+  total_ranked: number | null;
+  validation_blocked_by_eliminatory: boolean;
+  blocking_reasons: string[];
+  can_progress_next_year: boolean;
+  missing_modules_count: number;
+  calculated_at: string | null;
+  published_at: string | null;
+  student?: GradeStudent;
+}
+
+/**
+ * Semester results response from API
+ */
+export interface SemesterResultsResponse {
+  semester_id: number;
+  semester_name: string;
+  results: SemesterResult[];
+  class_average: number | null;
+  pass_rate: number | null;
+  total_students: number;
+}
+
+/**
+ * ECTS Allocation for a student
+ */
+export interface EctsAllocation {
+  student_id: number;
+  module_id: number;
+  semester_result_id: number;
+  credits_allocated: number;
+  allocation_type: 'validated' | 'compensated' | 'equivalence';
+  note: string | null;
+  allocated_at: string;
+  module?: EvaluationModule;
+}
+
+/**
+ * ECTS Summary for a student
+ */
+export interface EctsSummary {
+  student_id: number;
+  total_acquired: number;
+  total_possible: number;
+  by_semester: Array<{
+    semester_id: number;
+    semester_name: string;
+    total_credits: number;
+    acquired_credits: number;
+    missing_credits: number;
+    success_rate: number;
+  }>;
+  can_progress: boolean;
+  progression_threshold: number;
 }
 
 /**

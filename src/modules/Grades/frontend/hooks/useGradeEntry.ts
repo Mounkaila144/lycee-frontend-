@@ -60,9 +60,10 @@ export const useGradeEntry = (evaluationId: number | null) => {
       setError(null);
       const data = await teacherGradeService.getEvaluationStudents(evaluationId, tenantId);
 
-      // Initialize students with is_modified = false
+      // Initialize students with is_modified = false and default absence_type
       const initializedData = data.map((entry) => ({
         ...entry,
+        absence_type: entry.absence_type ?? (entry.is_absent ? 'unjustified' : null),
         is_modified: false,
       }));
 
@@ -96,7 +97,7 @@ export const useGradeEntry = (evaluationId: number | null) => {
    * Update a student's grade locally
    */
   const updateGrade = useCallback(
-    (studentId: number, field: 'score' | 'is_absent' | 'comment', value: number | boolean | string | null) => {
+    (studentId: number, field: 'score' | 'is_absent' | 'comment' | 'absence_type', value: number | boolean | string | null) => {
       setStudents((prev) =>
         prev.map((entry) => {
           if (entry.student.id !== studentId) return entry;
@@ -108,13 +109,21 @@ export const useGradeEntry = (evaluationId: number | null) => {
             // If score is entered, uncheck absent
             if (value !== null && value !== undefined) {
               updated.is_absent = false;
+              updated.absence_type = null;
             }
           } else if (field === 'is_absent') {
             updated.is_absent = value as boolean;
-            // If marked absent, clear score
+            // If marked absent, clear score and set default absence type
             if (value === true) {
               updated.score = null;
+              if (!updated.absence_type) {
+                updated.absence_type = 'unjustified';
+              }
+            } else {
+              updated.absence_type = null;
             }
+          } else if (field === 'absence_type') {
+            updated.absence_type = value as any;
           } else if (field === 'comment') {
             updated.comment = value as string | null;
           }
@@ -188,6 +197,7 @@ export const useGradeEntry = (evaluationId: number | null) => {
         student_id: entry.student.id,
         score: entry.score,
         is_absent: entry.is_absent,
+        absence_type: entry.absence_type || undefined,
         comment: entry.comment || undefined,
       }));
 
@@ -309,6 +319,42 @@ export const useGradeEntry = (evaluationId: number | null) => {
   }, [originalStudents]);
 
   /**
+   * Apply batch changes (from clipboard paste)
+   */
+  const applyBatchChanges = useCallback(
+    (changes: Array<{ studentId: number; score: number | null; isAbsent: boolean; absenceType?: string | null }>) => {
+      setStudents((prev) => {
+        const changeMap = new Map(changes.map(c => [c.studentId, c]));
+
+        return prev.map((entry) => {
+          const change = changeMap.get(entry.student.id);
+          if (!change) return entry;
+
+          return {
+            ...entry,
+            score: change.score,
+            is_absent: change.isAbsent,
+            absence_type: change.isAbsent ? (change.absenceType as any || 'unjustified') : null,
+            is_modified: true,
+          };
+        });
+      });
+
+      setHasUnsavedChanges(true);
+
+      // Reset auto-save timer
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+
+      autoSaveTimerRef.current = setTimeout(() => {
+        saveGrades();
+      }, AUTO_SAVE_INTERVAL);
+    },
+    [saveGrades]
+  );
+
+  /**
    * Refresh data
    */
   const refresh = useCallback(() => {
@@ -380,6 +426,7 @@ export const useGradeEntry = (evaluationId: number | null) => {
     saveGrades,
     getCellState,
     resetChanges,
+    applyBatchChanges,
     refresh,
   };
 };

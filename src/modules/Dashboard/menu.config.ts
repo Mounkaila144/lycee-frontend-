@@ -10,20 +10,6 @@ export const dashboardMenuConfig: ModuleMenuConfig = {
   module: 'Dashboard',
   menus: [
     {
-      id: 'dashboard-admin',
-      label: 'Dashboard',
-      route: '/admin/dashboard',
-      icon: {
-        type: 'emoji',
-        value: '📊',
-      },
-      order: 1,
-      module: 'Dashboard',
-      roles: ['admin'],
-      isVisible: true,
-      isActive: true,
-    },
-    {
       id: 'dashboard-superadmin',
       label: 'Dashboard',
       route: '/superadmin/dashboard',

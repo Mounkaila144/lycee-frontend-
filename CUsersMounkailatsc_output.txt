@@ -1,0 +1,236 @@
+src/app/[lang]/admin/grades/submit/page.tsx(109,11): error TS2322: Type 'Error' is not assignable to type 'ReactNode'.
+src/app/[lang]/admin/login/page.tsx(10,17): error TS2322: Type '{ mode: Mode; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'mode' does not exist on type 'IntrinsicAttributes'.
+src/app/[lang]/admin/settings/menus/page.tsx(5,10): error TS2305: Module '"@/modules/UsersGuard"' has no exported member 'useAuth'.
+src/app/[lang]/admin/settings/page.tsx(6,10): error TS2305: Module '"@/modules/UsersGuard"' has no exported member 'useAuth'.
+src/app/[lang]/superadmin/sites/page.tsx(17,3): error TS2305: Module '"@/modules/Site"' has no exported member 'SitePaginationMeta'.
+src/app/[lang]/superadmin/sites/page.tsx(56,5): error TS2353: Object literal may only specify known properties, and 'sort_by' does not exist in type 'SiteFilters | (() => SiteFilters)'.
+src/app/[lang]/superadmin/sites/page.tsx(207,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/app/[lang]/superadmin/sites/page.tsx(211,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/app/server/actions.ts(9,37): error TS2307: Cannot find module '@/fake-db/apps/ecommerce' or its corresponding type declarations.
+src/app/server/actions.ts(10,35): error TS2307: Cannot find module '@/fake-db/apps/academy' or its corresponding type declarations.
+src/app/server/actions.ts(11,35): error TS2307: Cannot find module '@/fake-db/apps/logistics' or its corresponding type declarations.
+src/app/server/actions.ts(12,35): error TS2307: Cannot find module '@/fake-db/apps/invoice' or its corresponding type declarations.
+src/app/server/actions.ts(13,32): error TS2307: Cannot find module '@/fake-db/apps/userList' or its corresponding type declarations.
+src/app/server/actions.ts(14,38): error TS2307: Cannot find module '@/fake-db/apps/permissions' or its corresponding type declarations.
+src/app/server/actions.ts(15,35): error TS2307: Cannot find module '@/fake-db/pages/userProfile' or its corresponding type declarations.
+src/app/server/actions.ts(16,31): error TS2307: Cannot find module '@/fake-db/pages/faq' or its corresponding type declarations.
+src/app/server/actions.ts(17,35): error TS2307: Cannot find module '@/fake-db/pages/pricing' or its corresponding type declarations.
+src/app/server/actions.ts(18,38): error TS2307: Cannot find module '@/fake-db/pages/widgetExamples' or its corresponding type declarations.
+src/components/layout/horizontal/HorizontalModuleMenu.tsx(62,11): error TS2367: This comparison appears to be unintentional because the types '"svg" | "icon-class" | "lucide"' and '"iconify"' have no overlap.
+src/components/layout/shared/UserDropdown.tsx(124,67): error TS2339: Property 'avatar' does not exist on type 'User'.
+src/components/layout/vertical/ModuleMenu.tsx(65,11): error TS2367: This comparison appears to be unintentional because the types '"svg" | "icon-class" | "lucide"' and '"iconify"' have no overlap.
+src/modules/Enrollment/admin/components/AdministrativeEnrollmentFormDialog.tsx(156,26): error TS2339: Property 'label' does not exist on type 'AdministrativeEnrollmentStudent'.
+src/modules/Enrollment/admin/components/AdministrativeEnrollmentListTable.tsx(451,5): error TS2353: Object literal may only specify known properties, and 'filterComponents' does not exist in type 'DataTableConfig<AdministrativeEnrollment>'.
+src/modules/Enrollment/admin/components/EnrollmentStatistics.tsx(339,9): error TS2322: Type '(request?: ReportGenerationRequest) => Promise<ReportDownloadResponse>' is not assignable to type '() => Promise<void>'.
+  Type 'Promise<ReportDownloadResponse>' is not assignable to type 'Promise<void>'.
+    Type 'ReportDownloadResponse' is not assignable to type 'void'.
+src/modules/Enrollment/admin/components/EnrollmentStatistics.tsx(340,9): error TS2322: Type '(request?: ReportGenerationRequest) => Promise<ReportDownloadResponse>' is not assignable to type '() => Promise<void>'.
+  Type 'Promise<ReportDownloadResponse>' is not assignable to type 'Promise<void>'.
+src/modules/Enrollment/admin/components/EnrollmentValidationDashboard.tsx(523,23): error TS2339: Property 'label' does not exist on type 'AcademicYear'.
+src/modules/Enrollment/admin/components/EnrollmentValidationDashboard.tsx(523,37): error TS2339: Property 'year' does not exist on type 'AcademicYear'.
+src/modules/Enrollment/admin/components/EnrollmentValidationDialog.tsx(252,9): error TS2322: Type 'void' is not assignable to type 'ReactNode'.
+src/modules/Enrollment/admin/components/EquivalenceFormDialog.tsx(97,13): error TS2353: Object literal may only specify known properties, and 'programme_id' does not exist in type 'ModuleQueryParams'.
+src/modules/Enrollment/admin/components/EquivalenceFormDialog.tsx(318,70): error TS2339: Property 'nom' does not exist on type 'Module'.
+src/modules/Enrollment/admin/components/ExemptionFormDialog.tsx(93,67): error TS2339: Property 'is_current' does not exist on type 'AcademicYear'.
+src/modules/Enrollment/admin/components/ExemptionFormDialog.tsx(334,51): error TS2339: Property 'ects' does not exist on type 'Module'.
+src/modules/Enrollment/admin/components/ExemptionFormDialog.tsx(352,43): error TS2339: Property 'is_current' does not exist on type 'AcademicYear'.
+src/modules/Enrollment/admin/components/GroupAssignmentDashboard.tsx(245,22): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & ListItemOwnProps & CommonProps & Omit<any, "alignItems" | ... 15 more ... | "disablePadding">): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; key: number; button: true; selected: boolean; onClick: () => void; sx: { borderBottom: string; borderColor: "divider"; }; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<ListItemTypeMap<{}, "li">>): Element | null', gave the following error.
+    Type '{ children: Element; key: number; button: true; selected: boolean; onClick: () => void; sx: { borderBottom: string; borderColor: "divider"; }; }' is not assignable to type 'IntrinsicAttributes & ListItemOwnProps & CommonProps & Omit<Omit<DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>, "ref"> & { ...; }, "alignItems" | ... 15 more ... | "disablePadding">'.
+      Property 'button' does not exist on type 'IntrinsicAttributes & ListItemOwnProps & CommonProps & Omit<Omit<DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>, "ref"> & { ...; }, "alignItems" | ... 15 more ... | "disablePadding">'.
+src/modules/Enrollment/admin/components/GroupAssignmentDashboard.tsx(444,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & ListItemOwnProps & CommonProps & Omit<any, "alignItems" | ... 15 more ... | "disablePadding">): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element[]; key: number; button: true; onClick: () => Promise<void>; sx: { borderBottom: string; borderColor: "divider"; }; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<ListItemTypeMap<{}, "li">>): Element | null', gave the following error.
+    Type '{ children: Element[]; key: number; button: true; onClick: () => Promise<void>; sx: { borderBottom: string; borderColor: "divider"; }; }' is not assignable to type 'IntrinsicAttributes & ListItemOwnProps & CommonProps & Omit<Omit<DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>, "ref"> & { ...; }, "alignItems" | ... 15 more ... | "disablePadding">'.
+      Property 'button' does not exist on type 'IntrinsicAttributes & ListItemOwnProps & CommonProps & Omit<Omit<DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>, "ref"> & { ...; }, "alignItems" | ... 15 more ... | "disablePadding">'.
+src/modules/Enrollment/admin/components/GroupAssignmentDialog.tsx(190,24): error TS18048: 'assignment.student' is possibly 'undefined'.
+src/modules/Enrollment/admin/components/GroupAssignmentDialog.tsx(191,24): error TS18048: 'assignment.student' is possibly 'undefined'.
+src/modules/Enrollment/admin/components/GroupAssignmentDialog.tsx(192,23): error TS18048: 'assignment.student' is possibly 'undefined'.
+src/modules/Enrollment/admin/components/GroupExportDialog.tsx(197,80): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/modules/Enrollment/admin/components/GroupExportDialog.tsx(200,82): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/Enrollment/admin/components/GroupExportDialog.tsx(203,80): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/Enrollment/admin/components/GroupExportDialog.tsx(206,99): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/Enrollment/admin/components/GroupListTable.tsx(287,5): error TS2353: Object literal may only specify known properties, and 'headerContent' does not exist in type 'DataTableConfig<Group>'.
+src/modules/Enrollment/admin/components/OptionList.tsx(365,7): error TS2353: Object literal may only specify known properties, and 'page' does not exist in type '{ current_page: number; last_page: number; per_page: number; total: number; }'.
+src/modules/Enrollment/admin/components/OptionList.tsx(470,71): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/modules/Enrollment/admin/components/PedagogicalEnrollmentWizard.tsx(176,5): error TS2353: Object literal may only specify known properties, and 'existingEnrollment' does not exist in type '{ summary: string; student: string; program: string; semester: string; selectedModules: string; totalCredits: string; mandatory: string; optional: string; moduleCode: string; moduleName: string; ... 8 more ...; warnings: string; }'.
+src/modules/Enrollment/admin/components/PedagogicalEnrollmentWizard.tsx(380,59): error TS2339: Property 'libelle' does not exist on type '{ id: number; code: string; name: string; }'.
+src/modules/Enrollment/admin/components/PedagogicalEnrollmentWizard.tsx(432,58): error TS2339: Property 'existingEnrollment' does not exist on type '{ summary: string; student: string; program: string; semester: string; selectedModules: string; totalCredits: string; mandatory: string; optional: string; moduleCode: string; moduleName: string; ... 8 more ...; warnings: string; }'.
+src/modules/Enrollment/admin/components/ProgramDistributionChart.tsx(253,27): error TS2322: Type '"error" | "warning" | "success" | "default"' is not assignable to type 'OverridableStringUnion<"primary" | "secondary" | "error" | "warning" | "info" | "success" | "inherit", LinearProgressPropsColorOverrides> | undefined'.
+  Type '"default"' is not assignable to type 'OverridableStringUnion<"primary" | "secondary" | "error" | "warning" | "info" | "success" | "inherit", LinearProgressPropsColorOverrides> | undefined'.
+src/modules/Enrollment/admin/components/ReenrollmentCampaignFormDialog.tsx(407,34): error TS2552: Cannot find name 'DOCUMENT_TYPES'. Did you mean 'getDocumentTypes'?
+src/modules/Enrollment/admin/components/ReenrollmentCampaignFormDialog.tsx(407,54): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/modules/Enrollment/admin/components/ReenrollmentCampaignFormDialog.tsx(414,20): error TS2552: Cannot find name 'DOCUMENT_TYPES'. Did you mean 'getDocumentTypes'?
+src/modules/Enrollment/admin/components/ReenrollmentCampaignFormDialog.tsx(414,39): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/modules/Enrollment/admin/components/Reenrollments.tsx(225,9): error TS2322: Type '"warning" | "success"' is not assignable to type '"error" | "success"'.
+  Type '"warning"' is not assignable to type '"error" | "success"'.
+src/modules/Enrollment/admin/components/StudentCardGenerateDialog.tsx(226,11): error TS2322: Type '"Active"' is not assignable to type 'StudentStatus | undefined'.
+src/modules/Enrollment/admin/components/StudentCardListTable.tsx(333,5): error TS2353: Object literal may only specify known properties, and 'headerContent' does not exist in type 'DataTableConfig<StudentCard>'.
+src/modules/Enrollment/admin/components/TransferFormDialog.tsx(97,67): error TS2339: Property 'is_current' does not exist on type 'AcademicYear'.
+src/modules/Enrollment/admin/components/TransferFormDialog.tsx(406,43): error TS2339: Property 'is_current' does not exist on type 'AcademicYear'.
+src/modules/Enrollment/admin/hooks/index.ts(10,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(11,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(12,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(13,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(14,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(15,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(16,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/index.ts(17,1): error TS2308: Module './useStudents' has already exported a member named 'PaginationMeta'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/admin/hooks/useOptions.ts(311,47): error TS2561: Object literal may only specify known properties, but 'program_id' does not exist in type 'AutomaticAssignmentRequest'. Did you mean to write 'programme_id'?
+src/modules/Enrollment/admin/hooks/usePedagogicalEnrollment.ts(321,14): error TS2345: Argument of type '{ availableModules: null; selectedModules: never[]; currentEnrollment: null; enrollmentResult: null; creditValidation: null; loading: false; submitting: false; error: null; currentStep: "selection"; ... 4 more ...; academicYearId: null; }' is not assignable to parameter of type 'SetStateAction<UsePedagogicalEnrollmentState>'.
+  Property 'isExistingEnrollment' is missing in type '{ availableModules: null; selectedModules: never[]; currentEnrollment: null; enrollmentResult: null; creditValidation: null; loading: false; submitting: false; error: null; currentStep: "selection"; ... 4 more ...; academicYearId: null; }' but required in type 'UsePedagogicalEnrollmentState'.
+src/modules/Enrollment/admin/services/enrollmentValidationService.ts(155,5): error TS2322: Type '{ id: any; student_id: any; program_id: any; level: any; academic_year_id: any; semester_id: any; status: string; total_modules: any; total_ects: any; modules_check: boolean; groups_check: boolean; ... 11 more ...; semester: any; }' is not assignable to type 'PedagogicalEnrollment'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'PedagogicalEnrollmentStatus'.
+src/modules/Enrollment/admin/services/studentImportService.ts(140,7): error TS2353: Object literal may only specify known properties, and 'errorDetails' does not exist in type 'ImportExecuteResponse'.
+src/modules/Enrollment/menu.config.ts(21,38): error TS2322: Type '"agent_inscription"' is not assignable to type 'UserRole'.
+src/modules/Enrollment/menu.config.ts(36,42): error TS2322: Type '"agent_inscription"' is not assignable to type 'UserRole'.
+src/modules/Enrollment/menu.config.ts(81,42): error TS2322: Type '"agent_inscription"' is not assignable to type 'UserRole'.
+src/modules/Enrollment/menu.config.ts(141,42): error TS2322: Type '"agent_inscription"' is not assignable to type 'UserRole'.
+src/modules/Enrollment/types/index.ts(8,1): error TS2308: Module './option.types' has already exported a member named 'AssignmentMethod'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/types/index.ts(13,1): error TS2308: Module './reenrollment.types' has already exported a member named 'AcademicYear'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/types/index.ts(15,1): error TS2308: Module './student.types' has already exported a member named 'StatusStatistics'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Enrollment/types/reenrollment.types.ts(7,15): error TS2724: '"./pedagogicalEnrollment.types"' has no exported member named 'PedagogicalEnrollment'. Did you mean 'PedagogicalEnrollmentRequest'?
+src/modules/Grades/admin/components/GradeSubmissionCard.tsx(150,40): error TS2367: This comparison appears to be unintentional because the types 'GradeValidationStatus' and '"Draft"' have no overlap.
+src/modules/Grades/admin/components/GradeSubmissionCard.tsx(168,19): error TS2367: This comparison appears to be unintentional because the types '"Approved" | "Rejected" | "Published"' and '"Submitted"' have no overlap.
+src/modules/Grades/admin/components/GradeSubmissionCard.tsx(278,28): error TS2367: This comparison appears to be unintentional because the types 'GradeValidationStatus | undefined' and '"Draft"' have no overlap.
+src/modules/Grades/admin/components/GradeValidationsDashboard.tsx(81,12): error TS2678: Type '"Submitted"' is not comparable to type 'GradeValidationStatus'.
+src/modules/Grades/admin/components/GradeValidationsDashboard.tsx(97,12): error TS2678: Type '"Submitted"' is not comparable to type 'GradeValidationStatus'.
+src/modules/Grades/admin/components/ModuleSelector.tsx(137,19): error TS18048: 'module.semester' is possibly 'undefined'.
+src/modules/Grades/admin/services/gradeSubmissionService.ts(106,17): error TS2322: Type '{ can_submit: boolean; checks: { all_grades_entered: boolean; valid_grade_range: true; no_anomalies: boolean; }; errors: string[]; warnings: string[]; statistics: null; } | undefined' is not assignable to type 'PreSubmissionCheck | undefined'.
+  Object literal may only specify known properties, and 'statistics' does not exist in type 'PreSubmissionCheck'.
+src/modules/Grades/frontend/components/GradeImportWizard.tsx(383,59): error TS2322: Type 'number | undefined' is not assignable to type 'string | number'.
+  Type 'undefined' is not assignable to type 'string | number'.
+src/modules/Grades/frontend/components/TeacherGradeEntry.tsx(555,62): error TS2339: Property 'academic_year_id' does not exist on type '{ id: number; name: string; }'.
+src/modules/Grades/frontend/components/TeacherGradeEntry.tsx(556,21): error TS2322: Type 'GradeStatistics | null' is not assignable to type 'GradeStatistics | undefined'.
+  Type 'null' is not assignable to type 'GradeStatistics | undefined'.
+src/modules/Grades/frontend/components/TeacherGradeEntry.tsx(644,11): error TS2322: Type '(evaluationId: number) => Promise<{ is_complete: boolean; total_students: number; entered_count: number; missing_count: number; absent_count: number; }>' is not assignable to type '(evaluationId: number) => Promise<void>'.
+  Type 'Promise<{ is_complete: boolean; total_students: number; entered_count: number; missing_count: number; absent_count: number; }>' is not assignable to type 'Promise<void>'.
+    Type '{ is_complete: boolean; total_students: number; entered_count: number; missing_count: number; absent_count: number; }' is not assignable to type 'void'.
+src/modules/Grades/frontend/components/TeacherGradeEntry.tsx(645,11): error TS2322: Type '(evaluationId: number, notifyStudents?: boolean) => Promise<PublishGradesResponse>' is not assignable to type '(evaluationId: number, notifyStudents: boolean) => Promise<void>'.
+  Type 'Promise<PublishGradesResponse>' is not assignable to type 'Promise<void>'.
+    Type 'PublishGradesResponse' is not assignable to type 'void'.
+src/modules/Grades/frontend/hooks/useGradeImport.ts(114,19): error TS2339: Property 'status' does not exist on type 'Query<ImportStatusResponse, Error, ImportStatusResponse, (string | null | undefined)[]>'.
+src/modules/Grades/frontend/hooks/useGradeImport.ts(114,49): error TS2339: Property 'status' does not exist on type 'Query<ImportStatusResponse, Error, ImportStatusResponse, (string | null | undefined)[]>'.
+src/modules/Grades/menu.config.ts(21,38): error TS2322: Type '"teacher"' is not assignable to type 'UserRole'.
+src/modules/Grades/menu.config.ts(21,49): error TS2322: Type '"enseignant"' is not assignable to type 'UserRole'.
+src/modules/Grades/menu.config.ts(36,42): error TS2322: Type '"teacher"' is not assignable to type 'UserRole'.
+src/modules/Grades/menu.config.ts(36,53): error TS2322: Type '"enseignant"' is not assignable to type 'UserRole'.
+src/modules/Grades/menu.config.ts(51,42): error TS2322: Type '"responsable_pedagogique"' is not assignable to type 'UserRole'.
+src/modules/Grades/menu.config.ts(201,42): error TS2322: Type '"teacher"' is not assignable to type 'UserRole'.
+src/modules/Grades/menu.config.ts(201,53): error TS2322: Type '"enseignant"' is not assignable to type 'UserRole'.
+src/modules/Grades/types/index.ts(6,1): error TS2308: Module './grade.types' has already exported a member named 'GradeModificationRequest'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Grades/types/index.ts(6,1): error TS2308: Module './grade.types' has already exported a member named 'GradeModificationResponse'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Grades/types/index.ts(6,1): error TS2308: Module './grade.types' has already exported a member named 'PublishGradesRequest'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Grades/types/index.ts(6,1): error TS2308: Module './grade.types' has already exported a member named 'PublishGradesResponse'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/Site/index.ts(25,3): error TS2305: Module '"./types/site.types"' has no exported member 'SiteType'.
+src/modules/Site/index.ts(26,3): error TS2305: Module '"./types/site.types"' has no exported member 'YesNo'.
+src/modules/StructureAcademique/admin/__tests__/curriculum.test.ts(5,38): error TS2307: Cannot find module '@jest/globals' or its corresponding type declarations.
+src/modules/StructureAcademique/admin/components/AcademicPeriodFormDialog.tsx(66,13): error TS2345: Argument of type '{ name: string; type: AcademicPeriodType; start_date: string; end_date: string; }' is not assignable to parameter of type '{ type: "Autre" | "Inscription pédagogique" | "Jour férié" | "Vacances" | "Session examens"; name: string; start_date: string; end_date: string; } | { type?: "Autre" | "Inscription pédagogique" | "Jour férié" | "Vacances" | "Session examens" | undefined; name?: string | undefined; start_date?: string | undefined; en...'.
+  Types of property 'type' are incompatible.
+    Type 'AcademicPeriodType' is not assignable to type '"Autre" | "Inscription pédagogique" | "Jour férié" | "Vacances" | "Session examens" | undefined'.
+      Type '"Rattrapage"' is not assignable to type '"Autre" | "Inscription pédagogique" | "Jour férié" | "Vacances" | "Session examens" | undefined'.
+src/modules/StructureAcademique/admin/components/EvaluationConfigForm.tsx(20,33): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/modules/StructureAcademique/admin/components/EvaluationConfigForm.tsx(21,33): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/modules/StructureAcademique/admin/components/EvaluationTemplateForm.tsx(256,72): error TS2339: Property 'message' does not exist on type 'FieldError | LiteralUnion<"pattern" | "onBlur" | "onChange" | "disabled" | "value" | "max" | "maxLength" | "min" | "minLength" | "required" | "shouldUnregister" | "valueAsNumber" | "valueAsDate" | "setValueAs" | "validate" | "deps", string>'.
+  Property 'message' does not exist on type '"pattern"'.
+src/modules/StructureAcademique/admin/components/ProgressionRuleList.tsx(30,13): error TS2322: Type '(data: ProgressionRuleFormData) => Promise<ProgressionRule>' is not assignable to type '(data: any) => Promise<void>'.
+  Type 'Promise<ProgressionRule>' is not assignable to type 'Promise<void>'.
+    Type 'ProgressionRule' is not assignable to type 'void'.
+src/modules/StructureAcademique/admin/components/ProgressionRuleList.tsx(31,13): error TS2322: Type '(id: number, data: Partial<ProgressionRuleFormData>) => Promise<ProgressionRule>' is not assignable to type '(id: number, data: any) => Promise<void>'.
+  Type 'Promise<ProgressionRule>' is not assignable to type 'Promise<void>'.
+src/modules/StructureAcademique/admin/components/ProgressionSimulatorDialog.tsx(150,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & ChipOwnProps & CommonProps & Omit<any, "size" | ... 15 more ... | "skipFocusWhenDisabled">): Element | null', gave the following error.
+    Type '"large"' is not assignable to type 'OverridableStringUnion<"small" | "medium", ChipPropsSizeOverrides> | undefined'.
+  Overload 2 of 2, '(props: DefaultComponentProps<ChipTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '"large"' is not assignable to type 'OverridableStringUnion<"small" | "medium", ChipPropsSizeOverrides> | undefined'.
+src/modules/StructureAcademique/admin/components/SpecializationFormDialog.tsx(225,39): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & FormHelperTextOwnProps & CommonProps & Omit<...>): Element | null', gave the following error.
+    Type 'string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined' is not assignable to type 'ReactNode'.
+      Type 'FieldError' is not assignable to type 'ReactNode'.
+        Type 'FieldError' is missing the following properties from type 'ReactPortal': children, props, key
+  Overload 2 of 2, '(props: DefaultComponentProps<FormHelperTextTypeMap<{}, "p">>): Element | null', gave the following error.
+    Type 'string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined' is not assignable to type 'ReactNode'.
+src/modules/StructureAcademique/admin/components/SpecializationFormDialog.tsx(349,53): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & FormHelperTextOwnProps & CommonProps & Omit<...>): Element | null', gave the following error.
+    Type 'string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined' is not assignable to type 'ReactNode'.
+  Overload 2 of 2, '(props: DefaultComponentProps<FormHelperTextTypeMap<{}, "p">>): Element | null', gave the following error.
+    Type 'string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined' is not assignable to type 'ReactNode'.
+src/modules/StructureAcademique/admin/components/SpecializationFormDialog.tsx(366,63): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & FormHelperTextOwnProps & CommonProps & Omit<...>): Element | null', gave the following error.
+    Type 'string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined' is not assignable to type 'ReactNode'.
+  Overload 2 of 2, '(props: DefaultComponentProps<FormHelperTextTypeMap<{}, "p">>): Element | null', gave the following error.
+    Type 'string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined' is not assignable to type 'ReactNode'.
+src/modules/StructureAcademique/admin/components/SpecializationList.tsx(114,9): error TS2322: Type '(data: SpecializationFormInput) => Promise<void>' is not assignable to type '(data: { code: string; name: string; is_active: boolean; programme_id: number; type?: any; description?: string | undefined; capacity?: number | undefined; responsable_id?: number | undefined; ... 4 more ...; selection_mode?: any; }) => Promise<...>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type '{ code: string; name: string; is_active: boolean; programme_id: number; type?: any; description?: string | undefined; capacity?: number | undefined; responsable_id?: number | undefined; min_average_required?: number | undefined; application_start_date?: string | undefined; application_end_date?: string | undefined; ...' is not assignable to type 'SpecializationFormInput'.
+      Property 'available_from_level' is optional in type '{ code: string; name: string; is_active: boolean; programme_id: number; type?: any; description?: string | undefined; capacity?: number | undefined; responsable_id?: number | undefined; min_average_required?: number | undefined; application_start_date?: string | undefined; application_end_date?: string | undefined; ...' but required in type 'SpecializationFormInput'.
+src/modules/StructureAcademique/admin/components/SpecializationList.tsx(116,9): error TS2322: Type 'Programme[]' is not assignable to type '{ id: number; code: string; name: string; }[]'.
+  Property 'name' is missing in type 'Programme' but required in type '{ id: number; code: string; name: string; }'.
+src/modules/StructureAcademique/admin/hooks/useLevelCredits.ts(25,69): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useLevelCredits.ts(40,82): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useLevelCredits.ts(85,81): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useLevelCredits.ts(104,94): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useLevelCredits.ts(149,81): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammeLevels.ts(30,71): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammeLevels.ts(55,11): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammeLevels.ts(82,69): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammes.ts(44,61): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammes.ts(103,75): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammes.ts(126,92): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammes.ts(149,61): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/admin/hooks/useProgrammes.ts(171,89): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/StructureAcademique/index.ts(5,1): error TS2308: Module './admin' has already exported a member named 'CreditValidationReport'. Consider explicitly re-exporting to resolve the ambiguity.
+src/modules/StructureAcademique/types/index.ts(7,3): error TS2305: Module '"./programme.types"' has no exported member 'ProgrammeFilters'.
+src/modules/StructureAcademique/types/index.ts(8,3): error TS2724: '"./programme.types"' has no exported member named 'ProgrammesListResponse'. Did you mean 'ProgrammeResponse'?
+src/modules/Timetable/admin/components/NotificationCenterDashboard.tsx(234,18): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(props: DefaultComponentProps<BoxTypeMap<{}, "div", Theme>>): Element | null', gave the following error.
+    Type 'unknown' is not assignable to type 'ReactNode'.
+  Overload 2 of 2, '(props: DefaultComponentProps<BoxTypeMap<{}, "div", Theme>>): Element | null', gave the following error.
+    Type 'unknown' is not assignable to type 'ReactNode'.
+  Overload 2 of 2, '(props: DefaultComponentProps<BoxTypeMap<{}, "div", Theme>>): Element | null', gave the following error.
+    Type 'unknown' is not assignable to type 'ReactNode'.
+src/modules/UsersGuard/admin/components/UserFunctionsModal.tsx(35,26): error TS2339: Property 'functions_list' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserFunctionsModal.tsx(36,12): error TS2339: Property 'functions_list' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserFunctionsModal.tsx(36,42): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserFunctionsModal.tsx(64,31): error TS7006: Parameter 'func' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserFunctionsModal.tsx(64,37): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(35,23): error TS2339: Property 'groups' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(35,38): error TS2339: Property 'groups' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(36,12): error TS2339: Property 'groups' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(37,12): error TS2339: Property 'groups_list' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(38,14): error TS2339: Property 'groups_list' does not exist on type 'User'.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(38,42): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(38,48): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(42,20): error TS7006: Parameter 'g' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(70,28): error TS7006: Parameter 'group' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UserGroupsModal.tsx(70,35): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/modules/UsersGuard/admin/components/UsersList.tsx(58,28): error TS2741: Property 'statistics' is missing in type '{ users: User[]; loading: boolean; error: Error | null; pagination: PaginationMeta; params: UserQueryParams; updateParams: (newParams: Partial<UserQueryParams>) => void; ... 4 more ...; deleteUser: (userId: number) => Promise<...>; }' but required in type 'UsersContextType'.
+src/modules/UsersGuard/admin/hooks/useUsers.ts(42,51): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/UsersGuard/admin/hooks/useUsers.ts(101,46): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+src/modules/UsersGuard/admin/services/userService.ts(5,3): error TS2305: Module '"../../types/user.types"' has no exported member 'UserFilters'.
+src/modules/UsersGuard/index.ts(40,32): error TS2305: Module '"../UsersGuard/types/user.types"' has no exported member 'UserFilters'.
+src/modules/UsersGuard/superadmin/components/LoginForm.tsx(86,17): error TS2322: Type '"superadmin"' is not assignable to type '"admin" | "frontend"'.
+src/shared/components/Navbar.tsx(5,10): error TS2305: Module '"@/modules/UsersGuard"' has no exported member 'useAuth'.
+src/shared/components/permissions/DebugPermissionsState.tsx(10,10): error TS2305: Module '"@/modules/UsersGuard"' has no exported member 'useAuth'.
+src/shared/components/permissions/ForceLoadPermissions.tsx(11,10): error TS2305: Module '"@/modules/UsersGuard"' has no exported member 'useAuth'.
+src/shared/contexts/PermissionsContext.tsx(143,50): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/shared/contexts/PermissionsContext.tsx(146,49): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/shared/lib/init-modules.ts(9,10): error TS2305: Module '"@/modules/UsersGuard"' has no exported member 'initUsersGuardModule'.
+src/shared/utils/permissions.ts(13,46): error TS2345: Argument of type '(p: Permission) => any' is not assignable to parameter of type '(value: string, index: number, array: string[]) => any'.
+  Types of parameters 'p' and 'value' are incompatible.
+    Type 'string' is not assignable to type 'Permission'.
+src/shared/utils/permissions.ts(13,67): error TS2339: Property 'slug' does not exist on type 'Permission'.
+src/shared/utils/permissions.ts(17,12): error TS2339: Property 'groups' does not exist on type 'User'.
+src/shared/utils/permissions.ts(18,10): error TS2339: Property 'groups' does not exist on type 'User'.
+src/shared/utils/permissions.ts(18,26): error TS7006: Parameter 'group' implicitly has an 'any' type.
+src/shared/utils/permissions.ts(20,52): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/views/LoginSuperAdmin.tsx(105,9): error TS2322: Type '"superadmin"' is not assignable to type '"admin" | "frontend"'.

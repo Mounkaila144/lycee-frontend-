@@ -14,6 +14,7 @@ import { superAdminMenuConfig } from '@/modules/SuperAdmin/menu.config';
 import { structureAcademiqueMenuConfig } from '@/modules/StructureAcademique/menu.config';
 import { enrollmentMenuConfig } from '@/modules/Enrollment/menu.config';
 import { gradesMenuConfig } from '@/modules/Grades/menu.config';
+import { timetableMenuConfig } from '@/modules/Timetable/menu.config';
 
 /**
  * Registry of all module menu configurations
@@ -30,6 +31,7 @@ const moduleMenuConfigs: ModuleMenuConfig[] = [
   structureAcademiqueMenuConfig,
   enrollmentMenuConfig,
   gradesMenuConfig,
+  timetableMenuConfig,
   // Add more module menu configs here
 ];
 

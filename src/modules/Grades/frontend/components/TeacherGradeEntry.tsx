@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Components
 import { TeacherModulesList } from './TeacherModulesList';
@@ -20,6 +21,10 @@ import { GradeEntryTable } from './GradeEntryTable';
 import { GradeStatisticsPanel } from './GradeStatisticsPanel';
 import { GradeImportExportDialog } from './GradeImportExportDialog';
 import { GradePublishDialog } from './GradePublishDialog';
+import { GradeHistoryModal } from './GradeHistoryModal';
+import { GradeCorrectionRequestModal } from './GradeCorrectionRequestModal';
+import { BatchPastePreviewModal, type MappedGradeData } from './BatchPastePreviewModal';
+import { AbsenceManagementModal } from './AbsenceManagementModal';
 import { GradeSubmissionCard } from '@/modules/Grades/admin/components';
 
 // Hooks
@@ -27,6 +32,11 @@ import { useTeacherModules } from '../hooks/useTeacherModules';
 import { useGradeEntry } from '../hooks/useGradeEntry';
 import { useGradePublish } from '../hooks/useGradePublish';
 import { useGradeImportExport } from '../hooks/useGradeImportExport';
+import { useGradeCorrection } from '../hooks/useGradeCorrection';
+import { useClipboardPaste } from '../hooks/useClipboardPaste';
+import { useAbsenceManagement } from '../hooks/useAbsenceManagement';
+import { useModuleAverages } from '../hooks/useModuleAverages';
+import type { AbsenceType } from '../../types/absence.types';
 
 /**
  * TeacherGradeEntry Component
@@ -40,6 +50,13 @@ export const TeacherGradeEntry: React.FC = () => {
   // Dialogs state
   const [importExportOpen, setImportExportOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
+  const [selectedStudentName, setSelectedStudentName] = useState<string>('');
+  const [selectedCurrentScore, setSelectedCurrentScore] = useState<number | null>(null);
+  const [batchPasteOpen, setBatchPasteOpen] = useState(false);
+  const [applyingBatch, setApplyingBatch] = useState(false);
 
   // Hooks
   const {
@@ -58,6 +75,7 @@ export const TeacherGradeEntry: React.FC = () => {
 
   const {
     students,
+    allStudents,
     statistics,
     completionStatus,
     loading: gradesLoading,
@@ -74,6 +92,7 @@ export const TeacherGradeEntry: React.FC = () => {
     saveGrades,
     getCellState,
     resetChanges,
+    applyBatchChanges,
     refresh: refreshGrades,
   } = useGradeEntry(selectedEvaluation?.id ?? null);
 
@@ -101,6 +120,156 @@ export const TeacherGradeEntry: React.FC = () => {
     executeImport,
     resetImport,
   } = useGradeImportExport();
+
+  const {
+    history,
+    historyLoading,
+    historyError,
+    fetchGradeHistory,
+    resetHistory,
+    requesting,
+    requestError,
+    requestResult,
+    requestCorrection,
+    resetRequest,
+    exporting: exportingHistory,
+    exportModuleHistory,
+    exportEvaluationHistory,
+  } = useGradeCorrection();
+
+  const {
+    absencePolicy,
+    selectedStudentIds,
+    toggleStudentSelection,
+    selectAllStudents,
+    deselectAllStudents,
+    bulkAbsenceType,
+    setBulkAbsenceType,
+    bulkMarkingAbsent,
+    markSelectedAbsent,
+    absenceModalOpen,
+    selectedGradeId: absenceGradeId,
+    selectedStudentName: absenceStudentName,
+    selectedAbsenceType,
+    openAbsenceModal,
+    closeAbsenceModal,
+  } = useAbsenceManagement(selectedEvaluation?.id ?? null);
+
+  const {
+    averagesByStudent,
+    classAverage,
+    passRate,
+    loading: averagesLoading,
+    fetchAverages: refreshAverages,
+  } = useModuleAverages(
+    selectedModule?.id ?? null,
+    selectedModule?.semester?.id ?? null,
+    evaluations
+  );
+
+  // Check if evaluation has published grades
+  // Backend updates Grade.status to 'Published' but not evaluation.is_published
+  // So we also check grades_published count from the API
+  const isEvaluationPublished =
+    selectedEvaluation?.is_published || (selectedEvaluation?.grades_published ?? 0) > 0;
+
+  // Clipboard paste hook - only enabled when evaluation is selected and not published
+  const {
+    pastedData,
+    validation: pasteValidation,
+    isPasting,
+    pasteError,
+    clearPaste,
+  } = useClipboardPaste({
+    enabled: !!selectedEvaluation && !isEvaluationPublished,
+    onPaste: (data, validation) => {
+      if (data.rows.length > 0 && validation.validRows > 0) {
+        setBatchPasteOpen(true);
+      }
+    },
+  });
+
+  /**
+   * Handle batch paste apply
+   */
+  const handleApplyBatchPaste = (mappedData: MappedGradeData[]) => {
+    setApplyingBatch(true);
+
+    try {
+      // Transform mapped data to the format expected by applyBatchChanges
+      const changes = mappedData.map(item => ({
+        studentId: item.studentId,
+        score: item.score,
+        isAbsent: item.isAbsent,
+      }));
+
+      applyBatchChanges(changes);
+      setBatchPasteOpen(false);
+      clearPaste();
+    } finally {
+      setApplyingBatch(false);
+    }
+  };
+
+  /**
+   * Handle marking selected students as absent
+   */
+  const handleMarkSelectedAbsent = () => {
+    markSelectedAbsent((studentIds, absenceType) => {
+      studentIds.forEach(id => {
+        updateGrade(id, 'is_absent', true);
+        updateGrade(id, 'absence_type', absenceType);
+      });
+    });
+  };
+
+  /**
+   * Handle absence type change for a student
+   */
+  const handleAbsenceTypeChange = (studentId: number, absenceType: AbsenceType) => {
+    updateGrade(studentId, 'absence_type', absenceType);
+  };
+
+  /**
+   * Handle updating absence type from modal
+   */
+  const handleUpdateAbsenceType = (gradeId: number, absenceType: AbsenceType, comment?: string) => {
+    // Find the student by grade id
+    const entry = (allStudents || students).find(s => s.grade?.id === gradeId);
+    if (entry) {
+      updateGrade(entry.student.id, 'absence_type', absenceType);
+      if (comment) {
+        updateGrade(entry.student.id, 'comment', comment);
+      }
+    }
+    closeAbsenceModal();
+  };
+
+  /**
+   * Handle manage absence click (opens modal)
+   */
+  const handleManageAbsence = (gradeId: number, studentName: string, currentAbsenceType: AbsenceType | null) => {
+    openAbsenceModal(gradeId, studentName, currentAbsenceType);
+  };
+
+  /**
+   * Handle viewing grade history
+   */
+  const handleViewHistory = (gradeId: number, studentName: string) => {
+    setSelectedGradeId(gradeId);
+    setSelectedStudentName(studentName);
+    setHistoryOpen(true);
+  };
+
+  /**
+   * Handle requesting grade correction
+   */
+  const handleRequestCorrection = (gradeId: number, studentName: string, currentScore: number | null) => {
+    setSelectedGradeId(gradeId);
+    setSelectedStudentName(studentName);
+    setSelectedCurrentScore(currentScore);
+    setCorrectionOpen(true);
+  };
 
   /**
    * Handle module selection
@@ -147,6 +316,16 @@ export const TeacherGradeEntry: React.FC = () => {
   const handlePublishSuccess = () => {
     refreshEvaluations();
     refreshGrades();
+    refreshAverages();
+  };
+
+  /**
+   * Handle save with average refresh
+   */
+  const handleSaveGrades = async () => {
+    await saveGrades();
+    // Refresh module averages after save (backend recalculates via Observer)
+    setTimeout(() => refreshAverages(), 500);
   };
 
   /**
@@ -289,6 +468,22 @@ export const TeacherGradeEntry: React.FC = () => {
                           <i className="ri-download-upload-line" />
                         </IconButton>
                       </Tooltip>
+                      {/* Export History Button - only show for published evaluations */}
+                      {isEvaluationPublished && (
+                        <Tooltip title="Exporter l'historique des modifications">
+                          <IconButton
+                            onClick={() => exportEvaluationHistory(selectedEvaluation.id, selectedEvaluation.name)}
+                            disabled={exportingHistory}
+                            color="info"
+                          >
+                            {exportingHistory ? (
+                              <CircularProgress size={20} />
+                            ) : (
+                              <i className="ri-history-fill" />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Button
                         variant="outlined"
                         startIcon={<i className="ri-file-excel-2-line" />}
@@ -301,9 +496,9 @@ export const TeacherGradeEntry: React.FC = () => {
                         variant="contained"
                         startIcon={<i className="ri-send-plane-line" />}
                         onClick={() => setPublishOpen(true)}
-                        disabled={selectedEvaluation.is_published}
+                        disabled={isEvaluationPublished}
                       >
-                        {selectedEvaluation.is_published ? 'Publié' : 'Publier'}
+                        {isEvaluationPublished ? 'Publié' : 'Publier'}
                       </Button>
                     </Box>
                   </Box>
@@ -317,6 +512,40 @@ export const TeacherGradeEntry: React.FC = () => {
                     loading={gradesLoading}
                   />
                 </Box>
+
+                {/* Module Averages Summary */}
+                {classAverage !== null && (
+                  <Paper sx={{ p: 2, mb: 2 }}>
+                    <Box display="flex" alignItems="center" gap={3} flexWrap="wrap">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <i className="ri-bar-chart-2-line" style={{ fontSize: 20, color: '#1976d2' }} />
+                        <Typography variant="subtitle2">Moyennes Module</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Moyenne classe</Typography>
+                        <Typography
+                          variant="h6"
+                          fontWeight="bold"
+                          sx={{ color: classAverage >= 10 ? 'success.main' : 'error.main' }}
+                        >
+                          {classAverage.toFixed(2)}/20
+                        </Typography>
+                      </Box>
+                      {passRate !== null && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">Taux de réussite</Typography>
+                          <Typography
+                            variant="h6"
+                            fontWeight="bold"
+                            sx={{ color: passRate >= 50 ? 'success.main' : 'error.main' }}
+                          >
+                            {passRate.toFixed(1)}%
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Paper>
+                )}
 
                 {/* Submission Card */}
                 <Box mb={2}>
@@ -345,11 +574,30 @@ export const TeacherGradeEntry: React.FC = () => {
                     onSearchChange={setSearchQuery}
                     onSortChange={setSortBy}
                     onGradeChange={updateGrade}
-                    onSave={saveGrades}
+                    onSave={handleSaveGrades}
                     onRefresh={refreshGrades}
+                    onResetChanges={resetChanges}
                     validateScore={validateScore}
                     getCellState={getCellState}
-                    isPublished={selectedEvaluation.is_published}
+                    isPublished={isEvaluationPublished}
+                    onViewHistory={handleViewHistory}
+                    onRequestCorrection={isEvaluationPublished ? handleRequestCorrection : undefined}
+                    // Module averages
+                    moduleAverages={averagesByStudent}
+                    classAverage={classAverage}
+                    averagesLoading={averagesLoading}
+                    // Absence management
+                    absencePolicy={absencePolicy}
+                    selectedStudentIds={selectedStudentIds}
+                    onToggleStudentSelection={toggleStudentSelection}
+                    onSelectAllStudents={selectAllStudents}
+                    onDeselectAllStudents={deselectAllStudents}
+                    onAbsenceTypeChange={handleAbsenceTypeChange}
+                    onManageAbsence={handleManageAbsence}
+                    onMarkSelectedAbsent={handleMarkSelectedAbsent}
+                    bulkMarkingAbsent={bulkMarkingAbsent}
+                    bulkAbsenceType={bulkAbsenceType}
+                    onBulkAbsenceTypeChange={setBulkAbsenceType}
                   />
                 </Paper>
               </>
@@ -399,6 +647,76 @@ export const TeacherGradeEntry: React.FC = () => {
           completenessChecking={completenessChecking}
           error={publishError}
         />
+      )}
+
+      {/* Grade History Modal */}
+      <GradeHistoryModal
+        open={historyOpen}
+        onClose={() => {
+          setHistoryOpen(false);
+          setSelectedGradeId(null);
+          resetHistory();
+        }}
+        gradeId={selectedGradeId}
+        studentName={selectedStudentName}
+        history={history}
+        loading={historyLoading}
+        error={historyError}
+        onFetchHistory={fetchGradeHistory}
+      />
+
+      {/* Grade Correction Request Modal */}
+      <GradeCorrectionRequestModal
+        open={correctionOpen}
+        onClose={() => {
+          setCorrectionOpen(false);
+          setSelectedGradeId(null);
+          resetRequest();
+        }}
+        gradeId={selectedGradeId}
+        studentName={selectedStudentName}
+        currentScore={selectedCurrentScore}
+        onRequestCorrection={requestCorrection}
+        requesting={requesting}
+        requestError={requestError}
+        requestResult={requestResult}
+        onResetRequest={resetRequest}
+      />
+
+      {/* Batch Paste Preview Modal */}
+      <BatchPastePreviewModal
+        open={batchPasteOpen}
+        onClose={() => {
+          setBatchPasteOpen(false);
+          clearPaste();
+        }}
+        pastedData={pastedData}
+        validation={pasteValidation}
+        students={allStudents || students}
+        onApply={handleApplyBatchPaste}
+        applying={applyingBatch}
+      />
+
+      {/* Absence Management Modal */}
+      <AbsenceManagementModal
+        open={absenceModalOpen}
+        onClose={closeAbsenceModal}
+        studentName={absenceStudentName}
+        gradeId={absenceGradeId}
+        currentAbsenceType={selectedAbsenceType}
+        absencePolicy={absencePolicy}
+        onUpdateAbsenceType={handleUpdateAbsenceType}
+      />
+
+      {/* Paste Error Alert */}
+      {pasteError && (
+        <Alert
+          severity="error"
+          sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1400 }}
+          onClose={clearPaste}
+        >
+          {pasteError}
+        </Alert>
       )}
     </Box>
   );

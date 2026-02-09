@@ -1,108 +1,91 @@
 /**
  * Grades Module - Validation Types
- * Types for grade validation and publication workflow
+ * Types matching the backend GradeValidationResource and GradeValidationController
  */
 
 /**
  * Grade Validation Status
- * Matches backend: Draft -> Submitted -> Validated/Rejected -> Published
+ * Backend: Pending -> Approved/Rejected -> Published
  */
-export type GradeValidationStatus = 'Draft' | 'Submitted' | 'Pending' | 'Approved' | 'Rejected' | 'Published';
+export type GradeValidationStatus = 'Pending' | 'Approved' | 'Rejected' | 'Published';
 
 /**
  * Grade Validation Entity
- * Matches backend: GradeValidation model
+ * Matches backend GradeValidationResource exactly
  */
 export interface GradeValidation {
   id: number;
   module_id: number;
   evaluation_id: number | null;
-  academic_year_id: number;
-  submitted_by: number;
+  academic_year_id: number | null;
+  semester_id: number | null;
   status: GradeValidationStatus;
-  validated_by: number | null;
-  submitted_at: string;
+  submitted_at: string | null;
   validated_at: string | null;
   published_at: string | null;
+  scheduled_publish_at: string | null;
   rejection_reason: string | null;
+  notes: string | null;
   statistics: ValidationStatistics | null;
-  anomalies: string[] | null;
+  anomalies: string[];
+  has_anomalies: boolean;
   created_at: string;
   updated_at: string;
 
-  // Relations
+  // Relations (conditionally loaded via whenLoaded)
   module?: ValidationModule;
   evaluation?: ValidationEvaluation;
-  submitted_by_user?: ValidationUser;
-  validated_by_user?: ValidationUser | null;
+  submitter?: ValidationUser;
+  validator?: ValidationUser | null;
+  academic_year?: { id: number; name: string };
+  semester?: { id: number; name: string };
 }
 
 /**
  * Module simplified for validation
+ * Backend returns: { id, code, name }
  */
 export interface ValidationModule {
   id: number;
   code: string;
   name: string;
-  credits: number;
-  semester_id: number;
-  academic_year_id: number;
 }
 
 /**
  * Evaluation simplified for validation
+ * Backend returns: { id, name, type }
  */
 export interface ValidationEvaluation {
   id: number;
   name: string;
-  code: string;
   type: string;
-  coefficient: number;
-  max_score: number;
-  date: string | null;
 }
 
 /**
  * User simplified for validation
+ * Backend returns: { id, name }
  */
 export interface ValidationUser {
   id: number;
-  firstname: string;
-  lastname: string;
-  email: string;
+  name: string;
 }
 
 /**
  * Validation Statistics
- * Calculated when submitting grades for validation
+ * Calculated by GradeStatisticsService::calculateStats()
+ * Backend returns these exact fields
  */
 export interface ValidationStatistics {
   count: number;
   average: number;
-  std_dev: number;
-  min: number;
-  max: number;
+  min: number | null;
+  max: number | null;
   median: number;
+  std_dev: number;
   pass_rate: number;
-  distribution?: {
-    '0-5': number;
-    '5-10': number;
-    '10-15': number;
-    '15-20': number;
-  };
-  absent_count?: number;
-  present_count?: number;
-}
-
-/**
- * Anomaly Detection Result
- */
-export interface ValidationAnomaly {
-  type: 'low_average' | 'high_average' | 'low_variance' | 'high_variance' | 'low_pass_rate' | 'high_fail_rate';
-  message: string;
-  severity: 'warning' | 'critical';
-  value: number;
-  threshold: number;
+  fail_rate: number;
+  absent_count: number;
+  distribution: Record<string, number>;
 }
 
 /**
@@ -141,40 +124,47 @@ export interface SubmitGradesResponse {
 }
 
 /**
- * Validate Grades Request (Admin)
+ * Validate (Approve) Grades Request
+ * POST /api/admin/grade-validations/{id}/validate
+ * Backend expects: { notes?: string }
  */
 export interface ValidateGradesRequest {
-  decision: 'Approved' | 'Rejected';
   notes?: string;
 }
 
 /**
- * Validate Grades Response
+ * Reject Grades Request
+ * POST /api/admin/grade-validations/{id}/reject
+ * Backend expects: { reason: string }
+ */
+export interface RejectGradesRequest {
+  reason: string;
+}
+
+/**
+ * Validate/Reject Response
+ * Backend returns: { message, data: GradeValidation }
  */
 export interface ValidateGradesResponse {
-  success: boolean;
   message: string;
-  validation: GradeValidation;
+  data: GradeValidation;
 }
 
 /**
  * Publish Grades Request
+ * POST /api/admin/grade-validations/{id}/publish
+ * Backend expects: { scheduled_at?: string }
  */
 export interface PublishGradesRequest {
-  validation_id: number;
-  publish_at?: string; // ISO date string for scheduled publication
-  notify_students?: boolean;
+  scheduled_at?: string;
 }
 
 /**
  * Publish Grades Response
  */
 export interface PublishGradesResponse {
-  success: boolean;
   message: string;
-  published_count: number;
-  published_at: string;
-  is_scheduled: boolean;
+  data: GradeValidation;
 }
 
 /**
@@ -182,52 +172,44 @@ export interface PublishGradesResponse {
  */
 export interface BulkPublishRequest {
   validation_ids: number[];
-  notify_students?: boolean;
 }
 
 /**
  * Bulk Publish Response
  */
 export interface BulkPublishResponse {
-  success: boolean;
   message: string;
-  published_count: number;
-  failed_count: number;
-  results: Array<{
-    validation_id: number;
-    success: boolean;
-    error?: string;
-  }>;
+  data: {
+    published: number;
+    errors: string[];
+  };
 }
 
 /**
  * Grade Validation Filters
  */
 export interface GradeValidationFilters {
-  status?: GradeValidationStatus | GradeValidationStatus[];
+  status?: GradeValidationStatus;
   module_id?: number;
   evaluation_id?: number;
   academic_year_id?: number;
-  submitted_by?: number;
   semester_id?: number;
-  date_from?: string;
-  date_to?: string;
-  has_anomalies?: boolean;
   search?: string;
+  per_page?: number;
 }
 
 /**
  * Validation Statistics Summary (for dashboard)
+ * Matches backend GET /api/admin/grade-validations/statistics response
  */
 export interface ValidationStatisticsSummary {
-  total_validations: number;
-  pending_validations: number;
-  approved_validations: number;
-  rejected_validations: number;
-  published_validations: number;
-  average_validation_time: number; // in hours
-  rejection_rate: number; // percentage
-  modules_with_anomalies: number;
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  published: number;
+  average_validation_time: number;
+  rejection_rate: number;
 }
 
 /**
@@ -267,27 +249,116 @@ export interface GradeModificationResponse {
 
 /**
  * Correction Request Entity
+ * Matches backend: Modules/Grades/Entities/GradeCorrectionRequest.php
  */
 export interface CorrectionRequest {
   id: number;
   grade_id: number;
   requested_by: number;
+  current_value: number | null;
+  proposed_value: number | null;
   old_score: number | null;
   new_score: number | null;
   old_is_absent: boolean;
   new_is_absent: boolean;
   reason: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: CorrectionRequestStatus;
   reviewed_by: number | null;
   reviewed_at: string | null;
+  review_comment: string | null;
   rejection_reason: string | null;
+  expires_at: string | null;
   created_at: string;
   updated_at: string;
 
   // Relations
-  grade?: any; // Full grade object
-  requested_by_user?: ValidationUser;
-  reviewed_by_user?: ValidationUser | null;
+  grade?: GradeWithStudent;
+  requester?: ValidationUser; // API returns this instead of requested_by_user
+  requested_by_user?: ValidationUser; // Legacy, kept for backwards compatibility
+  reviewer?: ValidationUser | null; // API returns this instead of reviewed_by_user
+  reviewed_by_user?: ValidationUser | null; // Legacy, kept for backwards compatibility
+
+  // Additional API fields
+  change_display?: string;
+  is_expired?: boolean;
+  is_active?: boolean;
+}
+
+/**
+ * Correction Request Status
+ */
+export type CorrectionRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+
+/**
+ * Grade with student info for correction request display
+ */
+export interface GradeWithStudent {
+  id: number;
+  score: number | null;
+  is_absent: boolean;
+  status?: string;
+  student?: {
+    id: number;
+    matricule: string;
+    firstname?: string;
+    lastname?: string;
+    full_name?: string; // API returns full_name instead of firstname/lastname
+  };
+  evaluation?: {
+    id: number;
+    name: string;
+    type?: string;
+    module?: {
+      id: number;
+      code: string;
+      name: string;
+    };
+  };
+}
+
+/**
+ * Grade History Entry
+ * Matches backend: Modules/Grades/Entities/GradeHistory.php
+ * Note: Backend GradeHistoryResource returns changed_by as an object, not an ID
+ */
+export interface GradeHistory {
+  id: number;
+  grade_id: number;
+  old_value: number | null;
+  new_value: number | null;
+  changed_by: ValidationUser | number; // Can be object (from resource) or ID
+  changed_at: string;
+  reason: string | null;
+  change_type: GradeChangeType;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at?: string;
+
+  // Relations (legacy, kept for backwards compatibility)
+  changed_by_user?: ValidationUser;
+}
+
+/**
+ * Grade Change Type
+ */
+export type GradeChangeType = 'creation' | 'modification' | 'correction';
+
+/**
+ * Request Grade Correction (teacher sends this)
+ * POST /api/frontend/teacher/grades/{id}/request-correction
+ */
+export interface RequestGradeCorrectionPayload {
+  proposed_value: number;
+  reason: string;
+}
+
+/**
+ * Request Grade Correction Response
+ */
+export interface RequestGradeCorrectionResponse {
+  success: boolean;
+  message: string;
+  correction_request: CorrectionRequest;
 }
 
 /**

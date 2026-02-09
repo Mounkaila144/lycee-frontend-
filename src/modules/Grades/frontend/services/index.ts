@@ -11,3 +11,4 @@ export type {
   ImportExecuteResponse,
   ImportStatusResponse,
 } from './gradeImportService';
+export { retakeGradeService } from './retakeGradeService';

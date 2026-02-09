@@ -3,6 +3,7 @@ import { gradeValidationService } from '../services';
 import type {
   GradeValidationFilters,
   ValidateGradesRequest,
+  RejectGradesRequest,
   PublishGradesRequest,
   BulkPublishRequest,
   CorrectionRequestFilters,
@@ -49,6 +50,8 @@ export const useGradeValidation = (validationId: number, tenantId?: string) => {
 
 /**
  * Hook for validating (approving) grades
+ * Backend: POST /api/admin/grade-validations/{id}/validate
+ * Body: { notes?: string }
  */
 export const useValidateGrades = (tenantId?: string) => {
   const queryClient = useQueryClient();
@@ -57,7 +60,6 @@ export const useValidateGrades = (tenantId?: string) => {
     mutationFn: ({ validationId, data }: { validationId: number; data: ValidateGradesRequest }) =>
       gradeValidationService.validateGrades(validationId, data, tenantId),
     onSuccess: (_, variables) => {
-      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['grade-validations'] });
       queryClient.invalidateQueries({ queryKey: ['grade-validation', variables.validationId] });
       queryClient.invalidateQueries({ queryKey: ['validation-statistics'] });
@@ -67,15 +69,16 @@ export const useValidateGrades = (tenantId?: string) => {
 
 /**
  * Hook for rejecting grades
+ * Backend: POST /api/admin/grade-validations/{id}/reject
+ * Body: { reason: string }
  */
 export const useRejectGrades = (tenantId?: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ validationId, data }: { validationId: number; data: ValidateGradesRequest }) =>
+    mutationFn: ({ validationId, data }: { validationId: number; data: RejectGradesRequest }) =>
       gradeValidationService.rejectGrades(validationId, data, tenantId),
     onSuccess: (_, variables) => {
-      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['grade-validations'] });
       queryClient.invalidateQueries({ queryKey: ['grade-validation', variables.validationId] });
       queryClient.invalidateQueries({ queryKey: ['validation-statistics'] });
@@ -85,6 +88,8 @@ export const useRejectGrades = (tenantId?: string) => {
 
 /**
  * Hook for publishing grades
+ * Backend: POST /api/admin/grade-validations/{id}/publish
+ * Body: { scheduled_at?: string }
  */
 export const usePublishGrades = (tenantId?: string) => {
   const queryClient = useQueryClient();
@@ -95,10 +100,9 @@ export const usePublishGrades = (tenantId?: string) => {
       data,
     }: {
       validationId: number;
-      data?: Omit<PublishGradesRequest, 'validation_id'>;
+      data?: PublishGradesRequest;
     }) => gradeValidationService.publishGrades(validationId, data, tenantId),
     onSuccess: (_, variables) => {
-      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['grade-validations'] });
       queryClient.invalidateQueries({ queryKey: ['grade-validation', variables.validationId] });
       queryClient.invalidateQueries({ queryKey: ['validation-statistics'] });
@@ -115,7 +119,6 @@ export const useBulkPublishGrades = (tenantId?: string) => {
   return useMutation({
     mutationFn: (data: BulkPublishRequest) => gradeValidationService.bulkPublish(data, tenantId),
     onSuccess: () => {
-      // Invalidate all validation queries
       queryClient.invalidateQueries({ queryKey: ['grade-validations'] });
       queryClient.invalidateQueries({ queryKey: ['validation-statistics'] });
     },
@@ -178,7 +181,6 @@ export const useApproveCorrectionRequest = (tenantId?: string) => {
     mutationFn: ({ requestId, notes }: { requestId: number; notes?: string }) =>
       gradeValidationService.approveCorrectionRequest(requestId, { notes }, tenantId),
     onSuccess: (_, variables) => {
-      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['correction-requests'] });
       queryClient.invalidateQueries({ queryKey: ['correction-request', variables.requestId] });
     },
@@ -195,7 +197,6 @@ export const useRejectCorrectionRequest = (tenantId?: string) => {
     mutationFn: ({ requestId, notes }: { requestId: number; notes: string }) =>
       gradeValidationService.rejectCorrectionRequest(requestId, { notes }, tenantId),
     onSuccess: (_, variables) => {
-      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['correction-requests'] });
       queryClient.invalidateQueries({ queryKey: ['correction-request', variables.requestId] });
     },
