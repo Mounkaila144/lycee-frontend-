@@ -64,6 +64,9 @@ export default function SitesManagementPage() {
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
 
+  // Activation state
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+
   // Auth check
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -164,6 +167,28 @@ export default function SitesManagementPage() {
     }
   };
 
+  const handleActivateClick = async (siteItem: SiteListItem) => {
+    const displayName = siteItem.company_name || siteItem.id;
+    if (!window.confirm(`Voulez-vous activer le site "${displayName}" ? Cela va exécuter les migrations de la base de données.`)) {
+      return;
+    }
+
+    try {
+      setActivatingId(siteItem.id);
+      const result = await siteService.activateSite(siteItem.id);
+      if (result.success) {
+        alert(`Site activé avec succès !`);
+      }
+      await refresh();
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Erreur lors de l\'activation du site';
+      alert(`Échec de l'activation : ${message}`);
+      console.error('Error activating site:', err);
+    } finally {
+      setActivatingId(null);
+    }
+  };
+
   const handleFormSubmit = async (data: CreateSiteData | UpdateSiteData) => {
     try {
       if (formMode === 'create') {
@@ -201,6 +226,8 @@ export default function SitesManagementPage() {
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}
         onView={handleViewClick}
+        onActivate={handleActivateClick}
+        activatingId={activatingId}
         onAdd={handleCreateClick}
         pagination={pagination}
         onPageChange={(page) => {

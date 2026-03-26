@@ -15,6 +15,11 @@ import { structureAcademiqueMenuConfig } from '@/modules/StructureAcademique/men
 import { enrollmentMenuConfig } from '@/modules/Enrollment/menu.config';
 import { gradesMenuConfig } from '@/modules/Grades/menu.config';
 import { timetableMenuConfig } from '@/modules/Timetable/menu.config';
+import { attendanceMenuConfig } from '@/modules/Attendance/menu.config';
+import { examsMenuConfig } from '@/modules/Exams/menu.config';
+import { financeMenuConfig } from '@/modules/Finance/menu.config';
+import { payrollMenuConfig } from '@/modules/Payroll/menu.config';
+import { documentsMenuConfig } from '@/modules/Documents/menu.config';
 
 /**
  * Registry of all module menu configurations
@@ -32,7 +37,11 @@ const moduleMenuConfigs: ModuleMenuConfig[] = [
   enrollmentMenuConfig,
   gradesMenuConfig,
   timetableMenuConfig,
-  // Add more module menu configs here
+  attendanceMenuConfig,
+  examsMenuConfig,
+  financeMenuConfig,
+  payrollMenuConfig,
+  documentsMenuConfig,
 ];
 
 /**

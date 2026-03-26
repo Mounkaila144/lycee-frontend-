@@ -78,6 +78,17 @@ class SiteService {
   }
 
   /**
+   * Activer un site (exécuter les migrations tenant)
+   */
+  async activateSite(id: string): Promise<{ success: boolean; message: string; output?: string }> {
+    const client = createApiClient();
+    const response = await client.post<{ success: boolean; message: string; data?: Site; output?: string }>(
+      `/superadmin/sites/${id}/activate`
+    );
+    return response.data;
+  }
+
+  /**
    * Ajouter un domaine à un tenant
    */
   async addDomain(tenantId: string, data: AddDomainData): Promise<Site> {

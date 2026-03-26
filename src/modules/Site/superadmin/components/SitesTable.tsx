@@ -7,6 +7,8 @@ import { createColumnHelper } from '@tanstack/react-table'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Chip from '@mui/material/Chip'
+import Tooltip from '@mui/material/Tooltip'
+import CircularProgress from '@mui/material/CircularProgress'
 
 // Services & Types
 import type { SiteListItem } from '../../types/site.types'
@@ -29,6 +31,8 @@ interface SitesTableProps {
   onEdit: (site: SiteListItem) => void
   onDelete: (site: SiteListItem) => void
   onView: (site: SiteListItem) => void
+  onActivate: (site: SiteListItem) => void
+  activatingId?: string | null
   onAdd?: () => void
   pagination?: {
     current_page: number
@@ -52,6 +56,8 @@ export default function SitesTable({
   onEdit,
   onDelete,
   onView,
+  onActivate,
+  activatingId,
   onAdd,
   pagination,
   onPageChange,
@@ -184,22 +190,54 @@ export default function SitesTable({
       columnHelper.display({
         id: 'actions',
         header: 'Actions',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-0.5'>
-            <IconButton size='small' onClick={() => onView(row.original)} color='info' title='Voir les détails'>
-              <i className='ri-eye-line' />
-            </IconButton>
-            <IconButton size='small' onClick={() => onEdit(row.original)} color='primary' title='Modifier'>
-              <i className='ri-edit-box-line' />
-            </IconButton>
-            <IconButton size='small' onClick={() => handleDelete(row.original)} color='error' title='Supprimer'>
-              <i className='ri-delete-bin-7-line' />
-            </IconButton>
-          </div>
-        )
+        cell: ({ row }) => {
+          const isActivating = activatingId === row.original.id
+          const isUptodate = row.original.is_uptodate
+
+          return (
+            <div className='flex items-center gap-0.5'>
+              {!isUptodate && (
+                <Tooltip title='Activer le site (exécuter les migrations)'>
+                  <span>
+                    <IconButton
+                      size='small'
+                      onClick={() => onActivate(row.original)}
+                      color='success'
+                      disabled={isActivating}
+                    >
+                      {isActivating ? (
+                        <CircularProgress size={16} color='success' />
+                      ) : (
+                        <i className='ri-play-circle-line' />
+                      )}
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
+              {isUptodate && (
+                <Tooltip title='Site activé'>
+                  <span>
+                    <IconButton size='small' color='success' disabled>
+                      <i className='ri-checkbox-circle-line' />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
+              <IconButton size='small' onClick={() => onView(row.original)} color='info' title='Voir les détails'>
+                <i className='ri-eye-line' />
+              </IconButton>
+              <IconButton size='small' onClick={() => onEdit(row.original)} color='primary' title='Modifier'>
+                <i className='ri-edit-box-line' />
+              </IconButton>
+              <IconButton size='small' onClick={() => handleDelete(row.original)} color='error' title='Supprimer'>
+                <i className='ri-delete-bin-7-line' />
+              </IconButton>
+            </div>
+          )
+        }
       })
     ],
-    [formatLastConnection, onView, onEdit, handleDelete]
+    [formatLastConnection, onView, onEdit, handleDelete, onActivate, activatingId]
   )
 
   // DataTable configuration
@@ -270,19 +308,25 @@ export default function SitesTable({
               }
             ]}
             actions={[
+              ...(!site.is_uptodate ? [{
+                icon: activatingId === site.id ? 'ri-loader-4-line' : 'ri-play-circle-line',
+                color: 'success' as const,
+                onClick: () => onActivate(site),
+                disabled: activatingId === site.id
+              }] : []),
               {
                 icon: 'ri-eye-line',
-                color: 'info',
+                color: 'info' as const,
                 onClick: () => onView(site)
               },
               {
                 icon: 'ri-edit-box-line',
-                color: 'primary',
+                color: 'primary' as const,
                 onClick: () => onEdit(site)
               },
               {
                 icon: 'ri-delete-bin-7-line',
-                color: 'error',
+                color: 'error' as const,
                 onClick: () => handleDelete(site)
               }
             ]}

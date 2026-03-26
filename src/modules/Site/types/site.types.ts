@@ -43,6 +43,7 @@ export interface SiteListItem {
   company_email: string | null;
   company_phone: string | null;
   is_active: boolean;
+  is_uptodate?: boolean;
   domains: TenantDomain[];
   created_at: string;
   updated_at: string;
