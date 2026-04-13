@@ -23,6 +23,20 @@ import {
   Exemptions,
   EnrollmentStatistics,
 } from '@/modules/Enrollment/admin/components'
+import {
+  AcademicYearList,
+  CycleLevelList,
+  SeriesList,
+  ClassList,
+  SubjectList,
+  CoefficientConfig,
+  ProgrammeList,
+  ModuleList,
+  SpecializationList,
+  StatsDashboard,
+  ProgressionRuleList,
+  EvaluationTemplateList,
+} from '@/modules/StructureAcademique/admin'
 
 /**
  * Registry mapping module:component to actual component
@@ -31,6 +45,19 @@ export const adminComponentRegistry: Record<string, ComponentType<any>> = {
 
   // Users module
   'Users:UsersList': UsersList,
+
+  // Structure Académique module
+  'Structure:AcademicYears': AcademicYearList,
+  'Structure:CyclesLevels': CycleLevelList,
+  'Structure:Series': SeriesList,
+  'Structure:Classes': ClassList,
+  'Structure:Subjects': SubjectList,
+  'Structure:Coefficients': CoefficientConfig,
+  'Structure:Programmes': ProgrammeList,
+  'Structure:Modules': ModuleList,
+  'Structure:Specializations': SpecializationList,
+  'Structure:ProgressionRules': ProgressionRuleList,
+  'Structure:EvaluationTemplates': EvaluationTemplateList,
 
   // Enrollment module
   'Enrollment:Students': Students,

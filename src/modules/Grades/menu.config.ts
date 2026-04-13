@@ -10,7 +10,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
   menus: [
     {
       id: 'grades',
-      label: 'Grades & Evaluations',
+      label: 'Notes & Évaluations',
       route: '/admin/grades',
       icon: {
         type: 'emoji',
@@ -53,53 +53,8 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           isActive: true,
         },
         {
-          id: 'grades-coefficients',
-          label: 'Coefficients & ECTS',
-          route: '/admin/grades/coefficients',
-          icon: {
-            type: 'emoji',
-            value: '⚖️',
-          },
-          order: 2,
-          module: 'Grades',
-          parentId: 'grades',
-          roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
-        },
-        {
-          id: 'grades-eliminatory',
-          label: 'Eliminatory Modules',
-          route: '/admin/grades/eliminatory',
-          icon: {
-            type: 'emoji',
-            value: '⚠️',
-          },
-          order: 2.5,
-          module: 'Grades',
-          parentId: 'grades',
-          roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
-        },
-        {
-          id: 'grades-module-results',
-          label: 'Module Results',
-          route: '/admin/grades/module-results',
-          icon: {
-            type: 'emoji',
-            value: '📊',
-          },
-          order: 2.6,
-          module: 'Grades',
-          parentId: 'grades',
-          roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
-        },
-        {
           id: 'grades-semester-results',
-          label: 'Semester Results',
+          label: 'Résultats Semestriels',
           route: '/admin/grades/semester-results',
           icon: {
             type: 'emoji',
@@ -113,38 +68,8 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           isActive: true,
         },
         {
-          id: 'grades-compensation',
-          label: 'Compensation',
-          route: '/admin/grades/compensation',
-          icon: {
-            type: 'emoji',
-            value: '🔄',
-          },
-          order: 2.75,
-          module: 'Grades',
-          parentId: 'grades',
-          roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
-        },
-        {
-          id: 'grades-ects',
-          label: 'ECTS Credits',
-          route: '/admin/grades/ects',
-          icon: {
-            type: 'emoji',
-            value: '🎓',
-          },
-          order: 2.8,
-          module: 'Grades',
-          parentId: 'grades',
-          roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
-        },
-        {
           id: 'grades-deliberation',
-          label: 'Deliberations',
+          label: 'Conseil de Classe',
           route: '/admin/grades/deliberation',
           icon: {
             type: 'emoji',
@@ -234,7 +159,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'grades-transcripts',
-          label: 'Transcripts',
+          label: 'Relevés de Notes',
           route: '/admin/grades/transcripts',
           icon: {
             type: 'emoji',

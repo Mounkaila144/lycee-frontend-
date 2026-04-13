@@ -37,7 +37,7 @@ export const documentsMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'documents-diplomas',
-          label: 'Diplômes',
+          label: 'Certificats de Fin d\'Études',
           route: '/admin/documents/diplomas',
           icon: {
             type: 'emoji',
@@ -67,7 +67,7 @@ export const documentsMenuConfig: ModuleMenuConfig = {
         },
         {
           id: 'documents-cards',
-          label: 'Cartes Étudiants',
+          label: 'Cartes Scolaires',
           route: '/admin/documents/cards',
           icon: {
             type: 'emoji',

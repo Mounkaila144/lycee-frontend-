@@ -1,16 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
-import DialogContentText from '@mui/material/DialogContentText'
 import Button from '@mui/material/Button'
-import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import { useState } from 'react'
-import { useTranslation } from '@/shared/i18n/use-translation'
+import Alert from '@mui/material/Alert'
 import type { Semester } from '../../types/academicCalendar.types'
 
 interface SemesterClosureDialogProps {
@@ -21,66 +18,47 @@ interface SemesterClosureDialogProps {
 }
 
 const SemesterClosureDialog = ({ open, onClose, onConfirm, semester }: SemesterClosureDialogProps) => {
-  const { t } = useTranslation('StructureAcademique')
-  const [closing, setClosing] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleConfirm = async () => {
     try {
-      setClosing(true)
+      setSubmitting(true)
       setError(null)
       await onConfirm()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('Erreur lors de la clôture'))
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
     } finally {
-      setClosing(false)
-    }
-  }
-
-  const handleClose = () => {
-    if (!closing) {
-      setError(null)
-      onClose()
+      setSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('Clôturer le semestre')}</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Clôturer le semestre</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-        <DialogContentText>
-          {t('Êtes-vous sûr de vouloir clôturer le semestre')} <strong>{semester?.name}</strong> ?
-        </DialogContentText>
-        <Box sx={{ mt: 2, p: 2, bgcolor: 'warning.lighter', borderRadius: 1 }}>
-          <Typography variant="body2" color="warning.dark" fontWeight={600}>
-            {t('Conséquences de la clôture :')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {t('La saisie des notes sera verrouillée')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('Les résultats finaux seront générés')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('Cette action est irréversible')}
-          </Typography>
-        </Box>
-        <DialogContentText sx={{ mt: 2 }}>
-          {t('Assurez-vous que toutes les notes ont été saisies avant de continuer.')}
-        </DialogContentText>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Cette action est irréversible.
+        </Alert>
+        <Typography>
+          Êtes-vous sûr de vouloir clôturer le semestre <strong>{semester?.name}</strong> ?
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Une fois clôturé, aucune modification ne pourra être apportée aux notes et évaluations de ce semestre.
+        </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={closing}>
-          {t('Annuler')}
+        <Button onClick={onClose} disabled={submitting}>
+          Annuler
         </Button>
-        <Button onClick={handleConfirm} color="warning" variant="contained" disabled={closing}>
-          {closing ? t('Clôture en cours...') : t('Clôturer')}
+        <Button variant="contained" color="warning" onClick={handleConfirm} disabled={submitting}>
+          {submitting ? 'Clôture en cours...' : 'Clôturer'}
         </Button>
       </DialogActions>
     </Dialog>
