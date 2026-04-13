@@ -67,7 +67,7 @@ class AcademicCalendarService {
    */
   async activateAcademicYear(id: number, tenantId?: string): Promise<AcademicYear> {
     const client = createApiClient(tenantId)
-    const response = await client.patch<{ data: AcademicYear }>(`/admin/academic-years/${id}/activate`)
+    const response = await client.post<{ data: AcademicYear }>(`/admin/academic-years/${id}/activate`)
     return response.data.data
   }
 

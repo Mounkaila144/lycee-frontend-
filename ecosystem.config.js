@@ -1,10 +1,10 @@
 module.exports = {
   apps: [
     {
-      name: 'school-frontend',
+      name: 'lycee-frontend',
       script: 'npm',
       args: 'start',
-      cwd: '/var/www/gestion-scolaire-front',
+      cwd: '/var/www/lycee-front',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -12,7 +12,7 @@ module.exports = {
       max_memory_restart: '500M',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000
+        PORT: 3005
       },
       error_file: './logs/app-error.log',
       out_file: './logs/app-out.log',
