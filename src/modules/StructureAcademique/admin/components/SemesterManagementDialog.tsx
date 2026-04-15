@@ -146,11 +146,6 @@ const SemesterManagementDialog = ({ open, onClose, academicYear }: SemesterManag
                         </Typography>
                       </Box>
                       <Box display="flex" gap={0.5}>
-                        <Tooltip title="Gérer les modules">
-                          <IconButton size="small" color="primary" onClick={() => handleManageModules(semester)}>
-                            <i className="ri-book-line" />
-                          </IconButton>
-                        </Tooltip>
                         <Tooltip title="Périodes d'évaluation">
                           <IconButton
                             size="small"

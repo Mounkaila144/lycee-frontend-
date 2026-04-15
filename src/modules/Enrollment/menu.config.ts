@@ -49,8 +49,8 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
           module: 'Enrollment',
           parentId: 'enrollment',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'enrollment-statistics',
@@ -124,8 +124,8 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
           module: 'Enrollment',
           parentId: 'enrollment',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'enrollment-reenrollments',
@@ -139,8 +139,8 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
           module: 'Enrollment',
           parentId: 'enrollment',
           roles: ['admin', 'superadmin', 'agent_inscription'],
-          isVisible: true,
-          isActive: true,
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'enrollment-transfers',

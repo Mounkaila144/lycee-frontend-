@@ -62,7 +62,9 @@ export const SemesterSelector: React.FC<SemesterSelectorProps> = ({
       const client = createApiClient(tenantId);
       const response = await client.get<{ data: SemesterOption[] }>('/admin/semesters');
 
-      setSemesters(response.data.data);
+      // Filter out semesters with deleted academic years
+      const validSemesters = (response.data.data || []).filter(s => s.academic_year != null);
+      setSemesters(validSemesters);
     } catch (err) {
       console.error('Error fetching semesters:', err);
       setError(t('semesterSelector.loadError'));
