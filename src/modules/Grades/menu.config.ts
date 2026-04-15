@@ -169,8 +169,8 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'grades-statistics',
@@ -214,8 +214,8 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'grades-analytics',
