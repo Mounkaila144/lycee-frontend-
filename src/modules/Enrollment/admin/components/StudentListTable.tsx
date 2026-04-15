@@ -374,14 +374,6 @@ const StudentListTable = () => {
             </IconButton>
             <IconButton
               size='small'
-              onClick={() => handleOpenEnrollmentDialog(row.original)}
-              title='Inscription pédagogique'
-              color='primary'
-            >
-              <i className='ri-book-open-line' />
-            </IconButton>
-            <IconButton
-              size='small'
               onClick={() => handleOpenEditDialog(row.original)}
               title='Modifier'
             >

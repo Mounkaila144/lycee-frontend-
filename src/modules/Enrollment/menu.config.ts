@@ -94,8 +94,8 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
           module: 'Enrollment',
           parentId: 'enrollment',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'enrollment-student-cards',
