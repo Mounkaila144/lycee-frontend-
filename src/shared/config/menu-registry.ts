@@ -20,6 +20,11 @@ import { examsMenuConfig } from '@/modules/Exams/menu.config';
 import { financeMenuConfig } from '@/modules/Finance/menu.config';
 import { payrollMenuConfig } from '@/modules/Payroll/menu.config';
 import { documentsMenuConfig } from '@/modules/Documents/menu.config';
+// Modules ajoutés par le sprint role-coverage (Stories Parent/Étudiant/Messaging/Settings)
+import { portailParentMenuConfig } from '@/modules/PortailParent/menu.config';
+import { portailEtudiantMenuConfig } from '@/modules/PortailEtudiant/menu.config';
+import { messagingMenuConfig } from '@/modules/Messaging/menu.config';
+import { settingsMenuConfig } from '@/modules/Settings/menu.config';
 
 /**
  * Registry of all module menu configurations
@@ -42,6 +47,10 @@ const moduleMenuConfigs: ModuleMenuConfig[] = [
   financeMenuConfig,
   payrollMenuConfig,
   documentsMenuConfig,
+  portailParentMenuConfig,
+  portailEtudiantMenuConfig,
+  messagingMenuConfig,
+  settingsMenuConfig,
 ];
 
 /**
