@@ -17,6 +17,7 @@ export const attendanceMenuConfig: ModuleMenuConfig = {
       order: 35,
       module: 'Attendance',
       roles: ['admin', 'superadmin'],
+      requiredRoles: ['Administrator', 'Manager', 'Professeur'],
       isVisible: true,
       isActive: true,
       children: [
@@ -32,6 +33,7 @@ export const attendanceMenuConfig: ModuleMenuConfig = {
           module: 'Attendance',
           parentId: 'attendance',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Professeur'],
           isVisible: true,
           isActive: true,
         },

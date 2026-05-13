@@ -11,7 +11,11 @@ import { MenuItem, SubMenu } from '@menu/vertical-menu'
 
 // Hook Imports
 import { useConfigMenus } from '@/shared/hooks/useConfigMenus'
+import { useAuthUser } from '@/shared/hooks/useAuthUser'
 import { useTranslation } from '@/shared/i18n/use-translation'
+
+// Lib Imports
+import { filterMenuItems } from '@/shared/lib/auth/filterMenuItems'
 
 // Type Imports
 import type { MenuConfig, UserRole } from '@/shared/types/menu-config.types'
@@ -41,6 +45,11 @@ const ModuleMenu = () => {
   }, [pathname])
 
   const { menus, isLoading } = useConfigMenus({ visibleOnly: true, role: currentRole })
+  const authUser = useAuthUser()
+
+  // Filtre RBAC selon les rôles Spatie réels de l'utilisateur connecté
+  // (en plus du filtre par URL-area déjà appliqué dans useConfigMenus).
+  const visibleMenus = useMemo(() => filterMenuItems(menus, authUser), [menus, authUser])
 
   // Render loading state
   if (isLoading) {
@@ -99,7 +108,7 @@ const ModuleMenu = () => {
 
   return (
     <Fragment>
-      {menus.map(menu => renderMenuItem(menu))}
+      {visibleMenus.map(menu => renderMenuItem(menu))}
     </Fragment>
   )
 }

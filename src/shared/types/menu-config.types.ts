@@ -47,8 +47,20 @@ export interface MenuConfig {
   /** Required permission to view this menu (optional) */
   permission?: string;
 
-  /** Allowed user roles for this menu (if not specified, visible to all roles) */
+  /** Allowed URL-area roles ('admin' | 'superadmin'); kept for layout-area filtering */
   roles?: UserRole[];
+
+  /**
+   * Spatie role names required to see this menu (e.g. 'Professeur', 'Étudiant').
+   * - At least one match with the user's roles is required.
+   * - If absent, the item is only visible to privileged roles (Administrator/Manager).
+   */
+  requiredRoles?: string[];
+
+  /**
+   * Spatie permission names required to see this menu. ALL must be present in the user.
+   */
+  requiredPermissions?: string[];
 
   /** Badge to display on the menu item */
   badge?: MenuBadge;

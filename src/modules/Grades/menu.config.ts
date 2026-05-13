@@ -19,6 +19,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
       order: 25,
       module: 'Grades',
       roles: ['admin', 'superadmin', 'teacher', 'enseignant'],
+      requiredRoles: ['Administrator', 'Manager', 'Professeur'],
       isVisible: true,
       isActive: true,
       children: [
@@ -34,6 +35,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin', 'teacher', 'enseignant'],
+          requiredRoles: ['Administrator', 'Manager', 'Professeur'],
           isVisible: true,
           isActive: true,
         },
@@ -124,6 +126,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin', 'teacher', 'enseignant'],
+          requiredRoles: ['Administrator', 'Manager', 'Professeur'],
           isVisible: true,
           isActive: true,
         },

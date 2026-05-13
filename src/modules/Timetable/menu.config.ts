@@ -17,6 +17,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
       order: 30,
       module: 'Timetable',
       roles: ['admin', 'superadmin'],
+      requiredRoles: ['Administrator', 'Manager', 'Professeur'],
       isVisible: true,
       isActive: true,
       children: [
@@ -122,6 +123,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Professeur'],
           isVisible: true,
           isActive: true,
         },
