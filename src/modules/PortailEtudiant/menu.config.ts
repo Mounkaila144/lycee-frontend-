@@ -2,7 +2,8 @@ import { ModuleMenuConfig } from '@/shared/types/menu-config.types';
 
 /**
  * Portail Étudiant — sidebar Étudiant (Stories Étudiant 01-08).
- * Story 09 (LMD transferts) exclue V1.
+ * Items strictement réservés au rôle `Étudiant` — n'apparaissent pas
+ * dans la sidebar de l'Administrator. Story 09 (LMD transferts) exclue V1.
  */
 export const portailEtudiantMenuConfig: ModuleMenuConfig = {
   module: 'PortailEtudiant',
@@ -15,7 +16,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 5,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -27,7 +28,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 10,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -39,7 +40,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 20,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -51,7 +52,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 30,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -63,7 +64,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 40,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -75,7 +76,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 50,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -87,7 +88,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 60,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },
@@ -99,7 +100,7 @@ export const portailEtudiantMenuConfig: ModuleMenuConfig = {
       order: 70,
       module: 'PortailEtudiant',
       roles: ['admin'],
-      requiredRoles: ['Étudiant', 'Administrator'],
+      requiredRoles: ['Étudiant'],
       isVisible: true,
       isActive: true,
     },

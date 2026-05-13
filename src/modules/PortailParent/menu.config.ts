@@ -3,8 +3,9 @@ import { ModuleMenuConfig } from '@/shared/types/menu-config.types';
 /**
  * Portail Parent — sidebar Parent.
  *
- * Couvre les Stories Parent 01-09. Items réservés au rôle `Parent`
- * (et `Administrator` pour debug).
+ * Couvre les Stories Parent 01-09. Items strictement réservés au rôle
+ * `Parent`. L'Administrator peut naviguer sur ces routes via l'URL pour
+ * du debug, mais elles ne pollue plus sa sidebar.
  */
 export const portailParentMenuConfig: ModuleMenuConfig = {
   module: 'PortailParent',
@@ -17,7 +18,7 @@ export const portailParentMenuConfig: ModuleMenuConfig = {
       order: 5,
       module: 'PortailParent',
       roles: ['admin'],
-      requiredRoles: ['Parent', 'Administrator'],
+      requiredRoles: ['Parent'],
       isVisible: true,
       isActive: true,
     },
@@ -29,7 +30,7 @@ export const portailParentMenuConfig: ModuleMenuConfig = {
       order: 10,
       module: 'PortailParent',
       roles: ['admin'],
-      requiredRoles: ['Parent', 'Administrator'],
+      requiredRoles: ['Parent'],
       isVisible: true,
       isActive: true,
     },
@@ -41,7 +42,7 @@ export const portailParentMenuConfig: ModuleMenuConfig = {
       order: 20,
       module: 'PortailParent',
       roles: ['admin'],
-      requiredRoles: ['Parent', 'Administrator'],
+      requiredRoles: ['Parent'],
       isVisible: true,
       isActive: true,
     },
@@ -53,7 +54,7 @@ export const portailParentMenuConfig: ModuleMenuConfig = {
       order: 30,
       module: 'PortailParent',
       roles: ['admin'],
-      requiredRoles: ['Parent', 'Administrator'],
+      requiredRoles: ['Parent'],
       isVisible: true,
       isActive: true,
     },

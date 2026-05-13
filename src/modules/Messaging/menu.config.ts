@@ -17,7 +17,7 @@ export const messagingMenuConfig: ModuleMenuConfig = {
       order: 50,
       module: 'Messaging',
       roles: ['admin'],
-      requiredRoles: ['Professeur', 'Administrator'],
+      requiredRoles: ['Professeur'],
       isVisible: true,
       isActive: true,
     },
