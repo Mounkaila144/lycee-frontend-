@@ -1,4 +1,10 @@
 {
+  "teacherModulesList": {
+    "myModules": "وحداتي",
+    "myModulesCount": "وحداتي ({count})",
+    "loadError": "تعذر تحميل الوحدات: {error}",
+    "noModules": "لم يتم تعيين أي وحدة لك لهذا الفصل الدراسي."
+  },
   "grades": {
     "title": "إدخال الدرجات",
     "myModules": "وحداتي",

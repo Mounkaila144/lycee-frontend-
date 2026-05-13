@@ -55,6 +55,37 @@ function interpolate(
 }
 
 /**
+ * Resolve a translation key against a translations object.
+ *
+ * Two strategies, in order:
+ *  1. Flat lookup: `translations[key]` (legacy support, French-text-as-key).
+ *  2. Dotted-path traversal: 'foo.bar.baz' → translations.foo.bar.baz.
+ *
+ * Returns the resolved string, or null if the path doesn't resolve to a string.
+ */
+function resolveKey(translations: TranslationKeys, key: string): string | null {
+  const flat = translations[key];
+  if (typeof flat === 'string') {
+    return flat;
+  }
+
+  if (!key.includes('.')) {
+    return null;
+  }
+
+  let cursor: unknown = translations;
+  for (const segment of key.split('.')) {
+    if (cursor && typeof cursor === 'object' && segment in (cursor as Record<string, unknown>)) {
+      cursor = (cursor as Record<string, unknown>)[segment];
+    } else {
+      return null;
+    }
+  }
+
+  return typeof cursor === 'string' ? cursor : null;
+}
+
+/**
  * Translation cache to avoid re-loading translations
  */
 const translationCache: Record<string, TranslationKeys> = {};
@@ -104,9 +135,8 @@ export function useTranslation(moduleName?: string): UseTranslationReturn {
       const moduleTranslations = translationCache[moduleKey];
 
       if (moduleTranslations) {
-        // Use defaultText as the key
-        const value = moduleTranslations[defaultText];
-        if (value && typeof value === 'string') {
+        const value = resolveKey(moduleTranslations, defaultText);
+        if (value !== null) {
           return interpolate(value, params);
         }
       }
@@ -117,9 +147,8 @@ export function useTranslation(moduleName?: string): UseTranslationReturn {
     const globalTranslations = translationCache[globalKey];
 
     if (globalTranslations) {
-      // Use defaultText as the key
-      const value = globalTranslations[defaultText];
-      if (value && typeof value === 'string') {
+      const value = resolveKey(globalTranslations, defaultText);
+      if (value !== null) {
         return interpolate(value, params);
       }
     }

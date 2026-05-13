@@ -1,4 +1,10 @@
 {
+  "teacherModulesList": {
+    "myModules": "Mes modules",
+    "myModulesCount": "Mes modules ({count})",
+    "loadError": "Erreur de chargement des modules : {error}",
+    "noModules": "Aucun module ne vous est assigné pour ce semestre."
+  },
   "grades": {
     "title": "Saisie des Notes",
     "myModules": "Mes Modules",

@@ -1,4 +1,10 @@
 {
+  "teacherModulesList": {
+    "myModules": "My modules",
+    "myModulesCount": "My modules ({count})",
+    "loadError": "Failed to load modules: {error}",
+    "noModules": "No module is assigned to you for this semester."
+  },
   "grades": {
     "title": "Grade Entry",
     "myModules": "My Modules",
