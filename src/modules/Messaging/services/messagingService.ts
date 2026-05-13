@@ -1,5 +1,5 @@
 import { createApiClient } from '@/shared/lib/api-client';
-import type { Message, MessageInput } from '../types/messaging.types';
+import type { Message, MessageInput, MessageRecipient } from '../types/messaging.types';
 
 export const messagingService = {
   async inbox(): Promise<Message[]> {
@@ -20,6 +20,14 @@ export const messagingService = {
     const { data } = await createApiClient().post<{ data: Message }>(
       '/admin/messages',
       input
+    );
+    return data.data;
+  },
+
+  async recipients(q?: string): Promise<MessageRecipient[]> {
+    const { data } = await createApiClient().get<{ data: MessageRecipient[] }>(
+      '/admin/messages/recipients',
+      { params: q ? { q } : undefined }
     );
     return data.data;
   },

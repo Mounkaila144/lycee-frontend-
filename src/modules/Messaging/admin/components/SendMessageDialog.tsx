@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { valibotResolver } from '@hookform/resolvers/valibot';
-import { object, string, pipe, minLength, number, optional } from 'valibot';
+import { object, string, pipe, minLength, number, optional, minValue } from 'valibot';
 import type { InferInput } from 'valibot';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -11,13 +11,17 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
 
 import { messagingService } from '../../services/messagingService';
+import type { MessageRecipient } from '../../types/messaging.types';
 
 const schema = object({
-  recipient_id: pipe(number(), /* min handled at runtime */),
+  recipient_id: pipe(number(), minValue(1, 'Destinataire requis')),
   subject: pipe(string(), minLength(1, 'Sujet requis'), minLength(3, 'Sujet trop court')),
   body: pipe(string(), minLength(1, 'Message requis')),
   student_context_id: optional(number()),
@@ -42,11 +46,15 @@ export function SendMessageDialog({
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recipients, setRecipients] = useState<MessageRecipient[]>([]);
+  const [loadingRecipients, setLoadingRecipients] = useState(false);
+  const [search, setSearch] = useState('');
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
@@ -67,8 +75,49 @@ export function SendMessageDialog({
         student_context_id: defaultStudentContextId,
       });
       setError(null);
+      setSearch('');
     }
   }, [open, defaultRecipientId, defaultStudentContextId, reset]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setLoadingRecipients(true);
+    const handle = setTimeout(() => {
+      messagingService
+        .recipients(search.trim() || undefined)
+        .then((list) => {
+          if (!cancelled) {
+            setRecipients(list);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setRecipients([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoadingRecipients(false);
+          }
+        });
+    }, search ? 250 : 0);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [open, search]);
+
+  const recipientsById = useMemo(() => {
+    const map = new Map<number, MessageRecipient>();
+    recipients.forEach((r) => map.set(r.id, r));
+    return map;
+  }, [recipients]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -99,17 +148,63 @@ export function SendMessageDialog({
             <Controller
               name='recipient_id'
               control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  type='number'
-                  label='ID destinataire'
-                  size='small'
-                  error={!!errors.recipient_id}
-                  helperText={errors.recipient_id?.message ?? 'ID utilisateur tenant cible'}
-                  fullWidth
-                />
-              )}
+              render={({ field }) => {
+                const selected = field.value ? recipientsById.get(Number(field.value)) ?? null : null;
+
+                return (
+                  <Autocomplete<MessageRecipient, false, false, false>
+                    options={recipients}
+                    value={selected}
+                    loading={loadingRecipients}
+                    onInputChange={(_event, newValue, reason) => {
+                      if (reason === 'input') {
+                        setSearch(newValue);
+                      }
+                    }}
+                    onChange={(_event, newValue) => {
+                      setValue('recipient_id', newValue ? newValue.id : 0, {
+                        shouldValidate: true,
+                      });
+                    }}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    getOptionLabel={(option) => option.full_name || option.username}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.id}>
+                        <Stack direction='row' spacing={1} alignItems='center' width='100%'>
+                          <span>{option.full_name || option.username}</span>
+                          {option.role && (
+                            <Chip label={option.role} size='small' color='primary' variant='outlined' />
+                          )}
+                        </Stack>
+                      </li>
+                    )}
+                    noOptionsText={search ? 'Aucun destinataire trouvé.' : 'Tapez pour rechercher…'}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label='Destinataire'
+                        size='small'
+                        error={!!errors.recipient_id}
+                        helperText={
+                          errors.recipient_id?.message ?? 'Sélectionnez un enseignant ou un parent'
+                        }
+                        InputProps={{
+                          ...params.InputProps,
+                          endAdornment: (
+                            <>
+                              {loadingRecipients ? (
+                                <CircularProgress color='inherit' size={18} />
+                              ) : null}
+                              {params.InputProps.endAdornment}
+                            </>
+                          ),
+                        }}
+                      />
+                    )}
+                    fullWidth
+                  />
+                );
+              }}
             />
             <Controller
               name='subject'

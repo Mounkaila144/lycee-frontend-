@@ -18,3 +18,11 @@ export interface MessageInput {
   thread_id?: number;
   student_context_id?: number;
 }
+
+export interface MessageRecipient {
+  id: number;
+  username: string;
+  full_name: string;
+  email: string | null;
+  role: string | null;
+}
