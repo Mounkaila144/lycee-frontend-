@@ -8,17 +8,25 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
   Select,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
+  Tooltip,
   Typography
 } from '@mui/material'
 
@@ -27,14 +35,21 @@ import { useSeries } from '../hooks/useSeries'
 import { useCoefficients } from '../hooks/useCoefficients'
 import { isLyceeLevel } from '../../types/cycle.types'
 import type { Level } from '../../types/cycle.types'
+import type { SubjectClassCoefficient } from '../../types/coefficient.types'
 
 export const CoefficientConfig = () => {
   const { levels } = useCycles()
   const { series } = useSeries()
-  const { coefficients, totals, loading, error, fetchCoefficients } = useCoefficients()
+  const { coefficients, totals, loading, error, fetchCoefficients, updateCoefficient } = useCoefficients()
 
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null)
   const [selectedSeriesId, setSelectedSeriesId] = useState<number | undefined>(undefined)
+
+  const [editing, setEditing] = useState<SubjectClassCoefficient | null>(null)
+  const [editCoefficient, setEditCoefficient] = useState<string>('')
+  const [editHours, setEditHours] = useState<string>('')
+  const [saving, setSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   const handleLevelChange = (levelId: number) => {
     const level = levels.find(l => l.id === levelId) || null
@@ -52,6 +67,57 @@ export const CoefficientConfig = () => {
 
     if (selectedLevel) {
       fetchCoefficients(selectedLevel.id, seriesId)
+    }
+  }
+
+  const handleOpenEdit = (coeff: SubjectClassCoefficient) => {
+    setEditing(coeff)
+    setEditCoefficient(String(coeff.coefficient))
+    setEditHours(coeff.hours_per_week !== null && coeff.hours_per_week !== undefined ? String(coeff.hours_per_week) : '')
+    setEditError(null)
+  }
+
+  const handleCloseEdit = () => {
+    if (saving) return
+    setEditing(null)
+    setEditError(null)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editing || !selectedLevel) return
+
+    const coefficientValue = Number(editCoefficient)
+
+    if (!Number.isFinite(coefficientValue) || coefficientValue <= 0) {
+      setEditError('Le coefficient doit être un nombre supérieur à zéro.')
+
+      return
+    }
+
+    const hoursValue =
+      editHours.trim() === '' ? null : Number(editHours)
+
+    if (hoursValue !== null && (!Number.isFinite(hoursValue) || hoursValue < 0)) {
+      setEditError('Les heures par semaine doivent être un nombre positif ou vide.')
+
+      return
+    }
+
+    try {
+      setSaving(true)
+      setEditError(null)
+      await updateCoefficient(
+        editing.id,
+        { coefficient: coefficientValue, hours_per_week: hoursValue },
+        selectedLevel.id,
+        selectedSeriesId
+      )
+      setEditing(null)
+    } catch (err) {
+      console.error('Error updating coefficient:', err)
+      setEditError("Erreur lors de l'enregistrement du coefficient.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -136,11 +202,12 @@ export const CoefficientConfig = () => {
                 <TableCell>Code</TableCell>
                 <TableCell align='center'>Coefficient</TableCell>
                 <TableCell align='center'>Heures/semaine</TableCell>
+                <TableCell align='center'>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {coefficients.map(coeff => (
-                <TableRow key={coeff.id}>
+                <TableRow key={coeff.id} hover>
                   <TableCell>{coeff.subject?.name}</TableCell>
                   <TableCell>
                     <Chip label={coeff.subject?.code} size='small' variant='outlined' />
@@ -149,6 +216,13 @@ export const CoefficientConfig = () => {
                     <Typography fontWeight={600}>{coeff.coefficient}</Typography>
                   </TableCell>
                   <TableCell align='center'>{coeff.hours_per_week || '—'}</TableCell>
+                  <TableCell align='center'>
+                    <Tooltip title='Modifier'>
+                      <IconButton size='small' color='primary' onClick={() => handleOpenEdit(coeff)}>
+                        <i className='ri-edit-line' />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))}
               <TableRow sx={{ backgroundColor: 'action.hover' }}>
@@ -161,6 +235,7 @@ export const CoefficientConfig = () => {
                 <TableCell align='center'>
                   <Typography fontWeight={700}>{totals.total_hours}</Typography>
                 </TableCell>
+                <TableCell />
               </TableRow>
             </TableBody>
           </Table>
@@ -170,11 +245,48 @@ export const CoefficientConfig = () => {
       {!loading && selectedLevel && coefficients.length === 0 && (!needsSeries || selectedSeriesId) && (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography color='text.secondary'>Aucun coefficient configuré pour ce niveau/série.</Typography>
-          <Button variant='outlined' sx={{ mt: 2 }}>
-            Configurer les coefficients
-          </Button>
         </Paper>
       )}
+
+      <Dialog open={editing !== null} onClose={handleCloseEdit} maxWidth='xs' fullWidth>
+        <DialogTitle>Modifier le coefficient</DialogTitle>
+        <DialogContent>
+          {editing && (
+            <Stack spacing={2} mt={1}>
+              <Typography variant='body2' color='text.secondary'>
+                {editing.subject?.name} ({editing.subject?.code})
+              </Typography>
+              {editError && <Alert severity='error'>{editError}</Alert>}
+              <TextField
+                label='Coefficient'
+                type='number'
+                inputProps={{ min: 0.5, step: 0.5 }}
+                value={editCoefficient}
+                onChange={e => setEditCoefficient(e.target.value)}
+                fullWidth
+                required
+              />
+              <TextField
+                label='Heures par semaine'
+                type='number'
+                inputProps={{ min: 0, step: 0.5 }}
+                value={editHours}
+                onChange={e => setEditHours(e.target.value)}
+                helperText='Laisser vide si non applicable'
+                fullWidth
+              />
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit} disabled={saving}>
+            Annuler
+          </Button>
+          <Button onClick={handleSaveEdit} variant='contained' disabled={saving}>
+            {saving ? 'Enregistrement…' : 'Enregistrer'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
