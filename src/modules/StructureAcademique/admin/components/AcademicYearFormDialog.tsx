@@ -73,13 +73,13 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
       setError(null)
       setBackendErrors({})
 
-      // Validation de la durée (9-12 mois)
+      // Validation de la durée (6-12 mois)
       const start = new Date(data.start_date)
       const end = new Date(data.end_date)
       const diffMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
 
-      if (diffMonths < 9 || diffMonths > 12) {
-        setError(t('La durée de l\'année académique doit être entre 9 et 12 mois'))
+      if (diffMonths < 6 || diffMonths > 12) {
+        setError(t('La durée de l\'année académique doit être entre 6 et 12 mois'))
         setSubmitting(false)
         return
       }
@@ -184,7 +184,7 @@ const AcademicYearFormDialog = ({ open, onClose, onSubmit, academicYear }: Acade
                     label={t("Date de fin")}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors.end_date || !!backendErrors.end_date}
-                    helperText={getFieldError('end_date') || t('Durée: 9-12 mois')}
+                    helperText={getFieldError('end_date') || t('Durée: 6-12 mois')}
                     disabled={submitting}
                   />
                 )}
