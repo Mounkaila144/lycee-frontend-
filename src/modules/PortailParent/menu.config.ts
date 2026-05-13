@@ -41,7 +41,7 @@ export const portailParentMenuConfig: ModuleMenuConfig = {
       order: 20,
       module: 'PortailParent',
       roles: ['admin'],
-      requiredRoles: ['Parent', 'Professeur', 'Administrator'],
+      requiredRoles: ['Parent', 'Administrator'],
       isVisible: true,
       isActive: true,
     },
