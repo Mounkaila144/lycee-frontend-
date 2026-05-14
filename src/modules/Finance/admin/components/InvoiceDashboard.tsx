@@ -773,7 +773,7 @@ const defaultPaymentForm = (): PaymentFormState => ({
   notes: '',
 });
 
-const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantId, onClose, onSuccess }) => {
+export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantId, onClose, onSuccess }) => {
   const open = invoice !== null;
   const queryClient = useQueryClient();
   const [form, setForm] = useState<PaymentFormState>(defaultPaymentForm);

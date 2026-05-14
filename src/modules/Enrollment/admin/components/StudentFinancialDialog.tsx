@@ -21,11 +21,19 @@ import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 
-import { useQuery } from '@tanstack/react-query';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Snackbar from '@mui/material/Snackbar';
+
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
 
 import { useTenant } from '@/shared/lib/tenant-context';
 import { createApiClient } from '@/shared/lib/api-client';
 import type { Student } from '../../types/student.types';
+import { PaymentsDialog } from '@/modules/Finance/admin/components/InvoiceDashboard';
+import { CreateInvoiceForStudentDialog } from '@/modules/Finance/admin/components/CreateInvoiceForStudentDialog';
+import type { Invoice } from '@/modules/Finance/types';
 
 interface InvoiceRow {
   id: number;
@@ -70,6 +78,62 @@ const STATUS_LABEL: Record<string, { label: string; color: 'default' | 'primary'
 
 export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ student, open, onClose }) => {
   const { tenantId } = useTenant();
+  const queryClient = useQueryClient();
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [paymentsInvoice, setPaymentsInvoice] = useState<Invoice | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
+  const handleDownloadPdf = useCallback(async (invoice: InvoiceRow) => {
+    try {
+      const client = createApiClient(tenantId || undefined);
+      const response = await client.get<Blob>(`/admin/finance/invoices/${invoice.id}/pdf`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      const reference = invoice.reference ?? invoice.invoice_number;
+
+      link.href = url;
+      link.download = `facture_${reference}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err?.response?.data?.message || 'Erreur lors du téléchargement de la facture.',
+        severity: 'error',
+      });
+    }
+  }, [tenantId]);
+
+  const handleOpenPayments = (inv: InvoiceRow) => {
+    const amount = Number(inv.amount ?? inv.total_amount ?? 0);
+    const paid = (inv.payments ?? [])
+      .filter(p => (p.status ?? 'completed') !== 'refunded' && (p.status ?? 'completed') !== 'failed')
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    // PaymentsDialog attend un Invoice avec amount/paid_amount/remaining_amount/reference/student.
+    setPaymentsInvoice({
+      ...(inv as any),
+      amount,
+      paid_amount: paid,
+      remaining_amount: Math.max(0, amount - paid),
+      reference: inv.reference ?? inv.invoice_number,
+      student: student ? {
+        id: student.id,
+        firstname: student.firstname,
+        lastname: student.lastname,
+        matricule: student.matricule,
+      } : undefined,
+    } as unknown as Invoice);
+  };
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['student-financial', student?.id],
@@ -130,18 +194,27 @@ export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ 
               </Typography>
             )}
           </Box>
-          {totals.countTotal > 0 && (
-            <Chip
-              color={totals.remaining === 0 ? 'success' : totals.countOverdue > 0 ? 'error' : 'primary'}
-              label={
-                totals.remaining === 0
-                  ? 'À jour'
-                  : totals.countOverdue > 0
-                    ? `${totals.countOverdue} en retard`
-                    : `${formatCurrency(totals.remaining)} restant`
-              }
-            />
-          )}
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {totals.countTotal > 0 && (
+              <Chip
+                color={totals.remaining === 0 ? 'success' : totals.countOverdue > 0 ? 'error' : 'primary'}
+                label={
+                  totals.remaining === 0
+                    ? 'À jour'
+                    : totals.countOverdue > 0
+                      ? `${totals.countOverdue} en retard`
+                      : `${formatCurrency(totals.remaining)} restant`
+                }
+              />
+            )}
+            <Button
+              variant="contained"
+              onClick={() => setCreateOpen(true)}
+              startIcon={<i className="ri-add-line" />}
+            >
+              Nouvelle facture
+            </Button>
+          </Box>
         </Box>
       </DialogTitle>
 
@@ -209,6 +282,7 @@ export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ 
                     <TableCell align="right">Restant</TableCell>
                     <TableCell>Statut</TableCell>
                     <TableCell>Paiements</TableCell>
+                    <TableCell align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -252,6 +326,24 @@ export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ 
                             </Box>
                           )}
                         </TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                            <Tooltip title="Enregistrer / voir paiements">
+                              <IconButton
+                                size="small"
+                                color={remaining > 0 ? 'primary' : 'default'}
+                                onClick={() => handleOpenPayments(inv)}
+                              >
+                                <i className="ri-money-dollar-circle-line" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Télécharger PDF">
+                              <IconButton size="small" color="secondary" onClick={() => handleDownloadPdf(inv)}>
+                                <i className="ri-download-2-line" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -265,6 +357,37 @@ export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ 
       <DialogActions>
         <Button onClick={onClose}>Fermer</Button>
       </DialogActions>
+
+      <CreateInvoiceForStudentDialog
+        student={student}
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={message => {
+          setSnackbar({ open: true, message, severity: 'success' });
+          queryClient.invalidateQueries({ queryKey: ['student-financial', student?.id] });
+          queryClient.invalidateQueries({ queryKey: ['invoices'] });
+        }}
+      />
+
+      <PaymentsDialog
+        invoice={paymentsInvoice}
+        tenantId={tenantId}
+        onClose={() => {
+          setPaymentsInvoice(null);
+          queryClient.invalidateQueries({ queryKey: ['student-financial', student?.id] });
+        }}
+        onSuccess={message => setSnackbar({ open: true, message, severity: 'success' })}
+      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
