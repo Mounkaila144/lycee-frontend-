@@ -31,14 +31,55 @@ import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import Divider from '@mui/material/Divider';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useTenant } from '@/shared/lib/tenant-context';
 import { useAcademicYears } from '@/modules/StructureAcademique/admin/hooks/useAcademicYears';
 import { studentService } from '@/modules/Enrollment/admin/services/studentService';
 import type { Student } from '@/modules/Enrollment/types/student.types';
+import { createApiClient } from '@/shared/lib/api-client';
 
 import type { Invoice, InvoiceStatus } from '../../types';
 import { INVOICE_STATUS_LABELS } from '../../types';
 import { useInvoices, useFeeTypes, useCreateInvoice } from '../hooks/useInvoices';
+
+const PAYMENT_METHOD_OPTIONS = [
+  { value: 'cash', label: 'Espèces' },
+  { value: 'mobile_money', label: 'Mobile Money' },
+  { value: 'bank_transfer', label: 'Virement bancaire' },
+  { value: 'check', label: 'Chèque' },
+  { value: 'card', label: 'Carte bancaire' },
+  { value: 'online', label: 'Paiement en ligne' },
+] as const;
+
+type PaymentMethodValue = (typeof PAYMENT_METHOD_OPTIONS)[number]['value'];
+
+const PAYMENT_METHOD_LABEL: Record<string, string> = Object.fromEntries(
+  PAYMENT_METHOD_OPTIONS.map(o => [o.value, o.label]),
+);
+
+interface PaymentRow {
+  id: number;
+  invoice_id: number;
+  amount: number | string;
+  payment_method?: string;
+  method?: string;
+  reference_number?: string | null;
+  transaction_reference?: string | null;
+  payment_date?: string | null;
+  notes?: string | null;
+  status?: string;
+}
+
+interface PaymentFormState {
+  amount: string;
+  method: PaymentMethodValue;
+  reference: string;
+  paymentDate: string;
+  notes: string;
+}
 
 const getStatusChipColor = (status: InvoiceStatus): 'default' | 'primary' | 'success' | 'error' | 'warning' => {
   switch (status) {
@@ -105,6 +146,7 @@ export const InvoiceDashboard: React.FC = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [paymentsInvoice, setPaymentsInvoice] = useState<Invoice | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
   const [form, setForm] = useState<CreateFormState>(initialForm);
@@ -353,9 +395,19 @@ export const InvoiceDashboard: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell align="center">
-                          <Button size="small" variant="outlined" onClick={() => handleViewDetail(invoice)}>
-                            D&eacute;tails
-                          </Button>
+                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <Button size="small" variant="outlined" onClick={() => handleViewDetail(invoice)}>
+                              D&eacute;tails
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color={invoice.remaining_amount > 0 ? 'primary' : 'inherit'}
+                              onClick={() => setPaymentsInvoice(invoice)}
+                            >
+                              Paiements
+                            </Button>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))
@@ -434,6 +486,13 @@ export const InvoiceDashboard: React.FC = () => {
           <Button onClick={() => setDetailOpen(false)}>Fermer</Button>
         </DialogActions>
       </Dialog>
+
+      <PaymentsDialog
+        invoice={paymentsInvoice}
+        tenantId={tenantId}
+        onClose={() => setPaymentsInvoice(null)}
+        onSuccess={message => setSnackbar({ open: true, message, severity: 'success' })}
+      />
 
       {/* Create Invoice Dialog */}
       <Dialog open={createOpen} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
@@ -548,5 +607,293 @@ export const InvoiceDashboard: React.FC = () => {
         </Alert>
       </Snackbar>
     </Box>
+  );
+};
+
+interface PaymentsDialogProps {
+  invoice: Invoice | null;
+  tenantId: string | null;
+  onClose: () => void;
+  onSuccess: (message: string) => void;
+}
+
+const defaultPaymentForm = (): PaymentFormState => ({
+  amount: '',
+  method: 'cash',
+  reference: '',
+  paymentDate: new Date().toISOString().slice(0, 10),
+  notes: '',
+});
+
+const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantId, onClose, onSuccess }) => {
+  const open = invoice !== null;
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState<PaymentFormState>(defaultPaymentForm);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (invoice) {
+      setForm({ ...defaultPaymentForm(), amount: invoice.remaining_amount > 0 ? String(invoice.remaining_amount) : '' });
+      setFormError(null);
+    }
+  }, [invoice]);
+
+  const { data: paymentsData, isLoading: paymentsLoading, error: paymentsError } = useQuery({
+    queryKey: ['payments', 'invoice', invoice?.id],
+    queryFn: async () => {
+      const client = createApiClient(tenantId || undefined);
+      const res = await client.get('/admin/finance/payments', { params: { invoice_id: invoice!.id, per_page: 100 } });
+      return res.data;
+    },
+    enabled: !!invoice,
+  });
+
+  const payments: PaymentRow[] = useMemo(() => {
+    const raw = paymentsData?.data ?? paymentsData ?? [];
+    return Array.isArray(raw) ? raw : [];
+  }, [paymentsData]);
+
+  // Totaux calculés depuis les paiements chargés pour rester à jour
+  // immédiatement après l'enregistrement, sans dépendre du refetch d'invoice.
+  const computedPaid = useMemo(
+    () => payments
+      .filter(p => (p.status ?? 'completed') !== 'refunded' && (p.status ?? 'completed') !== 'failed')
+      .reduce((sum, p) => sum + Number(p.amount), 0),
+    [payments],
+  );
+  const totalAmount = invoice?.amount ?? 0;
+  const remaining = Math.max(0, totalAmount - computedPaid);
+
+  const recordMutation = useMutation({
+    mutationFn: async (payload: { amount: number; method: PaymentMethodValue; reference: string; paymentDate: string; notes: string }) => {
+      const client = createApiClient(tenantId || undefined);
+      const res = await client.post('/admin/finance/payments', {
+        invoice_id: invoice!.id,
+        amount: payload.amount,
+        payment_method: payload.method,
+        payment_date: payload.paymentDate,
+        reference_number: payload.reference || undefined,
+        notes: payload.notes || undefined,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
+
+  const handleSubmit = async () => {
+    setFormError(null);
+    if (!invoice) return;
+
+    const amount = Number(form.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setFormError('Le montant doit être un nombre positif.');
+      return;
+    }
+    if (amount > remaining + 0.01) {
+      setFormError(`Le montant dépasse le restant dû (${formatCurrency(remaining)}).`);
+      return;
+    }
+    if (!form.paymentDate) {
+      setFormError('La date du paiement est obligatoire.');
+      return;
+    }
+
+    try {
+      await recordMutation.mutateAsync({
+        amount,
+        method: form.method,
+        reference: form.reference,
+        paymentDate: form.paymentDate,
+        notes: form.notes,
+      });
+      onSuccess(`Paiement de ${formatCurrency(amount)} enregistré pour ${invoice.reference}.`);
+      setForm({ ...defaultPaymentForm(), amount: '' });
+    } catch (err: any) {
+      setFormError(err?.response?.data?.message || 'Erreur lors de l\'enregistrement du paiement.');
+    }
+  };
+
+  if (!invoice) return null;
+
+  const isFullyPaid = remaining <= 0;
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="h6">Paiements — Facture {invoice.reference}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {invoice.student?.firstname} {invoice.student?.lastname} ({invoice.student?.matricule})
+            </Typography>
+          </Box>
+          <Chip
+            color={isFullyPaid ? 'success' : 'primary'}
+            label={isFullyPaid ? 'Soldée' : `Restant : ${formatCurrency(remaining)}`}
+          />
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ mb: 3 }}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 4 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Montant total</Typography>
+                <Typography variant="h6" fontWeight="bold">{formatCurrency(totalAmount)}</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 4 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Total payé</Typography>
+                <Typography variant="h6" fontWeight="bold" color="success.main">{formatCurrency(computedPaid)}</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 4 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Restant dû</Typography>
+                <Typography variant="h6" fontWeight="bold" color={isFullyPaid ? 'text.secondary' : 'error.main'}>{formatCurrency(remaining)}</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
+
+        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+          Historique des paiements
+        </Typography>
+        {paymentsError instanceof Error && (
+          <Alert severity="error" sx={{ mb: 2 }}>{paymentsError.message}</Alert>
+        )}
+        {paymentsLoading ? (
+          <Box display="flex" justifyContent="center" p={2}><CircularProgress size={24} /></Box>
+        ) : (
+          <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Méthode</TableCell>
+                  <TableCell>Référence</TableCell>
+                  <TableCell align="right">Montant</TableCell>
+                  <TableCell>Statut</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {payments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      <Typography color="text.secondary" sx={{ py: 2 }}>
+                        Aucun paiement enregistré pour cette facture.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  payments.map(p => {
+                    const method = p.payment_method ?? p.method ?? '';
+                    const reference = p.reference_number ?? p.transaction_reference ?? '—';
+                    return (
+                      <TableRow key={p.id}>
+                        <TableCell>{p.payment_date ? new Date(p.payment_date).toLocaleDateString('fr-FR') : '—'}</TableCell>
+                        <TableCell>{PAYMENT_METHOD_LABEL[method] ?? method}</TableCell>
+                        <TableCell>{reference}</TableCell>
+                        <TableCell align="right">{formatCurrency(Number(p.amount))}</TableCell>
+                        <TableCell>
+                          <Chip size="small" label={p.status ?? 'completed'} color={p.status === 'refunded' ? 'warning' : 'success'} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+          Enregistrer un paiement
+        </Typography>
+
+        {isFullyPaid ? (
+          <Alert severity="success">Cette facture est entièrement soldée.</Alert>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {formError && <Alert severity="error">{formError}</Alert>}
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Montant (XOF)"
+                  type="number"
+                  fullWidth
+                  required
+                  value={form.amount}
+                  onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))}
+                  helperText={`Maximum : ${formatCurrency(remaining)}`}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormControl fullWidth required>
+                  <InputLabel>Méthode</InputLabel>
+                  <Select
+                    label="Méthode"
+                    value={form.method}
+                    onChange={e => setForm(prev => ({ ...prev, method: e.target.value as PaymentMethodValue }))}
+                  >
+                    {PAYMENT_METHOD_OPTIONS.map(opt => (
+                      <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Date du paiement"
+                  type="date"
+                  fullWidth
+                  required
+                  value={form.paymentDate}
+                  onChange={e => setForm(prev => ({ ...prev, paymentDate: e.target.value }))}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Référence transaction"
+                  fullWidth
+                  value={form.reference}
+                  onChange={e => setForm(prev => ({ ...prev, reference: e.target.value }))}
+                  placeholder="Optionnel"
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  label="Notes"
+                  fullWidth
+                  multiline
+                  rows={2}
+                  value={form.notes}
+                  onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={recordMutation.isPending}>Fermer</Button>
+        {!isFullyPaid && (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={recordMutation.isPending}
+          >
+            {recordMutation.isPending ? 'Enregistrement…' : 'Enregistrer le paiement'}
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
   );
 };
