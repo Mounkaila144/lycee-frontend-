@@ -159,6 +159,27 @@ export const InvoiceDashboard: React.FC = () => {
     setDetailOpen(true);
   }, []);
 
+  const handleDownloadPdf = useCallback(async (invoice: Invoice) => {
+    try {
+      const client = createApiClient(tenantId || undefined);
+      const response = await client.get<Blob>(`/admin/finance/invoices/${invoice.id}/pdf`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `facture_${invoice.reference}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error(err);
+      setSnackbar({ open: true, message: err?.response?.data?.message || 'Erreur lors du téléchargement de la facture.', severity: 'error' });
+    }
+  }, [tenantId]);
+
   const handleOpenCreate = () => {
     setForm({ ...initialForm, dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10) });
     setResolvedStudent(null);
@@ -406,6 +427,14 @@ export const InvoiceDashboard: React.FC = () => {
                               onClick={() => setPaymentsInvoice(invoice)}
                             >
                               Paiements
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                              onClick={() => handleDownloadPdf(invoice)}
+                            >
+                              PDF
                             </Button>
                           </Box>
                         </TableCell>
