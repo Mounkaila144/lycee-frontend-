@@ -143,6 +143,54 @@ export const InvoiceDashboard: React.FC = () => {
   }, [invoicesData]);
   const feeTypes = feeTypesData?.data || [];
 
+  // Charge tous les paiements pour les stats globales.
+  const { data: allPaymentsData } = useQuery({
+    queryKey: ['payments', 'all'],
+    queryFn: async () => {
+      const client = createApiClient(tenantId || undefined);
+      const res = await client.get('/admin/finance/payments', { params: { per_page: 200 } });
+      return res.data;
+    },
+  });
+
+  const allPayments: PaymentRow[] = useMemo(() => {
+    const raw = allPaymentsData?.data ?? allPaymentsData ?? [];
+    return Array.isArray(raw) ? raw : [];
+  }, [allPaymentsData]);
+
+  const paymentStats = useMemo(() => {
+    const active = allPayments.filter(p => (p.status ?? 'completed') !== 'refunded' && (p.status ?? 'completed') !== 'failed');
+    const byMethod: Record<string, { count: number; amount: number }> = {};
+
+    active.forEach(p => {
+      const method = p.payment_method ?? p.method ?? 'autre';
+      const entry = byMethod[method] ?? { count: 0, amount: 0 };
+
+      entry.count += 1;
+      entry.amount += Number(p.amount);
+      byMethod[method] = entry;
+    });
+
+    const total = active.reduce((sum, p) => sum + Number(p.amount), 0);
+    const average = active.length > 0 ? total / active.length : 0;
+    const now = new Date();
+    const last30 = active.filter(p => {
+      if (!p.payment_date) return false;
+      const date = new Date(p.payment_date);
+
+      return (now.getTime() - date.getTime()) <= 30 * 24 * 60 * 60 * 1000;
+    });
+
+    return {
+      total,
+      count: active.length,
+      average,
+      last30Amount: last30.reduce((sum, p) => sum + Number(p.amount), 0),
+      last30Count: last30.length,
+      byMethod,
+    };
+  }, [allPayments]);
+
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -345,6 +393,77 @@ export const InvoiceDashboard: React.FC = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Payment Statistics */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>Statistiques des paiements</Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Paiements enregistrés</Typography>
+                <Typography variant="h6" fontWeight="bold">{paymentStats.count}</Typography>
+                <Typography variant="caption" color="text.secondary">total</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Paiement moyen</Typography>
+                <Typography variant="h6" fontWeight="bold">{formatCurrency(paymentStats.average)}</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">30 derniers jours</Typography>
+                <Typography variant="h6" fontWeight="bold" color="success.main">{formatCurrency(paymentStats.last30Amount)}</Typography>
+                <Typography variant="caption" color="text.secondary">{paymentStats.last30Count} paiement(s)</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Total encaissé</Typography>
+                <Typography variant="h6" fontWeight="bold" color="success.main">{formatCurrency(paymentStats.total)}</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          {Object.keys(paymentStats.byMethod).length > 0 && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Répartition par méthode</Typography>
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Méthode</TableCell>
+                      <TableCell align="right">Paiements</TableCell>
+                      <TableCell align="right">Montant total</TableCell>
+                      <TableCell align="right">Part</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(paymentStats.byMethod)
+                      .sort(([, a], [, b]) => b.amount - a.amount)
+                      .map(([method, stats]) => {
+                        const share = paymentStats.total > 0 ? Math.round((stats.amount / paymentStats.total) * 100) : 0;
+
+                        return (
+                          <TableRow key={method}>
+                            <TableCell>{PAYMENT_METHOD_LABEL[method] ?? method}</TableCell>
+                            <TableCell align="right">{stats.count}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>{formatCurrency(stats.amount)}</TableCell>
+                            <TableCell align="right">
+                              <Chip size="small" label={`${share}%`} color={share >= 50 ? 'primary' : 'default'} />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Invoices Table */}
       <Card>

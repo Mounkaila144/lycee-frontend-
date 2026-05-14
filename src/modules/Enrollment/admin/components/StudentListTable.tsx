@@ -24,6 +24,7 @@ import { StudentDeleteDialog } from './StudentDeleteDialog'
 import { StudentDetailDialog } from './StudentDetailDialog'
 import { StudentImportWizard } from './StudentImportWizard'
 import { PedagogicalEnrollmentWizard } from './PedagogicalEnrollmentWizard'
+import { StudentFinancialDialog } from './StudentFinancialDialog'
 
 // Shared DataTable Components
 import { DataTable, StandardMobileCard } from '@/components/shared/DataTable'
@@ -199,6 +200,12 @@ const StudentListTable = () => {
   const handleViewClick = useCallback((student: Student) => {
     setSelectedStudentId(student.id)
     setDetailDialogOpen(true)
+  }, [])
+
+  // Situation financière
+  const [financialStudent, setFinancialStudent] = useState<Student | null>(null)
+  const handleOpenFinancial = useCallback((student: Student) => {
+    setFinancialStudent(student)
   }, [])
 
   // Handle close detail dialog
@@ -381,6 +388,13 @@ const StudentListTable = () => {
             </IconButton>
             <IconButton
               size='small'
+              onClick={() => handleOpenFinancial(row.original)}
+              title='Situation financière'
+            >
+              <i className='ri-wallet-3-line text-textSecondary' />
+            </IconButton>
+            <IconButton
+              size='small'
               onClick={() => handleOpenDeleteDialog(row.original)}
               title='Supprimer'
             >
@@ -391,7 +405,7 @@ const StudentListTable = () => {
         enableSorting: false
       })
     ],
-    [handleViewClick, handleOpenEditDialog, handleOpenDeleteDialog, handleOpenEnrollmentDialog]
+    [handleViewClick, handleOpenEditDialog, handleOpenFinancial, handleOpenDeleteDialog, handleOpenEnrollmentDialog]
   )
 
   // DataTable configuration
@@ -540,6 +554,13 @@ const StudentListTable = () => {
         studentId={selectedStudentId}
         onEdit={handleEditFromDetail}
         onDelete={handleDeleteFromDetail}
+      />
+
+      {/* Financial Situation Dialog */}
+      <StudentFinancialDialog
+        open={financialStudent !== null}
+        student={financialStudent}
+        onClose={() => setFinancialStudent(null)}
       />
 
       {/* Import Wizard Dialog */}
