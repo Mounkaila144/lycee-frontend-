@@ -54,7 +54,7 @@ interface UserEditModalProps {
 }
 
 const UserEditModal = ({ open, onClose, onSuccess, user }: UserEditModalProps) => {
-  const { t } = useTranslation('Users')
+  const { t } = useTranslation('UsersGuard')
   const { tenantId } = useTenant()
 
   // Load roles and permissions from API

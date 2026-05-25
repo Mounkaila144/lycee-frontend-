@@ -1,0 +1,19 @@
+{
+  "Login": "Login",
+  "Sign in to your account": "Sign in to your account",
+  "Tenant ID": "Tenant ID",
+  "Enter your tenant ID": "Enter your tenant ID",
+  "Username": "Username",
+  "Enter your username": "Enter your username",
+  "Password": "Password",
+  "Enter your password": "Enter your password",
+  "Sign In": "Sign In",
+  "Invalid credentials": "Invalid credentials",
+  "Login successful": "Login successful",
+  "Are you sure you want to logout?": "Are you sure you want to logout?",
+  "Logout successful": "Logout successful",
+  "My Profile": "My Profile",
+  "Email": "Email",
+  "Name": "Name",
+  "Role": "Role"
+}

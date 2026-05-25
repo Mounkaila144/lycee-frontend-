@@ -68,7 +68,7 @@ const columnHelper = createColumnHelper<UserWithAction>()
 
 const UserListTable = () => {
   // Translation
-  const { t, locale } = useTranslation('Users')
+  const { t, locale } = useTranslation('UsersGuard')
 
   // Context
   const {

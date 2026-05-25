@@ -16,6 +16,24 @@ interface UseAuthReturn extends AuthState {
     error: string | null;
 }
 
+/**
+ * Resolve the landing route after login based on the user's roles.
+ * Each role is sent to a page it can actually access (avoids landing
+ * non-admin roles on /admin/users, which returns 403).
+ */
+const resolveLandingRoute = (groups: string[]): string => {
+    const has = (role: string) => groups.includes(role);
+
+    if (has('Administrator') || has('Manager')) return '/admin/users';
+    if (has('Comptable')) return '/admin/finance/invoices';
+    if (has('Caissier')) return '/admin/finance/payments';
+    if (has('Professeur')) return '/admin/dashboard';
+    if (has('Parent')) return '/admin/parent/home';
+    if (has('Élève')) return '/admin/student/home';
+
+    return '/admin/dashboard';
+};
+
 export const useAuth = (): UseAuthReturn => {
     const router = useRouter();
     const permissionsContext = usePermissionsOptional();
@@ -68,22 +86,19 @@ export const useAuth = (): UseAuthReturn => {
                     isLoading: false,
                 });
 
-                // Extract and store permissions (NO additional API request!)
+                // Extract permissions/roles from the login response (NO additional API request!)
+                const extracted = extractPermissionsFromLogin(response);
                 if (permissionsContext) {
-                    const permissions = extractPermissionsFromLogin(response);
-                    permissionsContext.setPermissions(permissions);
-
-                    console.log('[useAuth] Permissions extracted:', {
-                        total_permissions: permissions.permissions.length,
-                        groups: permissions.groups,
-                        is_admin: permissions.is_admin,
-                        is_superadmin: permissions.is_superadmin,
-                    });
-                } else {
-                    console.warn('[useAuth] PermissionsContext not available, skipping permissions extraction');
+                    permissionsContext.setPermissions(extracted);
                 }
 
-                router.push('/admin/users');
+                // Redirect to a landing page appropriate for the user's role.
+                // Prefer the backend-computed home_route (config/role-routes.php),
+                // fall back to a role-based resolution from the user's roles.
+                const loggedUser: any = response.data.user;
+                const landingRoute =
+                    loggedUser?.home_route || resolveLandingRoute(loggedUser?.roles ?? []);
+                router.push(landingRoute);
             } else {
                 throw new Error(response.message || 'Login failed');
             }

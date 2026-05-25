@@ -27,7 +27,7 @@ interface UserFunctionsModalProps {
 }
 
 const UserFunctionsModal = ({ open, onClose, user }: UserFunctionsModalProps) => {
-  const { t } = useTranslation('Users')
+  const { t } = useTranslation('UsersGuard')
 
   if (!user) return null
 

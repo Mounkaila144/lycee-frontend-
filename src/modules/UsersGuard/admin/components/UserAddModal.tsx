@@ -53,7 +53,7 @@ interface UserAddModalProps {
 }
 
 const UserAddModal = ({ open, onClose, onSuccess }: UserAddModalProps) => {
-  const { t } = useTranslation('Users')
+  const { t } = useTranslation('UsersGuard')
   const { tenantId } = useTenant()
 
   // Load roles and permissions from API

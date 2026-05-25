@@ -27,7 +27,7 @@ interface UserGroupsModalProps {
 }
 
 const UserGroupsModal = ({ open, onClose, user }: UserGroupsModalProps) => {
-  const { t } = useTranslation('Users')
+  const { t } = useTranslation('UsersGuard')
 
   if (!user) return null
 

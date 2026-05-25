@@ -22,6 +22,7 @@ export const financeMenuConfig: ModuleMenuConfig = {
       order: 45,
       module: 'Finance',
       roles: ['admin', 'superadmin'],
+      requiredRoles: ['Administrator', 'Manager', 'Comptable', 'Caissier'],
       isVisible: true,
       isActive: true,
       children: [
@@ -37,6 +38,7 @@ export const financeMenuConfig: ModuleMenuConfig = {
           module: 'Finance',
           parentId: 'finance',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable', 'Caissier'],
           isVisible: true,
           isActive: true,
         },
