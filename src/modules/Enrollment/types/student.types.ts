@@ -124,6 +124,7 @@ export interface StudentFormData {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   programme_id: number;
+  class_id?: number | null;
 }
 
 /**

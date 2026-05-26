@@ -50,7 +50,7 @@ const modules = [
   {
     icon: 'ri-building-2-line',
     title: 'Structure Académique',
-    description: 'Gestion des programmes, niveaux (L1-M2), semestres, UE avec crédits ECTS et modules.',
+    description: 'Gestion des cycles, niveaux (6e à Terminale), classes, séries et matières avec coefficients.',
     tiers: ['basic', 'medium', 'premium']
   },
   {
@@ -74,7 +74,7 @@ const modules = [
   {
     icon: 'ri-file-list-3-line',
     title: 'Notes & Évaluations',
-    description: 'Saisie des notes, calcul automatique des moyennes, délibérations et règles LMD.',
+    description: 'Saisie des notes /20, calcul des moyennes par coefficient, bulletins et conseils de classe.',
     tiers: ['basic', 'medium', 'premium']
   },
   {
@@ -85,7 +85,7 @@ const modules = [
   },
   {
     icon: 'ri-money-euro-circle-line',
-    title: 'Comptabilité Étudiants',
+    title: 'Comptabilité Élèves',
     description: 'Facturation, paiements, reçus PDF, suivi des impayés et échéanciers.',
     tiers: ['basic', 'medium', 'premium']
   },
@@ -119,11 +119,11 @@ const plans = [
     highlights: [
       'Structure académique complète',
       'Inscriptions (admin + pédagogique)',
-      'Notes & évaluations (CC, Examen)',
+      'Notes & évaluations (devoirs, compositions)',
       'Calcul automatique des moyennes',
       'Documents officiels (1 template/type)',
-      'Relevés de notes & attestations PDF',
-      'Rôles : Admin, Enseignant, Étudiant',
+      'Bulletins & attestations PDF',
+      'Rôles : Admin, Enseignant, Élève, Parent',
       'Import CSV/Excel',
       'Stockage : 10 Go',
       'Support email (72h)'
@@ -131,7 +131,7 @@ const plans = [
     notIncluded: [
       'Emplois du temps',
       'Présences & Absences',
-      'Comptabilité Étudiants',
+      'Comptabilité Élèves',
       'Paie Personnel',
       'API Access'
     ]
@@ -152,7 +152,7 @@ const plans = [
       'Présences & Absences (QR Code)',
       'Emplois du temps (détection conflits)',
       'Examens & Planning complet',
-      'Comptabilité étudiants (facturation)',
+      'Comptabilité élèves (facturation)',
       'Paie Personnel (brut → net)',
       'Documents avancés (3 templates/type)',
       'Génération en masse de documents',
@@ -201,7 +201,7 @@ const plans = [
 
 // ── Comparison table data ──
 const comparisonRows = [
-  { feature: 'Étudiants max', basic: '500', medium: '2 000', premium: 'Illimité' },
+  { feature: 'Élèves max', basic: '500', medium: '2 000', premium: 'Illimité' },
   { feature: 'Utilisateurs admin', basic: '10', medium: '50', premium: 'Illimité' },
   { feature: 'Structure Académique', basic: true, medium: true, premium: true },
   { feature: 'Inscriptions', basic: true, medium: true, premium: true },
@@ -210,7 +210,7 @@ const comparisonRows = [
   { feature: 'Emplois du Temps', basic: false, medium: true, premium: true },
   { feature: 'Présences & Absences', basic: false, medium: true, premium: true },
   { feature: 'Examens & Planning', basic: false, medium: true, premium: true },
-  { feature: 'Comptabilité Étudiants', basic: false, medium: true, premium: true },
+  { feature: 'Comptabilité Élèves', basic: false, medium: true, premium: true },
   { feature: 'Paie Personnel', basic: false, medium: true, premium: true },
   { feature: 'Multi-campus', basic: false, medium: false, premium: true },
   { feature: 'API Access', basic: false, medium: 'Lecture seule', premium: 'Complet + Webhooks' },
@@ -462,7 +462,7 @@ const LandingPage = ({ lang }: Props) => {
             </Typography>
             <Typography variant='body1' sx={{ color: 'text.secondary', maxWidth: 650, mx: 'auto' }}>
               De la structure académique à la paie du personnel, Jandoo couvre l&apos;ensemble des besoins
-              de gestion de votre établissement d&apos;enseignement supérieur.
+              de gestion de votre établissement scolaire (collège &amp; lycée).
             </Typography>
           </Box>
 
@@ -627,7 +627,7 @@ const LandingPage = ({ lang }: Props) => {
 
                     <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
                       <Chip
-                        label={`${plan.students} étudiants`}
+                        label={`${plan.students} élèves`}
                         size='small'
                         variant='outlined'
                         sx={{ fontSize: '0.75rem' }}
@@ -801,12 +801,12 @@ const LandingPage = ({ lang }: Props) => {
                 variant='h3'
                 sx={{ fontWeight: 700, fontSize: { xs: '1.75rem', md: '2.25rem' }, mb: 3 }}
               >
-                Conçu pour l&apos;enseignement supérieur LMD
+                Conçu pour les collèges et lycées
               </Typography>
               {[
-                'Conforme au système LMD (Licence-Master-Doctorat)',
-                'Calcul automatique des crédits ECTS',
-                'Compensation et délibérations paramétrables',
+                'Adapté au système secondaire (collège & lycée)',
+                'Notes sur 20 et moyennes pondérées par coefficient',
+                'Bulletins et conseils de classe par trimestre',
                 'Multi-tenant : isolation complète des données',
                 'Import/Export CSV, Excel, PDF, iCal',
                 'Interface disponible en Français, Anglais et Arabe'
@@ -924,7 +924,7 @@ const LandingPage = ({ lang }: Props) => {
                 </Typography>
               </Box>
               <Typography variant='body2' sx={{ color: 'text.secondary', lineHeight: 1.7, maxWidth: 300 }}>
-                Plateforme de gestion scolaire intelligente pour l&apos;enseignement supérieur LMD.
+                Plateforme de gestion scolaire intelligente pour les collèges et lycées.
               </Typography>
             </Grid>
             <Grid size={{ xs: 6, md: 2 }}>

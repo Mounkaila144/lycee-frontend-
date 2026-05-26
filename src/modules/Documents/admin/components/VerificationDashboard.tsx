@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
+
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -27,468 +29,278 @@ import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import type {
-  DocumentVerification,
-  ElectronicSignature,
-  Archive,
-  DocumentRegister,
-  DocumentVerificationStatus,
-  SignatureStatus,
-  ArchiveStatus,
-} from '../../types';
+import { createApiClient } from '@/shared/lib/api-client';
 
-import {
-  VERIFICATION_STATUS_LABELS,
-  VERIFICATION_STATUS_COLORS,
-  SIGNATURE_STATUS_LABELS,
-  ARCHIVE_STATUS_LABELS,
-} from '../../types';
+const api = () => createApiClient();
 
-// ──── Demo Data ────
+function toArray<T>(resp: unknown): T[] {
+  if (Array.isArray(resp)) return resp as T[];
+  const r = resp as { data?: unknown };
+  if (r && Array.isArray(r.data)) return r.data as T[];
+  const nested = (r?.data as { data?: unknown })?.data;
+  if (Array.isArray(nested)) return nested as T[];
+  return [];
+}
 
-const DEMO_VERIFICATIONS: DocumentVerification[] = [
-  {
-    id: 1, document_type: 'transcript', document_number: 'TR-2026-001',
-    verification_code: 'VER-001-ABC', verified_at: '2026-03-25T10:00:00',
-    is_valid: true, status: 'valid', verified_by: 'Employeur XYZ',
-    document_data: null, created_at: '2026-03-25T10:00:00',
-  },
-  {
-    id: 2, document_type: 'diploma', document_number: 'DIP-2026-002',
-    verification_code: 'VER-002-DEF', verified_at: '2026-03-24T14:00:00',
-    is_valid: true, status: 'valid', verified_by: 'Université de Paris',
-    document_data: null, created_at: '2026-03-24T14:00:00',
-  },
-  {
-    id: 3, document_type: 'certificate', document_number: 'CERT-2025-099',
-    verification_code: 'VER-003-GHI', verified_at: '2026-03-23T09:00:00',
-    is_valid: false, status: 'expired', verified_by: 'Ambassade France',
-    document_data: null, created_at: '2026-03-23T09:00:00',
-  },
-  {
-    id: 4, document_type: 'diploma', document_number: 'FAKE-001',
-    verification_code: 'VER-004-JKL', verified_at: '2026-03-22T16:00:00',
-    is_valid: false, status: 'invalid', verified_by: 'Société ABC',
-    document_data: null, created_at: '2026-03-22T16:00:00',
-  },
-];
+interface ApiStudent {
+  id: number;
+  firstname?: string;
+  lastname?: string;
+  matricule?: string;
+}
 
-const DEMO_REGISTER: DocumentRegister[] = [
-  { id: 1, document_type: 'Relevé', document_number: 'TR-2026-001', student_name: 'Amadou Diallo', issued_at: '2026-03-20', status: 'Actif', verified_count: 3, last_verified_at: '2026-03-25T10:00:00' },
-  { id: 2, document_type: 'Diplôme', document_number: 'DIP-2026-001', student_name: 'Amadou Diallo', issued_at: '2026-03-01', status: 'Actif', verified_count: 5, last_verified_at: '2026-03-24T14:00:00' },
-  { id: 3, document_type: 'Attestation', document_number: 'CERT-2026-001', student_name: 'Amadou Diallo', issued_at: '2026-03-15', status: 'Actif', verified_count: 1, last_verified_at: '2026-03-20T09:00:00' },
-  { id: 4, document_type: 'Diplôme', document_number: 'DIP-2026-002', student_name: 'Fatima Ousmane', issued_at: '2026-03-05', status: 'Actif', verified_count: 2, last_verified_at: '2026-03-24T14:00:00' },
-  { id: 5, document_type: 'Relevé', document_number: 'TR-2026-003', student_name: 'Ibrahim Moussa', issued_at: '2026-03-22', status: 'Actif', verified_count: 0, last_verified_at: null },
-];
+interface ApiRegisterDoc {
+  id: number;
+  document_type: string;
+  document_number: string;
+  issue_date: string | null;
+  status: string;
+  verification_code: string | null;
+  student?: ApiStudent | null;
+}
 
-const DEMO_ARCHIVES: Archive[] = [
-  { id: 1, document_type: 'diploma', document_id: 10, document_number: 'DIP-2024-001', status: 'archived', archived_at: '2025-09-01T00:00:00', storage_location: 'Archive A-12', retention_until: '2034-09-01', metadata: null, created_at: '2025-09-01T00:00:00', updated_at: '2025-09-01T00:00:00' },
-  { id: 2, document_type: 'transcript', document_id: 20, document_number: 'TR-2024-050', status: 'cold_storage', archived_at: '2025-06-15T00:00:00', storage_location: 'Coffre B-03', retention_until: '2035-06-15', metadata: null, created_at: '2025-06-15T00:00:00', updated_at: '2026-01-10T00:00:00' },
-  { id: 3, document_type: 'certificate', document_id: 30, document_number: 'CERT-2024-100', status: 'active', archived_at: '2026-01-01T00:00:00', storage_location: 'Archive A-15', retention_until: '2031-01-01', metadata: null, created_at: '2026-01-01T00:00:00', updated_at: '2026-01-01T00:00:00' },
-];
+interface VerifyResult {
+  valid: boolean;
+  message?: string;
+  document?: {
+    document_number: string;
+    document_type: string;
+    student_name: string;
+    student_matricule: string;
+    issue_date: string;
+    academic_year?: string | null;
+    status: string;
+    verification_code?: string;
+  };
+  verification?: {
+    verified_at: string;
+    verification_count: number;
+  };
+}
 
-const DEMO_SIGNATURES: ElectronicSignature[] = [
-  { id: 1, document_type: 'diploma', document_id: 1, signer_name: 'Prof. Adamou Boubacar', signer_role: 'Recteur', status: 'signed', signed_at: '2026-03-10T14:00:00', certificate_path: '/certs/sig-001.pem', hash: 'sha256:abc123...', created_at: '2026-03-08T10:00:00', updated_at: '2026-03-10T14:00:00' },
-  { id: 2, document_type: 'diploma', document_id: 2, signer_name: 'Dr. Mariama Sani', signer_role: 'Doyen', status: 'pending', signed_at: null, certificate_path: null, hash: null, created_at: '2026-03-18T09:00:00', updated_at: '2026-03-18T09:00:00' },
-  { id: 3, document_type: 'transcript', document_id: 1, signer_name: 'Prof. Adamou Boubacar', signer_role: 'Recteur', status: 'signed', signed_at: '2026-03-20T10:00:00', certificate_path: '/certs/sig-003.pem', hash: 'sha256:def456...', created_at: '2026-03-19T08:00:00', updated_at: '2026-03-20T10:00:00' },
-  { id: 4, document_type: 'certificate', document_id: 5, signer_name: 'Dr. Issa Garba', signer_role: 'Secrétaire Général', status: 'rejected', signed_at: null, certificate_path: null, hash: null, created_at: '2026-03-22T11:00:00', updated_at: '2026-03-23T09:00:00' },
-];
+interface VerificationStats {
+  total_verifications: number;
+  successful_verifications: number;
+  failed_verifications: number;
+  success_rate: number;
+}
 
-const getVerificationChipColor = (status: DocumentVerificationStatus): 'default' | 'success' | 'error' => {
-  switch (status) {
-    case 'valid': return 'success';
-    case 'invalid': return 'error';
-    case 'expired': return 'default';
-    case 'revoked': return 'error';
-    default: return 'default';
-  }
+const DOC_TYPE_LABELS: Record<string, string> = {
+  transcript_semester: 'Relevé semestriel',
+  transcript_global: 'Relevé global',
+  transcript_provisional: 'Relevé provisoire',
+  diploma: 'Diplôme',
+  diploma_duplicate: 'Duplicata diplôme',
+  diploma_supplement: 'Supplément diplôme',
+  certificate_enrollment: "Attestation d'inscription",
+  certificate_status: 'Attestation de statut',
+  certificate_achievement: 'Attestation de réussite',
+  certificate_attendance: "Attestation d'assiduité",
+  certificate_schooling: 'Certificat de scolarité',
+  certificate_transfer: 'Certificat de transfert',
+  student_card: 'Carte étudiant',
+  access_badge: "Badge d'accès",
 };
 
-const getSignatureChipColor = (status: SignatureStatus): 'default' | 'warning' | 'success' | 'error' => {
-  switch (status) {
-    case 'pending': return 'warning';
-    case 'signed': return 'success';
-    case 'rejected': return 'error';
-    case 'expired': return 'default';
-    default: return 'default';
-  }
+const STATUS_LABELS: Record<string, string> = {
+  issued: 'Émis',
+  cancelled: 'Annulé',
+  replaced: 'Remplacé',
 };
 
-const getArchiveChipColor = (status: ArchiveStatus): 'default' | 'success' | 'primary' => {
-  switch (status) {
-    case 'active': return 'success';
-    case 'archived': return 'primary';
-    case 'cold_storage': return 'default';
-    default: return 'default';
-  }
-};
+const fmtDate = (d: string | null): string => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
+const studentName = (s?: ApiStudent | null): string => (s ? `${s.firstname ?? ''} ${s.lastname ?? ''}`.trim() || '—' : '—');
 
 export const VerificationDashboard: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [verifyOpen, setVerifyOpen] = useState(false);
-  const [verifyResult, setVerifyResult] = useState<DocumentVerification | null>(null);
+  const [docNumber, setDocNumber] = useState('');
+  const [verifyResult, setVerifyResult] = useState<VerifyResult | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
-  const verifications = DEMO_VERIFICATIONS;
-  const register = DEMO_REGISTER;
-  const archives = DEMO_ARCHIVES;
-  const signatures = DEMO_SIGNATURES;
+  const { data: registerResp, isLoading, isError } = useQuery({
+    queryKey: ['document-register'],
+    queryFn: async () => (await api().get('/admin/documents/verification/register', { params: { per_page: 200 } })).data,
+  });
+  const register = useMemo(() => toArray<ApiRegisterDoc>(registerResp), [registerResp]);
 
-  const handleVerify = useCallback(() => {
-    setVerifyResult(DEMO_VERIFICATIONS[0]);
-    setVerifyOpen(false);
-    setResultOpen(true);
-  }, []);
+  const { data: stats } = useQuery<VerificationStats>({
+    queryKey: ['verification-statistics'],
+    queryFn: async () => (await api().get('/admin/documents/verification/statistics')).data,
+  });
 
-  const handleSign = useCallback((signature: ElectronicSignature) => {
-    setSnackbar({ open: true, message: `Document signé par ${signature.signer_name}`, severity: 'success' });
-  }, []);
+  const verifyMutation = useMutation({
+    mutationFn: async (documentNumber: string) =>
+      (await api().post('/admin/documents/verification/document-number', { document_number: documentNumber })).data as VerifyResult,
+    onSuccess: (data) => {
+      setVerifyResult(data);
+      setVerifyOpen(false);
+      setResultOpen(true);
+    },
+    onError: (e: any) => setSnackbar({ open: true, message: e?.response?.data?.message ?? 'Échec de la vérification.', severity: 'error' }),
+  });
 
-  const handleColdStorage = useCallback((archive: Archive) => {
-    setSnackbar({ open: true, message: `Document "${archive.document_number}" déplacé en stockage froid`, severity: 'success' });
-  }, []);
-
-  const validCount = verifications.filter(v => v.status === 'valid').length;
-  const invalidCount = verifications.filter(v => v.status === 'invalid' || v.status === 'expired').length;
   const totalDocuments = register.length;
-  const pendingSignatures = signatures.filter(s => s.status === 'pending').length;
+  const issuedDocuments = register.filter(d => d.status === 'issued').length;
+  const totalVerifications = stats?.total_verifications ?? 0;
+  const successRate = stats?.success_rate ?? 0;
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">
-          Administration
-        </Link>
-        <Link underline="hover" color="inherit" href="#">
-          Documents Officiels
-        </Link>
+        <Link underline="hover" color="inherit" href="#">Administration</Link>
+        <Link underline="hover" color="inherit" href="#">Documents Officiels</Link>
         <Typography color="text.primary">Vérification</Typography>
       </Breadcrumbs>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Vérification & Registre des Documents
-        </Typography>
-        <Button variant="contained" onClick={() => setVerifyOpen(true)}>
-          Vérifier un Document
-        </Button>
+        <Typography variant="h4" fontWeight="bold">Vérification &amp; Registre des Documents</Typography>
+        <Button variant="contained" onClick={() => { setDocNumber(''); setVerifyOpen(true); }}>Vérifier un Document</Button>
       </Box>
 
-      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Vérifications valides', value: validCount, color: '#4caf50' },
-          { label: 'Vérifications invalides', value: invalidCount, color: '#f44336' },
           { label: 'Documents enregistrés', value: totalDocuments, color: '#1976d2' },
-          { label: 'Signatures en attente', value: pendingSignatures, color: '#ff9800' },
+          { label: 'Documents émis', value: issuedDocuments, color: '#4caf50' },
+          { label: 'Vérifications totales', value: totalVerifications, color: '#9c27b0' },
+          { label: 'Taux de succès', value: `${successRate}%`, color: '#ff9800' },
         ].map((stat, idx) => (
           <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
+                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>{stat.value}</Typography>
+                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Tabs */}
       <Card>
         <CardContent>
           <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 2 }}>
-            <Tab label="Historique Vérifications" />
             <Tab label="Registre Documents" />
-            <Tab label="Archives" />
-            <Tab label="Signatures Électroniques" />
           </Tabs>
 
-          {/* Verifications Tab */}
           {tabIndex === 0 && (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Type Document</TableCell>
-                    <TableCell>N° Document</TableCell>
-                    <TableCell>Vérifié par</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Résultat</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {verifications.map(verification => (
-                    <TableRow key={verification.id} hover>
-                      <TableCell>
-                        <Chip size="small" label={verification.document_type} variant="outlined" />
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="medium">{verification.document_number}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{verification.verified_by || 'Anonyme'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(verification.verified_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={VERIFICATION_STATUS_LABELS[verification.status]}
-                          color={getVerificationChipColor(verification.status)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-
-          {/* Register Tab */}
-          {tabIndex === 1 && (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Type</TableCell>
-                    <TableCell>N° Document</TableCell>
-                    <TableCell>Étudiant</TableCell>
-                    <TableCell>Émis le</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell>Vérifications</TableCell>
-                    <TableCell>Dernière vérification</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {register.map(doc => (
-                    <TableRow key={doc.id} hover>
-                      <TableCell>
-                        <Chip size="small" label={doc.document_type} variant="outlined" />
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="medium">{doc.document_number}</Typography>
-                      </TableCell>
-                      <TableCell>{doc.student_name}</TableCell>
-                      <TableCell>
-                        {new Date(doc.issued_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>
-                        <Chip size="small" label={doc.status} color="success" />
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="bold">{doc.verified_count}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        {doc.last_verified_at
-                          ? new Date(doc.last_verified_at).toLocaleDateString('fr-FR')
-                          : 'Jamais'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-
-          {/* Archives Tab */}
-          {tabIndex === 2 && (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Type</TableCell>
-                    <TableCell>N° Document</TableCell>
-                    <TableCell>Emplacement</TableCell>
-                    <TableCell>Archivé le</TableCell>
-                    <TableCell>Conservation jusqu&apos;au</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {archives.map(archive => (
-                    <TableRow key={archive.id} hover>
-                      <TableCell>
-                        <Chip size="small" label={archive.document_type} variant="outlined" />
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="medium">{archive.document_number}</Typography>
-                      </TableCell>
-                      <TableCell>{archive.storage_location}</TableCell>
-                      <TableCell>
-                        {new Date(archive.archived_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>
-                        {archive.retention_until
-                          ? new Date(archive.retention_until).toLocaleDateString('fr-FR')
-                          : 'Indéfini'}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={ARCHIVE_STATUS_LABELS[archive.status]}
-                          color={getArchiveChipColor(archive.status)}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        {archive.status !== 'cold_storage' && (
-                          <Tooltip title="Déplacer en stockage froid">
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => handleColdStorage(archive)}
-                            >
-                              Stockage froid
-                            </Button>
-                          </Tooltip>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-
-          {/* Signatures Tab */}
-          {tabIndex === 3 && (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Type Document</TableCell>
-                    <TableCell>Signataire</TableCell>
-                    <TableCell>Rôle</TableCell>
-                    <TableCell>Date signature</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {signatures.map(signature => (
-                    <TableRow key={signature.id} hover>
-                      <TableCell>
-                        <Chip size="small" label={signature.document_type} variant="outlined" />
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="medium">{signature.signer_name}</Typography>
-                      </TableCell>
-                      <TableCell>{signature.signer_role}</TableCell>
-                      <TableCell>
-                        {signature.signed_at
-                          ? new Date(signature.signed_at).toLocaleDateString('fr-FR')
-                          : 'En attente'}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={SIGNATURE_STATUS_LABELS[signature.status]}
-                          color={getSignatureChipColor(signature.status)}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        {signature.status === 'pending' && (
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleSign(signature)}
-                          >
-                            Signer
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <>
+              {isLoading && <Box display="flex" justifyContent="center" p={3}><CircularProgress /></Box>}
+              {isError && <Alert severity="error">Erreur lors du chargement du registre.</Alert>}
+              {!isLoading && !isError && register.length === 0 && <Alert severity="info">Aucun document enregistré.</Alert>}
+              {!isLoading && !isError && register.length > 0 && (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Type</TableCell>
+                        <TableCell>N° Document</TableCell>
+                        <TableCell>Étudiant</TableCell>
+                        <TableCell>Émis le</TableCell>
+                        <TableCell>Statut</TableCell>
+                        <TableCell>Code de vérification</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {register.map(doc => (
+                        <TableRow key={doc.id} hover>
+                          <TableCell>
+                            <Chip size="small" label={DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type} variant="outlined" />
+                          </TableCell>
+                          <TableCell><Typography fontWeight="medium">{doc.document_number}</Typography></TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{studentName(doc.student)}</Typography>
+                            <Typography variant="caption" color="text.secondary">{doc.student?.matricule ?? ''}</Typography>
+                          </TableCell>
+                          <TableCell>{fmtDate(doc.issue_date)}</TableCell>
+                          <TableCell>
+                            <Chip size="small" label={STATUS_LABELS[doc.status] ?? doc.status} color={doc.status === 'issued' ? 'success' : 'default'} />
+                          </TableCell>
+                          <TableCell>
+                            {doc.verification_code ? <Chip size="small" label={doc.verification_code} /> : '—'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* Verify Dialog */}
       <Dialog open={verifyOpen} onClose={() => setVerifyOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Vérifier un Document</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <Alert severity="info">
-              Entrez le numéro de document ou scannez le QR code pour vérifier l&apos;authenticité.
+              Entrez le numéro de document pour vérifier son authenticité auprès du registre.
             </Alert>
-            <TextField
-              label="N° de document"
-              fullWidth
-              placeholder="Ex: TR-2026-001, DIP-2026-001"
-            />
-            <Typography variant="body2" color="text.secondary" align="center">
-              - ou -
-            </Typography>
-            <TextField
-              label="Code QR"
-              fullWidth
-              placeholder="Collez ou scannez le code QR"
-            />
+            <TextField label="N° de document" fullWidth autoFocus
+              placeholder="Ex: DIP-2026-001"
+              value={docNumber}
+              onChange={e => setDocNumber(e.target.value)} />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setVerifyOpen(false)}>Annuler</Button>
-          <Button variant="contained" onClick={handleVerify}>
-            Vérifier
+          <Button variant="contained" disabled={!docNumber.trim() || verifyMutation.isPending}
+            onClick={() => verifyMutation.mutate(docNumber.trim())}>
+            {verifyMutation.isPending ? 'Vérification…' : 'Vérifier'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Verification Result Dialog */}
       <Dialog open={resultOpen} onClose={() => setResultOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Résultat de la Vérification</DialogTitle>
         <DialogContent>
           {verifyResult && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-              <Alert severity={verifyResult.is_valid ? 'success' : 'error'}>
-                {verifyResult.is_valid
+              <Alert severity={verifyResult.valid ? 'success' : 'error'}>
+                {verifyResult.valid
                   ? 'Ce document est authentique et valide.'
-                  : 'Ce document n\'est pas valide ou a expiré.'}
+                  : (verifyResult.message ?? "Ce document n'est pas valide ou est introuvable.")}
               </Alert>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Paper variant="outlined" sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary">Type</Typography>
-                    <Typography fontWeight="bold">{verifyResult.document_type}</Typography>
-                  </Paper>
+              {verifyResult.valid && verifyResult.document && (
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">Type</Typography>
+                      <Typography fontWeight="bold">{verifyResult.document.document_type}</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">N° Document</Typography>
+                      <Typography fontWeight="bold">{verifyResult.document.document_number}</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">Étudiant</Typography>
+                      <Typography fontWeight="bold">{verifyResult.document.student_name}</Typography>
+                      <Typography variant="body2">{verifyResult.document.student_matricule}</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">Émis le</Typography>
+                      <Typography fontWeight="bold">{verifyResult.document.issue_date}</Typography>
+                    </Paper>
+                  </Grid>
+                  {verifyResult.verification && (
+                    <Grid size={{ xs: 12 }}>
+                      <Paper variant="outlined" sx={{ p: 2 }}>
+                        <Typography variant="subtitle2" color="text.secondary">Vérifications</Typography>
+                        <Typography fontWeight="bold">{verifyResult.verification.verification_count}</Typography>
+                      </Paper>
+                    </Grid>
+                  )}
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Paper variant="outlined" sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary">N° Document</Typography>
-                    <Typography fontWeight="bold">{verifyResult.document_number}</Typography>
-                  </Paper>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Paper variant="outlined" sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary">Statut</Typography>
-                    <Chip
-                      label={VERIFICATION_STATUS_LABELS[verifyResult.status]}
-                      color={getVerificationChipColor(verifyResult.status)}
-                    />
-                  </Paper>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Paper variant="outlined" sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary">Vérifié le</Typography>
-                    <Typography fontWeight="bold">
-                      {new Date(verifyResult.verified_at).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
+              )}
             </Box>
           )}
         </DialogContent>
@@ -497,15 +309,8 @@ export const VerificationDashboard: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-      >
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-          {snackbar.message}
-        </Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );

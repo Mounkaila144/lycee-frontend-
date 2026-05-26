@@ -1,5 +1,5 @@
-import { TeacherGradeEntry } from '@/modules/Grades';
+import { SecondaryGradeEntry } from '@/modules/Grades/admin/components/SecondaryGradeEntry';
 
 export default function GradeEntryPage() {
-  return <TeacherGradeEntry />;
+  return <SecondaryGradeEntry />;
 }

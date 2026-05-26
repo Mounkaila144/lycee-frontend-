@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -29,109 +31,169 @@ import Alert from '@mui/material/Alert';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import type {
-  SocialDeclaration,
-  DeclarationStatus,
-  DeclarationType,
-} from '../../types';
+import { createApiClient } from '@/shared/lib/api-client';
 
-import {
-  DECLARATION_TYPE_LABELS,
-  DECLARATION_TYPE_COLORS,
-  DECLARATION_STATUS_LABELS,
-  DECLARATION_STATUS_COLORS,
-} from '../../types';
+const api = () => createApiClient();
 
-// ──── Demo Data ────
+function toArray<T>(resp: unknown): T[] {
+  if (Array.isArray(resp)) return resp as T[];
+  const r = resp as { data?: unknown };
+  if (r && Array.isArray(r.data)) return r.data as T[];
+  const nested = (r?.data as { data?: unknown })?.data;
+  if (Array.isArray(nested)) return nested as T[];
+  return [];
+}
 
-const DEMO_DECLARATIONS: SocialDeclaration[] = [
-  {
-    id: 1, type: 'CNSS', period_month: 2, period_year: 2026, label: 'CNSS - Février 2026',
-    total_base: 4850000, total_employee_share: 242500, total_employer_share: 388000, total_amount: 630500,
-    employee_count: 12, status: 'paid', due_date: '2026-03-15',
-    submitted_at: '2026-03-10T10:00:00', paid_at: '2026-03-14T09:00:00', reference: 'CNSS-2026-02-001',
-    created_at: '2026-02-28T00:00:00', updated_at: '2026-03-14T09:00:00',
-  },
-  {
-    id: 2, type: 'income_tax', period_month: 2, period_year: 2026, label: 'IR - Février 2026',
-    total_base: 4850000, total_employee_share: 485000, total_employer_share: 0, total_amount: 485000,
-    employee_count: 12, status: 'submitted', due_date: '2026-03-15',
-    submitted_at: '2026-03-12T14:00:00', paid_at: null, reference: 'IR-2026-02-001',
-    created_at: '2026-02-28T00:00:00', updated_at: '2026-03-12T14:00:00',
-  },
-  {
-    id: 3, type: 'AMO', period_month: 2, period_year: 2026, label: 'AMO - Février 2026',
-    total_base: 4850000, total_employee_share: 121250, total_employer_share: 121250, total_amount: 242500,
-    employee_count: 12, status: 'validated', due_date: '2026-03-15',
-    submitted_at: null, paid_at: null, reference: null,
-    created_at: '2026-02-28T00:00:00', updated_at: '2026-03-08T10:00:00',
-  },
-  {
-    id: 4, type: 'CNSS', period_month: 3, period_year: 2026, label: 'CNSS - Mars 2026',
-    total_base: 0, total_employee_share: 0, total_employer_share: 0, total_amount: 0,
-    employee_count: 0, status: 'draft', due_date: '2026-04-15',
-    submitted_at: null, paid_at: null, reference: null,
-    created_at: '2026-03-01T00:00:00', updated_at: '2026-03-01T00:00:00',
-  },
-  {
-    id: 5, type: 'income_tax', period_month: 3, period_year: 2026, label: 'IR - Mars 2026',
-    total_base: 0, total_employee_share: 0, total_employer_share: 0, total_amount: 0,
-    employee_count: 0, status: 'draft', due_date: '2026-04-15',
-    submitted_at: null, paid_at: null, reference: null,
-    created_at: '2026-03-01T00:00:00', updated_at: '2026-03-01T00:00:00',
-  },
-  {
-    id: 6, type: 'AMO', period_month: 3, period_year: 2026, label: 'AMO - Mars 2026',
-    total_base: 0, total_employee_share: 0, total_employer_share: 0, total_amount: 0,
-    employee_count: 0, status: 'draft', due_date: '2026-04-15',
-    submitted_at: null, paid_at: null, reference: null,
-    created_at: '2026-03-01T00:00:00', updated_at: '2026-03-01T00:00:00',
-  },
-];
+interface SocialDeclaration {
+  id: number;
+  declaration_type: string;
+  declaration_number?: string | null;
+  year: number;
+  month: number;
+  total_gross_salary?: number | string | null;
+  total_employee_contributions?: number | string | null;
+  total_employer_contributions?: number | string | null;
+  total_amount_due?: number | string | null;
+  total_employees?: number | null;
+  status: string;
+  due_date?: string | null;
+  submission_date?: string | null;
+  submission_reference?: string | null;
+  payment_date?: string | null;
+  payment_reference?: string | null;
+}
 
-const getStatusChipColor = (status: DeclarationStatus): 'default' | 'primary' | 'warning' | 'success' => {
-  switch (status) {
-    case 'draft': return 'default';
-    case 'validated': return 'primary';
-    case 'submitted': return 'warning';
-    case 'paid': return 'success';
-    default: return 'default';
-  }
+interface PeriodRef {
+  id: number;
+  period_code?: string;
+  name?: string;
+  year: number;
+  month: number;
+  status: string;
+}
+
+const MONTH_NAMES = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+const TYPE_LABELS: Record<string, string> = {
+  cnss: 'CNSS',
+  CNSS: 'CNSS',
+  income_tax: 'Impôt sur le revenu',
+  amo: 'AMO',
+  AMO: 'AMO',
+  annual_summary: 'Récapitulatif annuel',
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+const TYPE_COLORS: Record<string, string> = {
+  cnss: '#1976d2',
+  CNSS: '#1976d2',
+  income_tax: '#ff9800',
+  amo: '#9c27b0',
+  AMO: '#9c27b0',
+  annual_summary: '#607d8b',
 };
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'Brouillon',
+  validated: 'Validée',
+  submitted: 'Soumise',
+  accepted: 'Acceptée',
+  paid: 'Payée',
+};
+
+const STATUS_COLORS: Record<string, 'default' | 'primary' | 'warning' | 'success'> = {
+  draft: 'default',
+  validated: 'primary',
+  submitted: 'warning',
+  accepted: 'primary',
+  paid: 'success',
+};
+
+const fmtMoney = (n: unknown): string => (n == null ? '—' : new Intl.NumberFormat('fr-FR').format(Math.round(Number(n))) + ' F CFA');
+const declLabel = (d: SocialDeclaration): string => `${TYPE_LABELS[d.declaration_type] ?? d.declaration_type} - ${MONTH_NAMES[d.month] ?? d.month} ${d.year}`;
+const periodRefLabel = (p: PeriodRef): string => p.name ?? `${MONTH_NAMES[p.month] ?? p.month} ${p.year}`;
+const fmtDate = (d?: string | null): string => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
 
 export const SocialDeclarationDashboard: React.FC = () => {
+  const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedDeclaration, setSelectedDeclaration] = useState<SocialDeclaration | null>(null);
+  const [submitDialog, setSubmitDialog] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
+  const [payDialog, setPayDialog] = useState<{ open: boolean; decl: SocialDeclaration | null }>({ open: false, decl: null });
+  const [selected, setSelected] = useState<SocialDeclaration | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const notify = (message: string, severity: 'success' | 'error' = 'success') => setSnackbar({ open: true, message, severity });
 
-  const declarations = DEMO_DECLARATIONS;
+  const [createForm, setCreateForm] = useState({ period_id: '', type: 'cnss' });
+  const [submitForm, setSubmitForm] = useState({ reference: '' });
+  const [payForm, setPayForm] = useState({ amount: '', method: 'bank_transfer', reference: '' });
 
-  const handleViewDetail = useCallback((declaration: SocialDeclaration) => {
-    setSelectedDeclaration(declaration);
-    setDetailOpen(true);
-  }, []);
+  const onMutationError = (e: any) => {
+    const errs = e?.response?.data?.errors;
+    const msg = errs ? (Object.values(errs).flat()[0] as string) : (e?.response?.data?.message ?? 'Opération échouée.');
+    notify(msg, 'error');
+  };
 
-  const handleValidate = useCallback((declaration: SocialDeclaration) => {
-    setSnackbar({ open: true, message: `${declaration.label} validée`, severity: 'success' });
-  }, []);
+  const { data: resp, isLoading, isError } = useQuery({
+    queryKey: ['social-declarations'],
+    queryFn: async () => (await api().get('/admin/payroll/declarations')).data,
+  });
+  const declarations = useMemo(() => toArray<SocialDeclaration>(resp), [resp]);
 
-  const handleSubmit = useCallback((declaration: SocialDeclaration) => {
-    setSnackbar({ open: true, message: `${declaration.label} soumise`, severity: 'success' });
-  }, []);
+  const periodsQuery = useQuery({
+    queryKey: ['payroll-periods-for-declarations'],
+    queryFn: async () => (await api().get('/admin/payroll/payroll-periods')).data,
+  });
+  const periods = useMemo(() => toArray<PeriodRef>(periodsQuery.data), [periodsQuery.data]);
 
-  const handleMarkPaid = useCallback((declaration: SocialDeclaration) => {
-    setSnackbar({ open: true, message: `${declaration.label} marquée comme payée`, severity: 'success' });
-  }, []);
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['social-declarations'] });
 
-  const cnssTotal = declarations.filter(d => d.type === 'CNSS' && d.total_amount > 0).reduce((sum, d) => sum + d.total_amount, 0);
-  const irTotal = declarations.filter(d => d.type === 'income_tax' && d.total_amount > 0).reduce((sum, d) => sum + d.total_amount, 0);
-  const amoTotal = declarations.filter(d => d.type === 'AMO' && d.total_amount > 0).reduce((sum, d) => sum + d.total_amount, 0);
+  const generateMutation = useMutation({
+    mutationFn: async () => {
+      const periodId = Number(createForm.period_id);
+      const path = createForm.type === 'income_tax' ? 'income-tax' : createForm.type; // cnss | income-tax | amo
+
+      return (await api().post(`/admin/payroll/payroll-periods/${periodId}/declarations/${path}`)).data;
+    },
+    onSuccess: () => { setCreateOpen(false); notify('Déclaration générée.'); invalidate(); },
+    onError: onMutationError,
+  });
+
+  const validateMutation = useMutation({
+    mutationFn: async (id: number) => (await api().post(`/admin/payroll/declarations/${id}/validate`)).data,
+    onSuccess: () => { notify('Déclaration validée.'); invalidate(); },
+    onError: onMutationError,
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async () => (await api().post(`/admin/payroll/declarations/${submitDialog.id}/submit`, { reference: submitForm.reference })).data,
+    onSuccess: () => { setSubmitDialog({ open: false, id: null }); setSubmitForm({ reference: '' }); notify('Déclaration soumise.'); invalidate(); },
+    onError: onMutationError,
+  });
+
+  const payMutation = useMutation({
+    mutationFn: async () => (await api().post(`/admin/payroll/declarations/${payDialog.decl?.id}/payment`, {
+      amount: Number(payForm.amount),
+      method: payForm.method,
+      reference: payForm.reference,
+    })).data,
+    onSuccess: () => { setPayDialog({ open: false, decl: null }); setPayForm({ amount: '', method: 'bank_transfer', reference: '' }); notify('Paiement enregistré.'); invalidate(); },
+    onError: onMutationError,
+  });
+
+  const pendingId = (m: typeof validateMutation): number | null => (m.isPending ? (m.variables as number) : null);
+
+  const openSubmit = (d: SocialDeclaration) => { setSubmitForm({ reference: '' }); setSubmitDialog({ open: true, id: d.id }); };
+  const openPay = (d: SocialDeclaration) => { setPayForm({ amount: String(Math.round(Number(d.total_amount_due ?? 0))), method: 'bank_transfer', reference: '' }); setPayDialog({ open: true, decl: d }); };
+
+  const sumByType = (type: string): number =>
+    declarations.filter(d => d.declaration_type === type || (type === 'cnss' && d.declaration_type === 'CNSS') || (type === 'amo' && d.declaration_type === 'AMO'))
+      .reduce((sum, d) => sum + Number(d.total_amount_due ?? 0), 0);
+
+  const cnssTotal = sumByType('cnss');
+  const irTotal = sumByType('income_tax');
+  const amoTotal = sumByType('amo');
   const pendingCount = declarations.filter(d => d.status !== 'paid').length;
 
   return (
@@ -143,20 +205,15 @@ export const SocialDeclarationDashboard: React.FC = () => {
       </Breadcrumbs>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Déclarations Sociales
-        </Typography>
-        <Button variant="contained" onClick={() => setCreateOpen(true)}>
-          + Nouvelle Déclaration
-        </Button>
+        <Typography variant="h4" fontWeight="bold">Déclarations Sociales</Typography>
+        <Button variant="contained" onClick={() => setCreateOpen(true)}>+ Nouvelle Déclaration</Button>
       </Box>
 
-      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Total CNSS', value: formatCurrency(cnssTotal), color: '#1976d2' },
-          { label: 'Total IR', value: formatCurrency(irTotal), color: '#ff9800' },
-          { label: 'Total AMO', value: formatCurrency(amoTotal), color: '#9c27b0' },
+          { label: 'Total CNSS', value: fmtMoney(cnssTotal), color: '#1976d2' },
+          { label: 'Total IR', value: fmtMoney(irTotal), color: '#ff9800' },
+          { label: 'Total AMO', value: fmtMoney(amoTotal), color: '#9c27b0' },
           { label: 'En attente', value: pendingCount, color: '#f44336' },
         ].map((stat, idx) => (
           <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
@@ -165,83 +222,75 @@ export const SocialDeclarationDashboard: React.FC = () => {
                 <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, fontSize: typeof stat.value === 'string' ? '1.3rem' : undefined }}>
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
+                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Declarations Table */}
       <Card>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2 }}>Déclarations</Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Libellé</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Base</TableCell>
-                  <TableCell>Part salarié</TableCell>
-                  <TableCell>Part employeur</TableCell>
-                  <TableCell>Total</TableCell>
-                  <TableCell>Échéance</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {declarations.map(declaration => (
-                  <TableRow key={declaration.id} hover>
-                    <TableCell>
-                      <Typography fontWeight="medium">{declaration.label}</Typography>
-                      {declaration.reference && (
-                        <Typography variant="caption" color="text.secondary">{declaration.reference}</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Chip size="small" label={DECLARATION_TYPE_LABELS[declaration.type]} sx={{ bgcolor: DECLARATION_TYPE_COLORS[declaration.type], color: 'white' }} />
-                    </TableCell>
-                    <TableCell>{declaration.total_base > 0 ? formatCurrency(declaration.total_base) : '-'}</TableCell>
-                    <TableCell>{declaration.total_employee_share > 0 ? formatCurrency(declaration.total_employee_share) : '-'}</TableCell>
-                    <TableCell>{declaration.total_employer_share > 0 ? formatCurrency(declaration.total_employer_share) : '-'}</TableCell>
-                    <TableCell>
-                      <Typography fontWeight="bold">{declaration.total_amount > 0 ? formatCurrency(declaration.total_amount) : '-'}</Typography>
-                    </TableCell>
-                    <TableCell>{new Date(declaration.due_date).toLocaleDateString('fr-FR')}</TableCell>
-                    <TableCell>
-                      <Chip size="small" label={DECLARATION_STATUS_LABELS[declaration.status]} color={getStatusChipColor(declaration.status)} />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <Button size="small" variant="outlined" onClick={() => handleViewDetail(declaration)}>
-                          Détails
-                        </Button>
-                        {declaration.status === 'draft' && (
-                          <Button size="small" variant="contained" color="primary" onClick={() => handleValidate(declaration)}>
-                            Valider
-                          </Button>
-                        )}
-                        {declaration.status === 'validated' && (
-                          <Button size="small" variant="contained" color="warning" onClick={() => handleSubmit(declaration)}>
-                            Soumettre
-                          </Button>
-                        )}
-                        {declaration.status === 'submitted' && (
-                          <Button size="small" variant="contained" color="success" onClick={() => handleMarkPaid(declaration)}>
-                            Payé
-                          </Button>
-                        )}
-                      </Box>
-                    </TableCell>
+          {isLoading && <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>}
+          {isError && <Alert severity="error">Impossible de charger les déclarations.</Alert>}
+          {!isLoading && !isError && declarations.length === 0 && <Alert severity="info">Aucune déclaration. Générez-en une depuis une période de paie.</Alert>}
+          {!isLoading && !isError && declarations.length > 0 && (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Libellé</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Base brute</TableCell>
+                    <TableCell>Part salarié</TableCell>
+                    <TableCell>Part employeur</TableCell>
+                    <TableCell>Total dû</TableCell>
+                    <TableCell>Échéance</TableCell>
+                    <TableCell>Statut</TableCell>
+                    <TableCell align="center">Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {declarations.map(d => (
+                    <TableRow key={d.id} hover>
+                      <TableCell>
+                        <Typography fontWeight="medium">{declLabel(d)}</Typography>
+                        {d.declaration_number && <Typography variant="caption" color="text.secondary">{d.declaration_number}</Typography>}
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={TYPE_LABELS[d.declaration_type] ?? d.declaration_type} sx={{ bgcolor: TYPE_COLORS[d.declaration_type] ?? '#607d8b', color: 'white' }} />
+                      </TableCell>
+                      <TableCell>{fmtMoney(d.total_gross_salary)}</TableCell>
+                      <TableCell>{fmtMoney(d.total_employee_contributions)}</TableCell>
+                      <TableCell>{fmtMoney(d.total_employer_contributions)}</TableCell>
+                      <TableCell><Typography fontWeight="bold">{fmtMoney(d.total_amount_due)}</Typography></TableCell>
+                      <TableCell>{fmtDate(d.due_date)}</TableCell>
+                      <TableCell>
+                        <Chip size="small" label={STATUS_LABELS[d.status] ?? d.status} color={STATUS_COLORS[d.status] ?? 'default'} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <Button size="small" variant="outlined" onClick={() => { setSelected(d); setDetailOpen(true); }}>Détails</Button>
+                          {d.status === 'draft' && (
+                            <Button size="small" variant="contained" color="primary" disabled={pendingId(validateMutation) === d.id} onClick={() => validateMutation.mutate(d.id)}>
+                              Valider
+                            </Button>
+                          )}
+                          {d.status === 'validated' && (
+                            <Button size="small" variant="contained" color="warning" onClick={() => openSubmit(d)}>Soumettre</Button>
+                          )}
+                          {(d.status === 'submitted' || d.status === 'accepted' || d.status === 'validated') && (
+                            <Button size="small" variant="contained" color="success" onClick={() => openPay(d)}>Payer</Button>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -250,74 +299,60 @@ export const SocialDeclarationDashboard: React.FC = () => {
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
-              <Typography variant="h6">{selectedDeclaration?.label}</Typography>
-              {selectedDeclaration?.reference && (
-                <Typography variant="body2" color="text.secondary">Référence : {selectedDeclaration.reference}</Typography>
-              )}
+              <Typography variant="h6">{selected && declLabel(selected)}</Typography>
+              {selected?.declaration_number && <Typography variant="body2" color="text.secondary">N° : {selected.declaration_number}</Typography>}
             </Box>
-            {selectedDeclaration && (
-              <Chip label={DECLARATION_STATUS_LABELS[selectedDeclaration.status]} color={getStatusChipColor(selectedDeclaration.status)} />
-            )}
+            {selected && <Chip label={STATUS_LABELS[selected.status] ?? selected.status} color={STATUS_COLORS[selected.status] ?? 'default'} />}
           </Box>
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Type de déclaration</Typography>
-                {selectedDeclaration && (
-                  <Chip label={DECLARATION_TYPE_LABELS[selectedDeclaration.type]} sx={{ bgcolor: DECLARATION_TYPE_COLORS[selectedDeclaration.type], color: 'white', mt: 1 }} />
-                )}
+                <Typography variant="subtitle2" color="text.secondary">Type</Typography>
+                {selected && <Chip label={TYPE_LABELS[selected.declaration_type] ?? selected.declaration_type} sx={{ bgcolor: TYPE_COLORS[selected.declaration_type] ?? '#607d8b', color: 'white', mt: 1 }} />}
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">Échéance</Typography>
-                <Typography fontWeight="bold">
-                  {selectedDeclaration && new Date(selectedDeclaration.due_date).toLocaleDateString('fr-FR')}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {selectedDeclaration?.employee_count} employé(s) concerné(s)
-                </Typography>
+                <Typography fontWeight="bold">{fmtDate(selected?.due_date)}</Typography>
+                <Typography variant="caption" color="text.secondary">{selected?.total_employees ?? 0} employé(s) concerné(s)</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
                 <Typography variant="subtitle2" color="text.secondary">Part salarié</Typography>
-                <Typography variant="h6" fontWeight="bold" color="primary">
-                  {selectedDeclaration ? formatCurrency(selectedDeclaration.total_employee_share) : '-'}
-                </Typography>
+                <Typography variant="h6" fontWeight="bold" color="primary">{fmtMoney(selected?.total_employee_contributions)}</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
                 <Typography variant="subtitle2" color="text.secondary">Part employeur</Typography>
-                <Typography variant="h6" fontWeight="bold" color="warning.main">
-                  {selectedDeclaration ? formatCurrency(selectedDeclaration.total_employer_share) : '-'}
-                </Typography>
+                <Typography variant="h6" fontWeight="bold" color="warning.main">{fmtMoney(selected?.total_employer_contributions)}</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">Total</Typography>
-                <Typography variant="h6" fontWeight="bold" color="success.main">
-                  {selectedDeclaration ? formatCurrency(selectedDeclaration.total_amount) : '-'}
-                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">Total dû</Typography>
+                <Typography variant="h6" fontWeight="bold" color="success.main">{fmtMoney(selected?.total_amount_due)}</Typography>
               </Paper>
             </Grid>
-            {selectedDeclaration?.submitted_at && (
+            {selected?.submission_date && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary">Soumise le</Typography>
-                  <Typography>{new Date(selectedDeclaration.submitted_at).toLocaleDateString('fr-FR')}</Typography>
+                  <Typography>{fmtDate(selected.submission_date)}</Typography>
+                  {selected.submission_reference && <Typography variant="caption" color="text.secondary">Réf : {selected.submission_reference}</Typography>}
                 </Paper>
               </Grid>
             )}
-            {selectedDeclaration?.paid_at && (
+            {selected?.payment_date && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary">Payée le</Typography>
-                  <Typography>{new Date(selectedDeclaration.paid_at).toLocaleDateString('fr-FR')}</Typography>
+                  <Typography>{fmtDate(selected.payment_date)}</Typography>
+                  {selected.payment_reference && <Typography variant="caption" color="text.secondary">Réf : {selected.payment_reference}</Typography>}
                 </Paper>
               </Grid>
             )}
@@ -328,56 +363,80 @@ export const SocialDeclarationDashboard: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Create Declaration Dialog */}
+      {/* Generate Declaration Dialog */}
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Nouvelle Déclaration Sociale</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <Alert severity="info">La déclaration est générée à partir d'une période de paie calculée.</Alert>
+            <FormControl fullWidth>
+              <InputLabel>Période de paie</InputLabel>
+              <Select label="Période de paie" value={createForm.period_id} onChange={e => setCreateForm(f => ({ ...f, period_id: String(e.target.value) }))}>
+                {periods.map(p => <MenuItem key={p.id} value={p.id}>{periodRefLabel(p)}</MenuItem>)}
+              </Select>
+            </FormControl>
             <FormControl fullWidth>
               <InputLabel>Type</InputLabel>
-              <Select label="Type" defaultValue="CNSS">
-                <MenuItem value="CNSS">CNSS</MenuItem>
-                <MenuItem value="income_tax">Impôt sur le revenu</MenuItem>
-                <MenuItem value="AMO">AMO</MenuItem>
+              <Select label="Type" value={createForm.type} onChange={e => setCreateForm(f => ({ ...f, type: String(e.target.value) }))}>
+                <MenuItem value="cnss">CNSS</MenuItem>
+                <MenuItem value="income_tax">Impôt sur le revenu (IR)</MenuItem>
+                <MenuItem value="amo">AMO</MenuItem>
               </Select>
             </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Mois</InputLabel>
-              <Select label="Mois" defaultValue={3}>
-                {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'].map((name, idx) => (
-                  <MenuItem key={idx + 1} value={idx + 1}>{name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField label="Année" type="number" fullWidth defaultValue={2026} />
-            <TextField
-              label="Date d'échéance"
-              type="date"
-              defaultValue="2026-04-15"
-              slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
-            />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setCreateOpen(false);
-              setSnackbar({ open: true, message: 'Déclaration créée', severity: 'success' });
-            }}
-          >
-            Créer
+          <Button variant="contained" disabled={!createForm.period_id || generateMutation.isPending} onClick={() => generateMutation.mutate()}>
+            {generateMutation.isPending ? 'Génération…' : 'Générer'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-          {snackbar.message}
-        </Alert>
+      {/* Submit Dialog */}
+      <Dialog open={submitDialog.open} onClose={() => setSubmitDialog({ open: false, id: null })} maxWidth="xs" fullWidth>
+        <DialogTitle>Soumettre la déclaration</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 1 }}>
+            <TextField label="Référence de soumission" fullWidth value={submitForm.reference} onChange={e => setSubmitForm({ reference: e.target.value })} placeholder="Ex: CNSS-2026-02-001" />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSubmitDialog({ open: false, id: null })}>Annuler</Button>
+          <Button variant="contained" disabled={!submitForm.reference || submitMutation.isPending} onClick={() => submitMutation.mutate()}>
+            {submitMutation.isPending ? 'Envoi…' : 'Soumettre'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Payment Dialog */}
+      <Dialog open={payDialog.open} onClose={() => setPayDialog({ open: false, decl: null })} maxWidth="xs" fullWidth>
+        <DialogTitle>Enregistrer le paiement</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <TextField label="Montant (F CFA)" type="number" fullWidth value={payForm.amount} onChange={e => setPayForm(f => ({ ...f, amount: e.target.value }))} />
+            <FormControl fullWidth>
+              <InputLabel>Mode de paiement</InputLabel>
+              <Select label="Mode de paiement" value={payForm.method} onChange={e => setPayForm(f => ({ ...f, method: String(e.target.value) }))}>
+                <MenuItem value="bank_transfer">Virement bancaire</MenuItem>
+                <MenuItem value="check">Chèque</MenuItem>
+                <MenuItem value="online">En ligne</MenuItem>
+                <MenuItem value="other">Autre</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField label="Référence" fullWidth value={payForm.reference} onChange={e => setPayForm(f => ({ ...f, reference: e.target.value }))} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPayDialog({ open: false, decl: null })}>Annuler</Button>
+          <Button variant="contained" disabled={!payForm.amount || !payForm.reference || payMutation.isPending} onClick={() => payMutation.mutate()}>
+            {payMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbar.open} autoHideDuration={3500} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );

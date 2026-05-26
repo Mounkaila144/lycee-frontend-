@@ -1,5 +1,5 @@
-import { TimetableDashboard } from '@/modules/Timetable/admin/components/TimetableDashboard';
+import { SecondaryTimetable } from '@/modules/Timetable/admin/components/SecondaryTimetable';
 
 export default function TimetableSchedulePage() {
-  return <TimetableDashboard />;
+  return <SecondaryTimetable />;
 }

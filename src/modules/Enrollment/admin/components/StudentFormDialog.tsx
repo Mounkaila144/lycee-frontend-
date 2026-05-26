@@ -18,6 +18,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useStudentsContext } from './StudentList';
 import { studentService } from '../services/studentService';
+import { createApiClient } from '@/shared/lib/api-client';
 import type { Student, StudentFormData, Sex } from '../../types/student.types';
 import type { Programme } from '@/modules/StructureAcademique/types/programme.types';
 
@@ -48,6 +49,19 @@ export const StudentFormDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [selectedProgramme, setSelectedProgramme] = useState<Programme | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [classes, setClasses] = useState<{ id: number; name: string }[]>([]);
+
+  // Load classes for the class selector (secondary model)
+  useEffect(() => {
+    if (!open) return;
+    createApiClient()
+      .get('/admin/classes')
+      .then(res => {
+        const raw = (res.data?.data ?? res.data) as any;
+        setClasses(Array.isArray(raw) ? raw : (raw?.data ?? []));
+      })
+      .catch(() => setClasses([]));
+  }, [open]);
 
   const [formData, setFormData] = useState<StudentFormData>({
     firstname: '',
@@ -86,6 +100,7 @@ export const StudentFormDialog = ({
         emergency_contact_name: student.emergency_contact_name || '',
         emergency_contact_phone: student.emergency_contact_phone || '',
         programme_id: 0, // Not used in edit mode
+        class_id: (student as any).class_id ?? null,
       });
 
       // Don't set selected programme in edit mode (not editable)
@@ -350,7 +365,7 @@ export const StudentFormDialog = ({
               </TextField>
             </Grid>
 
-            <Grid item xs={12} sm={8}>
+            <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 label={t('Nationality')}
@@ -358,6 +373,23 @@ export const StudentFormDialog = ({
                 onChange={e => handleChange('nationality', e.target.value)}
                 disabled={loading}
               />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                select
+                label={t('Classe')}
+                value={formData.class_id ?? ''}
+                onChange={e => handleChange('class_id', e.target.value === '' ? null : Number(e.target.value))}
+                disabled={loading}
+                helperText={t('Classe de l\'élève')}
+              >
+                <MenuItem value="">—</MenuItem>
+                {classes.map(c => (
+                  <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                ))}
+              </TextField>
             </Grid>
 
             {/* Contact Information Section */}

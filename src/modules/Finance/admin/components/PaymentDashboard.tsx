@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -33,161 +35,218 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import LinearProgress from '@mui/material/LinearProgress';
 import Divider from '@mui/material/Divider';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import type {
-  Payment,
-  PaymentMethod,
-  PaymentStatus,
-} from '../../types';
+import { createApiClient } from '@/shared/lib/api-client';
 
-import {
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_METHOD_COLORS,
-  PAYMENT_STATUS_LABELS,
-  PAYMENT_STATUS_COLORS,
-} from '../../types';
+const api = () => createApiClient();
 
-// ──── Demo Data ────
+const formatCurrency = (n: number | string | null | undefined): string => {
+  const v = Number(n ?? 0);
 
-const DEMO_PAYMENTS: Payment[] = [
-  {
-    id: 1, reference: 'PAY-2026-0001', invoice_id: 1, student_id: 1,
-    amount: 575000, method: 'bank_transfer', status: 'completed',
-    transaction_reference: 'VIR-2026-ABC123', payment_date: '2026-02-15',
-    notes: 'Paiement intégral', receipt_number: 'REC-0001', received_by: 1,
-    student: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'ETU-2026-001' },
-    created_at: '2026-02-15T10:00:00', updated_at: '2026-02-15T10:00:00',
-  },
-  {
-    id: 2, reference: 'PAY-2026-0002', invoice_id: 2, student_id: 2,
-    amount: 275000, method: 'mobile_money', status: 'completed',
-    transaction_reference: 'MM-2026-XYZ789', payment_date: '2026-03-01',
-    notes: 'Première tranche', receipt_number: 'REC-0002', received_by: 1,
-    student: { id: 2, firstname: 'Fatima', lastname: 'Ousmane', matricule: 'ETU-2026-002' },
-    created_at: '2026-03-01T14:00:00', updated_at: '2026-03-01T14:00:00',
-  },
-  {
-    id: 3, reference: 'PAY-2026-0003', invoice_id: 3, student_id: 3,
-    amount: 200000, method: 'cash', status: 'pending',
-    transaction_reference: null, payment_date: '2026-03-25',
-    notes: 'Paiement partiel en espèces', receipt_number: null, received_by: null,
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-25T09:00:00', updated_at: '2026-03-25T09:00:00',
-  },
-  {
-    id: 4, reference: 'PAY-2026-0004', invoice_id: 1, student_id: 1,
-    amount: 50000, method: 'check', status: 'refunded',
-    transaction_reference: 'CHQ-2026-456', payment_date: '2026-02-10',
-    notes: 'Remboursement - double paiement', receipt_number: 'REC-0004', received_by: 2,
-    student: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'ETU-2026-001' },
-    created_at: '2026-02-10T11:00:00', updated_at: '2026-02-20T15:00:00',
-  },
-  {
-    id: 5, reference: 'PAY-2026-0005', invoice_id: 4, student_id: 4,
-    amount: 525000, method: 'bank_transfer', status: 'failed',
-    transaction_reference: 'VIR-2026-FAIL01', payment_date: '2026-03-20',
-    notes: 'Fonds insuffisants', receipt_number: null, received_by: null,
-    student: { id: 4, firstname: 'Aissatou', lastname: 'Boubacar', matricule: 'ETU-2026-004' },
-    created_at: '2026-03-20T16:00:00', updated_at: '2026-03-20T16:30:00',
-  },
-  {
-    id: 6, reference: 'PAY-2026-0006', invoice_id: 2, student_id: 2,
-    amount: 100000, method: 'mobile_money', status: 'completed',
-    transaction_reference: 'MM-2026-DEF456', payment_date: '2026-03-25',
-    notes: null, receipt_number: 'REC-0006', received_by: 1,
-    student: { id: 2, firstname: 'Fatima', lastname: 'Ousmane', matricule: 'ETU-2026-002' },
-    created_at: '2026-03-25T08:30:00', updated_at: '2026-03-25T08:30:00',
-  },
-];
-
-const DEMO_DAILY_SUMMARY = {
-  date: '2026-03-25',
-  total_payments: 3,
-  total_amount: 325000,
-  by_method: [
-    { method: 'cash' as PaymentMethod, count: 1, amount: 200000 },
-    { method: 'mobile_money' as PaymentMethod, count: 1, amount: 100000 },
-    { method: 'bank_transfer' as PaymentMethod, count: 1, amount: 25000 },
-  ],
+  return new Intl.NumberFormat('fr-FR').format(Math.round(v)) + ' F CFA';
 };
 
-const getStatusChipColor = (status: PaymentStatus): 'default' | 'success' | 'warning' | 'error' => {
-  switch (status) {
-    case 'pending': return 'warning';
-    case 'completed': return 'success';
-    case 'failed': return 'error';
-    case 'refunded': return 'default';
-    default: return 'default';
+const METHOD_LABELS: Record<string, string> = {
+  cash: 'Espèces',
+  check: 'Chèque',
+  bank_transfer: 'Virement',
+  card: 'Carte',
+  online: 'En ligne',
+  mobile_money: 'Mobile Money',
+};
+
+const METHOD_COLORS: Record<string, string> = {
+  cash: '#4caf50',
+  check: '#795548',
+  bank_transfer: '#1976d2',
+  card: '#9c27b0',
+  online: '#00bcd4',
+  mobile_money: '#ff9800',
+};
+
+const studentName = (s: any): string => (s ? `${s.firstname ?? ''} ${s.lastname ?? ''}`.trim() || '—' : '—');
+
+const firstError = (e: any): string | undefined => {
+  const errors = e?.response?.data?.errors as Record<string, string[]> | undefined;
+
+  if (errors) {
+    const first = Object.values(errors)[0];
+
+    if (Array.isArray(first) && first.length) {
+      return first[0];
+    }
   }
+
+  return undefined;
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
+const today = () => new Date().toISOString().slice(0, 10);
+
+type ApiPayment = {
+  id: number;
+  invoice_id: number;
+  amount: number | string;
+  payment_method: string;
+  payment_date: string;
+  reference_number: string | null;
+  receipt_number: string | null;
+  notes: string | null;
+  invoice?: { id: number; invoice_number?: string } | null;
+  student?: { id: number; firstname?: string; lastname?: string; matricule?: string } | null;
+};
+
+type ApiInvoice = {
+  id: number;
+  invoice_number: string;
+  total_amount: number | string;
+  paid_amount: number | string;
+  status: string;
+  student?: { firstname?: string; lastname?: string; matricule?: string } | null;
 };
 
 export const PaymentDashboard: React.FC = () => {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState(0);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<ApiPayment | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
-  const payments = DEMO_PAYMENTS;
+  // Record-payment form state
+  const [form, setForm] = useState<{ invoice_id: string; amount: string; payment_method: string; reference_number: string; payment_date: string; notes: string }>({
+    invoice_id: '', amount: '', payment_method: 'cash', reference_number: '', payment_date: today(), notes: '',
+  });
 
-  const handleViewReceipt = useCallback((payment: Payment) => {
-    setSelectedPayment(payment);
+  // Refund form state
+  const [refundForm, setRefundForm] = useState<{ amount: string; reason: string }>({ amount: '', reason: '' });
+
+  const { data: paymentsResp, isLoading, isError } = useQuery({
+    queryKey: ['finance-payments'],
+    queryFn: async () => (await api().get('/admin/finance/payments', { params: { per_page: 100 } })).data,
+  });
+
+  const payments: ApiPayment[] = (paymentsResp as any)?.data ?? [];
+
+  const { data: summaryResp } = useQuery({
+    queryKey: ['finance-payments-daily', today()],
+    queryFn: async () => (await api().get('/admin/finance/payments/summary/daily', { params: { date: today() } })).data,
+    enabled: tab === 1,
+  });
+
+  const summary = (summaryResp as any)?.data ?? {};
+
+  const byMethod: { method: string; count: number; amount: number | string }[] = useMemo(() => {
+    const bm = summary.by_method;
+
+    if (!bm) {
+      return [];
+    }
+
+    return Array.isArray(bm) ? bm : Object.values(bm);
+  }, [summary]);
+
+  const { data: invoicesResp } = useQuery({
+    queryKey: ['finance-invoices-select'],
+    queryFn: async () => (await api().get('/admin/finance/invoices', { params: { per_page: 100 } })).data,
+    enabled: paymentOpen,
+  });
+
+  const invoices: ApiInvoice[] = (invoicesResp as any)?.data ?? [];
+
+  const recordPayment = useMutation({
+    mutationFn: async () => (await api().post('/admin/finance/payments', {
+      invoice_id: Number(form.invoice_id),
+      amount: Number(form.amount),
+      payment_method: form.payment_method,
+      payment_date: form.payment_date || null,
+      reference_number: form.reference_number || null,
+      notes: form.notes || null,
+    })).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['finance-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-payments-daily'] });
+      setPaymentOpen(false);
+      setForm({ invoice_id: '', amount: '', payment_method: 'cash', reference_number: '', payment_date: today(), notes: '' });
+      setSnackbar({ open: true, message: 'Paiement enregistré avec succès', severity: 'success' });
+    },
+    onError: (e: any) => {
+      const msg = e?.response?.data?.message || firstError(e) || 'Erreur lors de l\'enregistrement';
+
+      setSnackbar({ open: true, message: String(msg), severity: 'error' });
+    },
+  });
+
+  const refundPayment = useMutation({
+    mutationFn: async () => (await api().post(`/admin/finance/payments/${selectedPayment?.id}/refund`, {
+      amount: Number(refundForm.amount),
+      reason: refundForm.reason,
+    })).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['finance-payments'] });
+      setRefundOpen(false);
+      setSelectedPayment(null);
+      setRefundForm({ amount: '', reason: '' });
+      setSnackbar({ open: true, message: 'Remboursement effectué avec succès', severity: 'success' });
+    },
+    onError: (e: any) => {
+      const msg = e?.response?.data?.message || 'Erreur lors du remboursement';
+
+      setSnackbar({ open: true, message: String(msg), severity: 'error' });
+    },
+  });
+
+  const totalReceived = useMemo(() => payments.reduce((sum, p) => sum + Number(p.amount), 0), [payments]);
+  const paymentCount = payments.length;
+
+  const todayTotal = useMemo(
+    () => payments.filter(p => String(p.payment_date).slice(0, 10) === today()).reduce((s, p) => s + Number(p.amount), 0),
+    [payments],
+  );
+
+  const distinctStudents = useMemo(() => new Set(payments.map(p => p.student?.id ?? p.invoice_id)).size, [payments]);
+
+  const openReceipt = (p: ApiPayment) => {
+    setSelectedPayment(p);
     setReceiptOpen(true);
-  }, []);
+  };
 
-  const totalReceived = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-  const totalPending = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
-  const totalRefunded = payments.filter(p => p.status === 'refunded').reduce((sum, p) => sum + p.amount, 0);
-  const completedCount = payments.filter(p => p.status === 'completed').length;
+  const openRefund = (p: ApiPayment) => {
+    setSelectedPayment(p);
+    setRefundForm({ amount: String(p.amount), reason: '' });
+    setRefundOpen(true);
+  };
+
+  const cards = [
+    { label: 'Total encaissé', value: formatCurrency(totalReceived), color: '#4caf50' },
+    { label: 'Encaissé aujourd\'hui', value: formatCurrency(todayTotal), color: '#1976d2' },
+    { label: 'Nombre de paiements', value: String(paymentCount), color: '#9c27b0' },
+    { label: 'Élèves concernés', value: String(distinctStudents), color: '#ff9800' },
+  ];
 
   return (
     <Box sx={{ p: 3 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">
-          Administration
-        </Link>
-        <Link underline="hover" color="inherit" href="#">
-          Comptabilit&eacute;
-        </Link>
+        <Link underline="hover" color="inherit" href="#">Administration</Link>
+        <Link underline="hover" color="inherit" href="#">Comptabilit&eacute;</Link>
         <Typography color="text.primary">Paiements</Typography>
       </Breadcrumbs>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Paiements
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" onClick={() => setRefundOpen(true)}>
-            Remboursement
-          </Button>
-          <Button variant="contained" onClick={() => setPaymentOpen(true)}>
-            + Enregistrer un paiement
-          </Button>
-        </Box>
+        <Typography variant="h4" fontWeight="bold">Paiements</Typography>
+        <Button variant="contained" onClick={() => setPaymentOpen(true)}>+ Enregistrer un paiement</Button>
       </Box>
 
-      {/* Stats Cards */}
+      {isError && <Alert severity="error" sx={{ mb: 2 }}>Impossible de charger les paiements.</Alert>}
+
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[
-          { label: 'Total encaissé', value: formatCurrency(totalReceived), color: '#4caf50' },
-          { label: 'En attente', value: formatCurrency(totalPending), color: '#ff9800' },
-          { label: 'Remboursé', value: formatCurrency(totalRefunded), color: '#9c27b0' },
-          { label: 'Paiements complétés', value: completedCount, color: '#1976d2' },
-        ].map((stat, idx) => (
+        {cards.map((stat, idx) => (
           <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
+                <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>{stat.value}</Typography>
+                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -199,114 +258,74 @@ export const PaymentDashboard: React.FC = () => {
         <Tab label="Résumé du jour" />
       </Tabs>
 
-      {/* Tab 0: Payments List */}
       {tab === 0 && (
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>Historique des Paiements</Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>R&eacute;f&eacute;rence</TableCell>
-                    <TableCell>&Eacute;tudiant</TableCell>
-                    <TableCell align="right">Montant</TableCell>
-                    <TableCell>M&eacute;thode</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell>R&eacute;f. Transaction</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {payments.map(payment => (
-                    <TableRow key={payment.id} hover>
-                      <TableCell>
-                        <Typography fontWeight="medium">{payment.reference}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="medium">
-                          {payment.student?.firstname} {payment.student?.lastname}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {payment.student?.matricule}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography fontWeight="bold">{formatCurrency(payment.amount)}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={PAYMENT_METHOD_LABELS[payment.method]}
-                          sx={{ bgcolor: PAYMENT_METHOD_COLORS[payment.method], color: 'white' }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {new Date(payment.payment_date).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={PAYMENT_STATUS_LABELS[payment.status]}
-                          color={getStatusChipColor(payment.status)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {payment.transaction_reference || '-'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                          {payment.receipt_number && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => handleViewReceipt(payment)}
-                            >
-                              Re&ccedil;u
-                            </Button>
-                          )}
-                          {payment.status === 'completed' && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="secondary"
-                              onClick={() => {
-                                setSelectedPayment(payment);
-                                setRefundOpen(true);
-                              }}
-                            >
-                              Rembourser
-                            </Button>
-                          )}
-                        </Box>
-                      </TableCell>
+            {isLoading && <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>}
+            {!isLoading && (
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Re&ccedil;u</TableCell>
+                      <TableCell>&Eacute;l&egrave;ve</TableCell>
+                      <TableCell>Facture</TableCell>
+                      <TableCell align="right">Montant</TableCell>
+                      <TableCell>M&eacute;thode</TableCell>
+                      <TableCell>Date</TableCell>
+                      <TableCell>R&eacute;f. Transaction</TableCell>
+                      <TableCell align="center">Actions</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {payments.length === 0 && (
+                      <TableRow><TableCell colSpan={8}><Alert severity="info">Aucun paiement enregistré.</Alert></TableCell></TableRow>
+                    )}
+                    {payments.map(payment => (
+                      <TableRow key={payment.id} hover>
+                        <TableCell><Typography fontWeight="medium">{payment.receipt_number || '—'}</Typography></TableCell>
+                        <TableCell>
+                          <Typography fontWeight="medium">{studentName(payment.student)}</Typography>
+                          <Typography variant="caption" color="text.secondary">{payment.student?.matricule}</Typography>
+                        </TableCell>
+                        <TableCell>{payment.invoice?.invoice_number || `#${payment.invoice_id}`}</TableCell>
+                        <TableCell align="right"><Typography fontWeight="bold">{formatCurrency(payment.amount)}</Typography></TableCell>
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={METHOD_LABELS[payment.payment_method] ?? payment.payment_method}
+                            sx={{ bgcolor: METHOD_COLORS[payment.payment_method] ?? '#757575', color: 'white' }}
+                          />
+                        </TableCell>
+                        <TableCell>{new Date(payment.payment_date).toLocaleDateString('fr-FR')}</TableCell>
+                        <TableCell><Typography variant="body2" color="text.secondary">{payment.reference_number || '-'}</Typography></TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                            {payment.receipt_number && (
+                              <Button size="small" variant="outlined" onClick={() => openReceipt(payment)}>Re&ccedil;u</Button>
+                            )}
+                            <Button size="small" variant="outlined" color="secondary" onClick={() => openRefund(payment)}>Rembourser</Button>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {/* Tab 1: Daily Summary */}
       {tab === 1 && (
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  R&eacute;sum&eacute; du {new Date(DEMO_DAILY_SUMMARY.date).toLocaleDateString('fr-FR')}
-                </Typography>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: '#1976d2', my: 2 }}>
-                  {formatCurrency(DEMO_DAILY_SUMMARY.total_amount)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {DEMO_DAILY_SUMMARY.total_payments} paiement(s) enregistr&eacute;(s)
-                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">R&eacute;sum&eacute; du {summary.date ?? new Date().toLocaleDateString('fr-FR')}</Typography>
+                <Typography variant="h3" fontWeight="bold" sx={{ color: '#1976d2', my: 2 }}>{formatCurrency(summary.total_amount)}</Typography>
+                <Typography variant="body2" color="text.secondary">{Number(summary.total_count ?? 0)} paiement(s) enregistr&eacute;(s)</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -314,28 +333,22 @@ export const PaymentDashboard: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>R&eacute;partition par m&eacute;thode</Typography>
-                {DEMO_DAILY_SUMMARY.by_method.map(entry => (
-                  <Box key={entry.method} sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Chip
-                        size="small"
-                        label={PAYMENT_METHOD_LABELS[entry.method]}
-                        sx={{ bgcolor: PAYMENT_METHOD_COLORS[entry.method], color: 'white' }}
-                      />
-                      <Typography variant="body2" fontWeight="bold">
-                        {formatCurrency(entry.amount)} ({entry.count} paiement{entry.count > 1 ? 's' : ''})
-                      </Typography>
+                {byMethod.length === 0 && <Alert severity="info">Aucun paiement aujourd&apos;hui.</Alert>}
+                {byMethod.map((entry, idx) => {
+                  const total = Number(summary.total_amount ?? 0) || 1;
+
+                  return (
+                    <Box key={idx} sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Chip size="small" label={entry.method} />
+                        <Typography variant="body2" fontWeight="bold">
+                          {formatCurrency(entry.amount)} ({entry.count} paiement{entry.count > 1 ? 's' : ''})
+                        </Typography>
+                      </Box>
+                      <LinearProgress variant="determinate" value={(Number(entry.amount) / total) * 100} sx={{ height: 10, borderRadius: 5 }} />
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={(entry.amount / DEMO_DAILY_SUMMARY.total_amount) * 100}
-                      sx={{
-                        height: 10, borderRadius: 5,
-                        '& .MuiLinearProgress-bar': { bgcolor: PAYMENT_METHOD_COLORS[entry.method], borderRadius: 5 },
-                      }}
-                    />
-                  </Box>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           </Grid>
@@ -347,38 +360,72 @@ export const PaymentDashboard: React.FC = () => {
         <DialogTitle>Enregistrer un Paiement</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="R&eacute;f&eacute;rence facture" fullWidth placeholder="Ex: FAC-2026-0001" />
-            <TextField label="Montant" type="number" fullWidth defaultValue={275000} />
             <FormControl fullWidth>
-              <InputLabel>M&eacute;thode de paiement</InputLabel>
-              <Select label="Méthode de paiement" defaultValue="cash">
-                <MenuItem value="cash">Esp&egrave;ces</MenuItem>
-                <MenuItem value="bank_transfer">Virement bancaire</MenuItem>
-                <MenuItem value="check">Ch&egrave;que</MenuItem>
-                <MenuItem value="mobile_money">Mobile Money</MenuItem>
+              <InputLabel>Facture</InputLabel>
+              <Select
+                label="Facture"
+                value={form.invoice_id}
+                onChange={(e) => setForm(f => ({ ...f, invoice_id: String(e.target.value) }))}
+              >
+                {invoices.length === 0 && <MenuItem value="" disabled>Aucune facture disponible</MenuItem>}
+                {invoices.map(inv => (
+                  <MenuItem key={inv.id} value={String(inv.id)}>
+                    {inv.invoice_number} — {studentName(inv.student)} ({formatCurrency(Number(inv.total_amount) - Number(inv.paid_amount))} dû)
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
-            <TextField label="R&eacute;f&eacute;rence transaction" fullWidth placeholder="Ex: VIR-2026-XXX" />
+            <TextField
+              label="Montant"
+              type="number"
+              fullWidth
+              value={form.amount}
+              onChange={(e) => setForm(f => ({ ...f, amount: e.target.value }))}
+            />
+            <FormControl fullWidth>
+              <InputLabel>M&eacute;thode de paiement</InputLabel>
+              <Select
+                label="Méthode de paiement"
+                value={form.payment_method}
+                onChange={(e) => setForm(f => ({ ...f, payment_method: String(e.target.value) }))}
+              >
+                {Object.entries(METHOD_LABELS).map(([value, label]) => (
+                  <MenuItem key={value} value={value}>{label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="R&eacute;f&eacute;rence transaction"
+              fullWidth
+              value={form.reference_number}
+              onChange={(e) => setForm(f => ({ ...f, reference_number: e.target.value }))}
+            />
             <TextField
               label="Date du paiement"
               type="date"
-              defaultValue="2026-03-26"
+              value={form.payment_date}
+              onChange={(e) => setForm(f => ({ ...f, payment_date: e.target.value }))}
               slotProps={{ inputLabel: { shrink: true } }}
               fullWidth
             />
-            <TextField label="Notes" fullWidth multiline rows={2} />
+            <TextField
+              label="Notes"
+              fullWidth
+              multiline
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPaymentOpen(false)}>Annuler</Button>
           <Button
             variant="contained"
-            onClick={() => {
-              setPaymentOpen(false);
-              setSnackbar({ open: true, message: 'Paiement enregistré avec succès', severity: 'success' });
-            }}
+            disabled={!form.invoice_id || !form.amount || recordPayment.isPending}
+            onClick={() => recordPayment.mutate()}
           >
-            Enregistrer
+            {recordPayment.isPending ? 'Enregistrement…' : 'Enregistrer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -390,11 +437,25 @@ export const PaymentDashboard: React.FC = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {selectedPayment && (
               <Alert severity="info">
-                Paiement {selectedPayment.reference} - {formatCurrency(selectedPayment.amount)}
+                Paiement {selectedPayment.receipt_number || `#${selectedPayment.id}`} — {formatCurrency(selectedPayment.amount)}
               </Alert>
             )}
-            <TextField label="Montant &agrave; rembourser" type="number" fullWidth defaultValue={selectedPayment?.amount || 0} />
-            <TextField label="Raison du remboursement" fullWidth multiline rows={3} placeholder="Ex: Double paiement, erreur de montant..." />
+            <TextField
+              label="Montant &agrave; rembourser"
+              type="number"
+              fullWidth
+              value={refundForm.amount}
+              onChange={(e) => setRefundForm(f => ({ ...f, amount: e.target.value }))}
+            />
+            <TextField
+              label="Raison du remboursement"
+              fullWidth
+              multiline
+              rows={3}
+              placeholder="Ex: Double paiement, erreur de montant..."
+              value={refundForm.reason}
+              onChange={(e) => setRefundForm(f => ({ ...f, reason: e.target.value }))}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
@@ -402,13 +463,10 @@ export const PaymentDashboard: React.FC = () => {
           <Button
             variant="contained"
             color="warning"
-            onClick={() => {
-              setRefundOpen(false);
-              setSelectedPayment(null);
-              setSnackbar({ open: true, message: 'Demande de remboursement soumise', severity: 'success' });
-            }}
+            disabled={!refundForm.amount || !refundForm.reason || refundPayment.isPending}
+            onClick={() => refundPayment.mutate()}
           >
-            Soumettre
+            {refundPayment.isPending ? 'Traitement…' : 'Soumettre'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -431,36 +489,28 @@ export const PaymentDashboard: React.FC = () => {
                     <Typography variant="caption" color="text.secondary">Date</Typography>
                     <Typography>{new Date(selectedPayment.payment_date).toLocaleDateString('fr-FR')}</Typography>
                   </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
+                  <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
                   <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">&Eacute;tudiant</Typography>
-                    <Typography fontWeight="bold">
-                      {selectedPayment.student?.firstname} {selectedPayment.student?.lastname}
-                    </Typography>
+                    <Typography variant="caption" color="text.secondary">&Eacute;l&egrave;ve</Typography>
+                    <Typography fontWeight="bold">{studentName(selectedPayment.student)}</Typography>
                   </Grid>
                   <Grid size={{ xs: 6 }}>
                     <Typography variant="caption" color="text.secondary">Matricule</Typography>
                     <Typography>{selectedPayment.student?.matricule}</Typography>
                   </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
+                  <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
                   <Grid size={{ xs: 6 }}>
                     <Typography variant="caption" color="text.secondary">Montant</Typography>
-                    <Typography variant="h5" fontWeight="bold" color="success.main">
-                      {formatCurrency(selectedPayment.amount)}
-                    </Typography>
+                    <Typography variant="h5" fontWeight="bold" color="success.main">{formatCurrency(selectedPayment.amount)}</Typography>
                   </Grid>
                   <Grid size={{ xs: 6 }}>
                     <Typography variant="caption" color="text.secondary">M&eacute;thode</Typography>
-                    <Typography>{PAYMENT_METHOD_LABELS[selectedPayment.method]}</Typography>
+                    <Typography>{METHOD_LABELS[selectedPayment.payment_method] ?? selectedPayment.payment_method}</Typography>
                   </Grid>
-                  {selectedPayment.transaction_reference && (
+                  {selectedPayment.reference_number && (
                     <Grid size={{ xs: 12 }}>
                       <Typography variant="caption" color="text.secondary">R&eacute;f. Transaction</Typography>
-                      <Typography>{selectedPayment.transaction_reference}</Typography>
+                      <Typography>{selectedPayment.reference_number}</Typography>
                     </Grid>
                   )}
                 </Grid>
@@ -470,19 +520,12 @@ export const PaymentDashboard: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setReceiptOpen(false); setSelectedPayment(null); }}>Fermer</Button>
-          <Button
-            variant="contained"
-            onClick={() => setSnackbar({ open: true, message: 'Reçu téléchargé', severity: 'success' })}
-          >
-            T&eacute;l&eacute;charger PDF
-          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
+        autoHideDuration={4000}
         onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
       >
         <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>

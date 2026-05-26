@@ -1,5 +1,5 @@
-import { CertificateDashboard } from '@/modules/Documents/admin/components/CertificateDashboard';
+import { SecondaryCertificates } from '@/modules/Documents/admin/components/SecondaryCertificates';
 
 export default function DocumentCertificatesPage() {
-  return <CertificateDashboard />;
+  return <SecondaryCertificates />;
 }

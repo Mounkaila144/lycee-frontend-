@@ -1,7 +1,7 @@
 // ──── Enums / Constants ────
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
-export type SessionStatus = 'open' | 'completed' | 'cancelled';
+export type SessionStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled';
 export type SessionMethod = 'manual' | 'mobile' | 'qr_code' | 'imported';
 export type JustificationType = 'medical' | 'family' | 'administrative' | 'other';
 export type JustificationStatus = 'pending' | 'approved' | 'rejected';
@@ -65,9 +65,23 @@ export interface TimetableSlotSummary {
   module?: ModuleSummary;
 }
 
+export interface ClassSummary {
+  id: number;
+  name: string;
+  code?: string;
+}
+
+export interface SubjectSummary {
+  id: number;
+  name: string;
+  code?: string;
+}
+
 export interface AttendanceSession {
   id: number;
-  timetable_slot_id: number;
+  timetable_slot_id: number | null;
+  class_id: number | null;
+  subject_id: number | null;
   session_date: string;
   start_time: string | null;
   end_time: string | null;
@@ -78,6 +92,8 @@ export interface AttendanceSession {
   completed_at: string | null;
   notes: string | null;
   timetable_slot?: TimetableSlotSummary;
+  classe?: ClassSummary;
+  subject?: SubjectSummary;
   creator?: StudentSummary;
   records?: AttendanceRecord[];
   created_at: string;
@@ -141,7 +157,8 @@ export interface AttendanceAlert {
 // ──── Request Types ────
 
 export interface CreateSessionRequest {
-  timetable_slot_id: number;
+  class_id: number;
+  subject_id: number;
   session_date: string;
   method?: SessionMethod;
 }

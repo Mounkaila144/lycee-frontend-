@@ -1,5 +1,5 @@
-import { EmployeeDashboard } from '@/modules/Payroll/admin/components/EmployeeDashboard';
+import { SecondaryPayrollEmployees } from '@/modules/Payroll/admin/components/SecondaryPayrollEmployees';
 
 export default function PayrollEmployeesPage() {
-  return <EmployeeDashboard />;
+  return <SecondaryPayrollEmployees />;
 }

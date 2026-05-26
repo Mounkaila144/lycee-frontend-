@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -30,291 +32,220 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
 import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import type {
-  Diploma,
-  DiplomaStatus,
-} from '../../types';
+import { createApiClient } from '@/shared/lib/api-client';
 
-import {
-  DIPLOMA_TYPE_LABELS,
-  DIPLOMA_STATUS_LABELS,
-  DIPLOMA_STATUS_COLORS,
-  DIPLOMA_MENTION_LABELS,
-} from '../../types';
+const api = () => createApiClient();
 
-// ──── Demo Data ────
+function toArray<T>(resp: unknown): T[] {
+  if (Array.isArray(resp)) return resp as T[];
+  const r = resp as { data?: unknown };
+  if (r && Array.isArray(r.data)) return r.data as T[];
+  const nested = (r?.data as { data?: unknown })?.data;
+  if (Array.isArray(nested)) return nested as T[];
+  return [];
+}
 
-const DEMO_DIPLOMAS: Diploma[] = [
-  {
-    id: 1, student_id: 1, programme_id: 1, academic_year_id: 1,
-    type: 'licence', registration_number: 'DIP-2026-001', mention: 'bien',
-    status: 'delivered', document_path: '/documents/diplomas/DIP-2026-001.pdf',
-    supplement_path: '/documents/diplomas/SUP-2026-001.pdf',
-    delivered_at: '2026-03-15T10:00:00', delivered_by: 1,
-    signed_at: '2026-03-10T14:00:00', signed_by: 1, qr_code: 'QR-DIP-001',
-    student: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'ETU-2024-001' },
-    programme: { id: 1, name: 'Informatique', code: 'INFO' },
-    created_at: '2026-03-01T08:00:00', updated_at: '2026-03-15T10:00:00',
-  },
-  {
-    id: 2, student_id: 2, programme_id: 1, academic_year_id: 1,
-    type: 'licence', registration_number: 'DIP-2026-002', mention: 'tres_bien',
-    status: 'signed', document_path: '/documents/diplomas/DIP-2026-002.pdf',
-    supplement_path: null,
-    delivered_at: null, delivered_by: null,
-    signed_at: '2026-03-18T09:00:00', signed_by: 1, qr_code: 'QR-DIP-002',
-    student: { id: 2, firstname: 'Fatima', lastname: 'Ousmane', matricule: 'ETU-2024-002' },
-    programme: { id: 1, name: 'Informatique', code: 'INFO' },
-    created_at: '2026-03-05T08:00:00', updated_at: '2026-03-18T09:00:00',
-  },
-  {
-    id: 3, student_id: 3, programme_id: 2, academic_year_id: 1,
-    type: 'master', registration_number: 'DIP-2026-003', mention: 'assez_bien',
-    status: 'generated', document_path: '/documents/diplomas/DIP-2026-003.pdf',
-    supplement_path: null,
-    delivered_at: null, delivered_by: null,
-    signed_at: null, signed_by: null, qr_code: 'QR-DIP-003',
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Moussa', matricule: 'ETU-2024-003' },
-    programme: { id: 2, name: 'Génie Civil', code: 'GC' },
-    created_at: '2026-03-10T11:00:00', updated_at: '2026-03-10T11:00:00',
-  },
-  {
-    id: 4, student_id: 4, programme_id: 3, academic_year_id: 1,
-    type: 'bts', registration_number: 'DIP-2026-004', mention: 'passable',
-    status: 'generated', document_path: '/documents/diplomas/DIP-2026-004.pdf',
-    supplement_path: null,
-    delivered_at: null, delivered_by: null,
-    signed_at: null, signed_by: null, qr_code: 'QR-DIP-004',
-    student: { id: 4, firstname: 'Aissatou', lastname: 'Bah', matricule: 'ETU-2024-004' },
-    programme: { id: 3, name: 'Comptabilité', code: 'COMPTA' },
-    created_at: '2026-03-12T15:00:00', updated_at: '2026-03-12T15:00:00',
-  },
-  {
-    id: 5, student_id: 5, programme_id: 2, academic_year_id: 1,
-    type: 'master', registration_number: 'DIP-2026-005', mention: 'excellent',
-    status: 'delivered', document_path: '/documents/diplomas/DIP-2026-005.pdf',
-    supplement_path: '/documents/diplomas/SUP-2026-005.pdf',
-    delivered_at: '2026-03-20T16:00:00', delivered_by: 1,
-    signed_at: '2026-03-18T10:00:00', signed_by: 1, qr_code: 'QR-DIP-005',
-    student: { id: 5, firstname: 'Oumar', lastname: 'Sidibe', matricule: 'ETU-2024-005' },
-    programme: { id: 2, name: 'Génie Civil', code: 'GC' },
-    created_at: '2026-03-08T09:00:00', updated_at: '2026-03-20T16:00:00',
-  },
-];
+interface ApiStudent {
+  id: number;
+  firstname?: string;
+  lastname?: string;
+  matricule?: string;
+}
 
-const getStatusChipColor = (status: DiplomaStatus): 'default' | 'primary' | 'warning' | 'success' | 'error' => {
-  switch (status) {
-    case 'generated': return 'primary';
-    case 'signed': return 'warning';
-    case 'delivered': return 'success';
-    case 'revoked': return 'error';
-    default: return 'default';
-  }
+interface ApiDiploma {
+  id: number;
+  diploma_number: string | null;
+  register_number: string | null;
+  diploma_type: string | null;
+  honors: string | null;
+  final_gpa: string | number | null;
+  specialization: string | null;
+  issue_date: string | null;
+  graduation_date: string | null;
+  delivered_at: string | null;
+  recipient_name: string | null;
+  supplement_generated: boolean;
+  is_duplicate: boolean;
+  student?: ApiStudent | null;
+  programme?: { id: number; name?: string; code?: string } | null;
+}
+
+const HONORS_LABELS: Record<string, string> = {
+  passable: 'Passable',
+  assez_bien: 'Assez Bien',
+  bien: 'Bien',
+  tres_bien: 'Très Bien',
+  excellent: 'Excellent',
+  none: 'Sans mention',
 };
 
+const fmtDate = (d: string | null): string => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
+const studentName = (s?: ApiStudent | null): string => (s ? `${s.firstname ?? ''} ${s.lastname ?? ''}`.trim() || '—' : '—');
+
+const GENERATION_DISABLED_TOOLTIP = 'Indisponible (modèle non configuré)';
+
 export const DiplomaDashboard: React.FC = () => {
-  const [createOpen, setCreateOpen] = useState(false);
+  const qc = useQueryClient();
   const [detailOpen, setDetailOpen] = useState(false);
   const [deliverOpen, setDeliverOpen] = useState(false);
-  const [selectedDiploma, setSelectedDiploma] = useState<Diploma | null>(null);
+  const [selectedDiploma, setSelectedDiploma] = useState<ApiDiploma | null>(null);
+  const [deliverForm, setDeliverForm] = useState({ recipient_name: '', recipient_id_type: 'cni', recipient_id_number: '', delivery_notes: '' });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const notify = (message: string, severity: 'success' | 'error' = 'success') => setSnackbar({ open: true, message, severity });
 
-  const diplomas = DEMO_DIPLOMAS;
+  const { data: resp, isLoading, isError } = useQuery({
+    queryKey: ['diploma-register'],
+    queryFn: async () => (await api().get('/admin/documents/diplomas', { params: { per_page: 100 } })).data,
+  });
+  const diplomas = useMemo(() => toArray<ApiDiploma>(resp), [resp]);
 
-  const handleViewDetail = useCallback((diploma: Diploma) => {
+  const deliverMutation = useMutation({
+    mutationFn: async ({ id, payload }: { id: number; payload: typeof deliverForm }) =>
+      (await api().patch(`/admin/documents/diplomas/${id}/deliver`, payload)).data,
+    onSuccess: () => {
+      notify('Diplôme marqué comme délivré.');
+      setDeliverOpen(false);
+      qc.invalidateQueries({ queryKey: ['diploma-register'] });
+    },
+    onError: (e: any) => notify(e?.response?.data?.message ?? 'Échec de la délivrance.', 'error'),
+  });
+
+  const handleViewDetail = (diploma: ApiDiploma) => {
     setSelectedDiploma(diploma);
     setDetailOpen(true);
-  }, []);
+  };
 
-  const handleDeliver = useCallback((diploma: Diploma) => {
+  const handleDeliver = (diploma: ApiDiploma) => {
     setSelectedDiploma(diploma);
+    setDeliverForm({ recipient_name: '', recipient_id_type: 'cni', recipient_id_number: '', delivery_notes: '' });
     setDeliverOpen(true);
-  }, []);
+  };
 
-  const handleDuplicate = useCallback((diploma: Diploma) => {
-    setSnackbar({ open: true, message: `Diplôme "${diploma.registration_number}" dupliqué avec succès`, severity: 'success' });
-  }, []);
-
-  const handleSupplement = useCallback((diploma: Diploma) => {
-    setSnackbar({ open: true, message: `Supplément au diplôme "${diploma.registration_number}" généré`, severity: 'success' });
-  }, []);
-
-  const deliveredCount = diplomas.filter(d => d.status === 'delivered').length;
-  const signedCount = diplomas.filter(d => d.status === 'signed').length;
-  const generatedCount = diplomas.filter(d => d.status === 'generated').length;
+  const deliveredCount = diplomas.filter(d => d.delivered_at).length;
+  const pendingCount = diplomas.filter(d => !d.delivered_at).length;
+  const duplicateCount = diplomas.filter(d => d.is_duplicate).length;
   const totalCount = diplomas.length;
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">
-          Administration
-        </Link>
-        <Link underline="hover" color="inherit" href="#">
-          Documents Officiels
-        </Link>
+        <Link underline="hover" color="inherit" href="#">Administration</Link>
+        <Link underline="hover" color="inherit" href="#">Documents Officiels</Link>
         <Typography color="text.primary">Diplômes</Typography>
       </Breadcrumbs>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Registre des Diplômes
-        </Typography>
-        <Button variant="contained" onClick={() => setCreateOpen(true)}>
-          + Générer un Diplôme
-        </Button>
+        <Typography variant="h4" fontWeight="bold">Registre des Diplômes</Typography>
+        <Tooltip title={GENERATION_DISABLED_TOOLTIP}>
+          <span>
+            <Button variant="contained" disabled>+ Générer un Diplôme</Button>
+          </span>
+        </Tooltip>
       </Box>
 
-      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
           { label: 'Total diplômes', value: totalCount, color: '#9c27b0' },
           { label: 'Délivrés', value: deliveredCount, color: '#4caf50' },
-          { label: 'Signés', value: signedCount, color: '#ff9800' },
-          { label: 'Générés', value: generatedCount, color: '#1976d2' },
+          { label: 'En attente de délivrance', value: pendingCount, color: '#ff9800' },
+          { label: 'Duplicatas', value: duplicateCount, color: '#1976d2' },
         ].map((stat, idx) => (
           <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
+                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>{stat.value}</Typography>
+                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Diplomas Table */}
       <Card>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2 }}>Liste des Diplômes</Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>N° Enregistrement</TableCell>
-                  <TableCell>Étudiant</TableCell>
-                  <TableCell>Programme</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Mention</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell>Supplément</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {diplomas.map(diploma => (
-                  <TableRow key={diploma.id} hover>
-                    <TableCell>
-                      <Typography fontWeight="medium">{diploma.registration_number}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography fontWeight="medium">
-                        {diploma.student?.firstname} {diploma.student?.lastname}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {diploma.student?.matricule}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography fontWeight="medium">{diploma.programme?.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {diploma.programme?.code}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip size="small" label={DIPLOMA_TYPE_LABELS[diploma.type]} variant="outlined" />
-                    </TableCell>
-                    <TableCell>
-                      <Typography>{DIPLOMA_MENTION_LABELS[diploma.mention]}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={DIPLOMA_STATUS_LABELS[diploma.status]}
-                        color={getStatusChipColor(diploma.status)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={diploma.supplement_path ? 'Oui' : 'Non'}
-                        color={diploma.supplement_path ? 'success' : 'default'}
-                        variant={diploma.supplement_path ? 'filled' : 'outlined'}
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleViewDetail(diploma)}
-                        >
-                          Détails
-                        </Button>
-                        {diploma.status === 'signed' && (
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => handleDeliver(diploma)}
-                          >
-                            Délivrer
-                          </Button>
-                        )}
-                        {!diploma.supplement_path && (
-                          <Tooltip title="Générer le supplément">
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="info"
-                              onClick={() => handleSupplement(diploma)}
-                            >
-                              Supplément
-                            </Button>
-                          </Tooltip>
-                        )}
-                        <Tooltip title="Dupliquer">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            color="secondary"
-                            onClick={() => handleDuplicate(diploma)}
-                          >
-                            Dupliquer
-                          </Button>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
+          {isLoading && <Box display="flex" justifyContent="center" p={3}><CircularProgress /></Box>}
+          {isError && <Alert severity="error">Erreur lors du chargement du registre.</Alert>}
+          {!isLoading && !isError && diplomas.length === 0 && <Alert severity="info">Aucun diplôme enregistré.</Alert>}
+          {!isLoading && !isError && diplomas.length > 0 && (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>N° Diplôme</TableCell>
+                    <TableCell>Étudiant</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Mention</TableCell>
+                    <TableCell>Délivré</TableCell>
+                    <TableCell>Supplément</TableCell>
+                    <TableCell align="center">Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {diplomas.map(diploma => (
+                    <TableRow key={diploma.id} hover>
+                      <TableCell>
+                        <Typography fontWeight="medium">{diploma.diploma_number ?? diploma.register_number ?? '—'}</Typography>
+                        {diploma.is_duplicate && <Chip size="small" label="Duplicata" color="info" variant="outlined" sx={{ mt: 0.5 }} />}
+                      </TableCell>
+                      <TableCell>
+                        <Typography fontWeight="medium">{studentName(diploma.student)}</Typography>
+                        <Typography variant="caption" color="text.secondary">{diploma.student?.matricule ?? ''}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={diploma.diploma_type ?? '—'} variant="outlined" />
+                      </TableCell>
+                      <TableCell>
+                        <Typography>{diploma.honors ? (HONORS_LABELS[diploma.honors] ?? diploma.honors) : 'Sans mention'}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={diploma.delivered_at ? 'Délivré' : 'Non délivré'} color={diploma.delivered_at ? 'success' : 'default'} />
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={diploma.supplement_generated ? 'Oui' : 'Non'}
+                          color={diploma.supplement_generated ? 'success' : 'default'}
+                          variant={diploma.supplement_generated ? 'filled' : 'outlined'} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                          <Button size="small" variant="outlined" onClick={() => handleViewDetail(diploma)}>Détails</Button>
+                          {!diploma.delivered_at && (
+                            <Button size="small" variant="contained" color="success" onClick={() => handleDeliver(diploma)}>Délivrer</Button>
+                          )}
+                          {!diploma.supplement_generated && (
+                            <Tooltip title={GENERATION_DISABLED_TOOLTIP}>
+                              <span>
+                                <Button size="small" variant="outlined" color="info" disabled>Supplément</Button>
+                              </span>
+                            </Tooltip>
+                          )}
+                          <Tooltip title={GENERATION_DISABLED_TOOLTIP}>
+                            <span>
+                              <Button size="small" variant="outlined" color="secondary" disabled>Dupliquer</Button>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
       <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
-              <Typography variant="h6">Diplôme {selectedDiploma?.registration_number}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {selectedDiploma?.student?.firstname} {selectedDiploma?.student?.lastname}
-              </Typography>
+              <Typography variant="h6">Diplôme {selectedDiploma?.diploma_number ?? selectedDiploma?.register_number ?? ''}</Typography>
+              <Typography variant="body2" color="text.secondary">{studentName(selectedDiploma?.student)}</Typography>
             </Box>
             {selectedDiploma && (
-              <Chip
-                label={DIPLOMA_STATUS_LABELS[selectedDiploma.status]}
-                color={getStatusChipColor(selectedDiploma.status)}
-              />
+              <Chip label={selectedDiploma.delivered_at ? 'Délivré' : 'Non délivré'} color={selectedDiploma.delivered_at ? 'success' : 'default'} />
             )}
           </Box>
         </DialogTitle>
@@ -323,35 +254,29 @@ export const DiplomaDashboard: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">Étudiant</Typography>
-                <Typography fontWeight="bold">
-                  {selectedDiploma?.student?.firstname} {selectedDiploma?.student?.lastname}
-                </Typography>
-                <Typography variant="body2">{selectedDiploma?.student?.matricule}</Typography>
+                <Typography fontWeight="bold">{studentName(selectedDiploma?.student)}</Typography>
+                <Typography variant="body2">{selectedDiploma?.student?.matricule ?? '—'}</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Programme</Typography>
-                <Typography fontWeight="bold">{selectedDiploma?.programme?.name}</Typography>
-                <Typography variant="body2">{selectedDiploma?.programme?.code}</Typography>
+                <Typography variant="subtitle2" color="text.secondary">Programme / Spécialité</Typography>
+                <Typography fontWeight="bold">{selectedDiploma?.programme?.name ?? '—'}</Typography>
+                <Typography variant="body2">{selectedDiploma?.specialization ?? selectedDiploma?.programme?.code ?? ''}</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Mention</Typography>
-                <Typography fontWeight="bold">
-                  {selectedDiploma && DIPLOMA_MENTION_LABELS[selectedDiploma.mention]}
-                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">Mention / Moyenne</Typography>
+                <Typography fontWeight="bold">{selectedDiploma?.honors ? (HONORS_LABELS[selectedDiploma.honors] ?? selectedDiploma.honors) : 'Sans mention'}</Typography>
+                <Typography variant="body2">{selectedDiploma?.final_gpa != null ? `${selectedDiploma.final_gpa}/20` : ''}</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">Délivré le</Typography>
-                <Typography fontWeight="bold">
-                  {selectedDiploma?.delivered_at
-                    ? new Date(selectedDiploma.delivered_at).toLocaleDateString('fr-FR')
-                    : 'Non délivré'}
-                </Typography>
+                <Typography fontWeight="bold">{fmtDate(selectedDiploma?.delivered_at ?? null)}</Typography>
+                {selectedDiploma?.recipient_name && <Typography variant="body2">À : {selectedDiploma.recipient_name}</Typography>}
               </Paper>
             </Grid>
           </Grid>
@@ -361,106 +286,45 @@ export const DiplomaDashboard: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Create Diploma Dialog */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Générer un Diplôme</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel>Étudiant</InputLabel>
-              <Select label="Étudiant" defaultValue="">
-                <MenuItem value={1}>Amadou Diallo (ETU-2024-001)</MenuItem>
-                <MenuItem value={2}>Fatima Ousmane (ETU-2024-002)</MenuItem>
-                <MenuItem value={3}>Ibrahim Moussa (ETU-2024-003)</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Programme</InputLabel>
-              <Select label="Programme" defaultValue="">
-                <MenuItem value={1}>INFO - Informatique</MenuItem>
-                <MenuItem value={2}>GC - Génie Civil</MenuItem>
-                <MenuItem value={3}>COMPTA - Comptabilité</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Type de diplôme</InputLabel>
-              <Select label="Type de diplôme" defaultValue="licence">
-                <MenuItem value="licence">Licence</MenuItem>
-                <MenuItem value="master">Master</MenuItem>
-                <MenuItem value="doctorat">Doctorat</MenuItem>
-                <MenuItem value="ingenieur">Ingénieur</MenuItem>
-                <MenuItem value="bts">BTS</MenuItem>
-                <MenuItem value="dut">DUT</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Mention</InputLabel>
-              <Select label="Mention" defaultValue="bien">
-                <MenuItem value="passable">Passable</MenuItem>
-                <MenuItem value="assez_bien">Assez Bien</MenuItem>
-                <MenuItem value="bien">Bien</MenuItem>
-                <MenuItem value="tres_bien">Très Bien</MenuItem>
-                <MenuItem value="excellent">Excellent</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setCreateOpen(false);
-              setSnackbar({ open: true, message: 'Diplôme généré avec succès', severity: 'success' });
-            }}
-          >
-            Générer
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Deliver Dialog */}
       <Dialog open={deliverOpen} onClose={() => setDeliverOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Délivrer le Diplôme</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <Alert severity="info">
-              Diplôme : {selectedDiploma?.registration_number} - {selectedDiploma?.student?.firstname} {selectedDiploma?.student?.lastname}
+              Diplôme : {selectedDiploma?.diploma_number ?? selectedDiploma?.register_number ?? ''} - {studentName(selectedDiploma?.student)}
             </Alert>
-            <TextField
-              label="Date de délivrance"
-              type="date"
-              defaultValue="2026-03-26"
-              slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
-            />
-            <TextField label="Notes" fullWidth multiline rows={2} placeholder="Notes de délivrance" />
+            <TextField label="Nom du destinataire" fullWidth required
+              value={deliverForm.recipient_name}
+              onChange={e => setDeliverForm(f => ({ ...f, recipient_name: e.target.value }))} />
+            <FormControl fullWidth>
+              <InputLabel>Type de pièce</InputLabel>
+              <Select label="Type de pièce" value={deliverForm.recipient_id_type}
+                onChange={e => setDeliverForm(f => ({ ...f, recipient_id_type: String(e.target.value) }))}>
+                <MenuItem value="cni">CNI</MenuItem>
+                <MenuItem value="passport">Passeport</MenuItem>
+                <MenuItem value="other">Autre</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField label="N° de pièce" fullWidth required
+              value={deliverForm.recipient_id_number}
+              onChange={e => setDeliverForm(f => ({ ...f, recipient_id_number: e.target.value }))} />
+            <TextField label="Notes" fullWidth multiline rows={2}
+              value={deliverForm.delivery_notes}
+              onChange={e => setDeliverForm(f => ({ ...f, delivery_notes: e.target.value }))} />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeliverOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => {
-              setDeliverOpen(false);
-              setSnackbar({ open: true, message: `Diplôme "${selectedDiploma?.registration_number}" délivré avec succès`, severity: 'success' });
-            }}
-          >
-            Confirmer la délivrance
+          <Button variant="contained" color="success"
+            disabled={!deliverForm.recipient_name || !deliverForm.recipient_id_number || deliverMutation.isPending}
+            onClick={() => selectedDiploma && deliverMutation.mutate({ id: selectedDiploma.id, payload: deliverForm })}>
+            {deliverMutation.isPending ? 'Envoi…' : 'Confirmer la délivrance'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-      >
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-          {snackbar.message}
-        </Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );

@@ -1,5 +1,5 @@
-import { ExamSessionsDashboard } from '@/modules/Exams/admin/components/ExamSessionsDashboard';
+import { SecondaryExams } from '@/modules/Exams/admin/components/SecondaryExams';
 
 export default function ExamPlanningPage() {
-  return <ExamSessionsDashboard />;
+  return <SecondaryExams />;
 }
