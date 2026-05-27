@@ -15,10 +15,8 @@ export { studentService } from '../UsersGuard/admin/services/studentService';
 // Admin layer exports - Financial Roles
 export { useCashiers } from '../UsersGuard/admin/hooks/useCashiers';
 export { useAccountants } from '../UsersGuard/admin/hooks/useAccountants';
-export { useAccountingClerks } from '../UsersGuard/admin/hooks/useAccountingClerks';
 export { cashierService } from '../UsersGuard/admin/services/cashierService';
 export { accountantService } from '../UsersGuard/admin/services/accountantService';
-export { accountingClerkService } from '../UsersGuard/admin/services/accountingClerkService';
 
 // Admin layer exports - Permissions & Roles Management
 export { usePermissionsList } from '../UsersGuard/admin/hooks/usePermissions';
@@ -46,12 +44,10 @@ export type { Student, StudentQueryParams, PaginatedStudentsResponse } from '../
 export type {
   Cashier,
   Accountant,
-  AccountingClerk,
   FinancialUser,
   FinancialRole,
   PaginatedCashiersResponse,
-  PaginatedAccountantsResponse,
-  PaginatedAccountingClerksResponse
+  PaginatedAccountantsResponse
 } from '../UsersGuard/types/financial.types';
 
 // Type exports - Permissions & Roles

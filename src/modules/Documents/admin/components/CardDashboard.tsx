@@ -17,19 +17,18 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Paper from '@mui/material/Paper';
-import Alert from '@mui/material/Alert';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Tooltip from '@mui/material/Tooltip';
-import CircularProgress from '@mui/material/CircularProgress';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 import { createApiClient } from '@/shared/lib/api-client';
 
@@ -44,289 +43,138 @@ function toArray<T>(resp: unknown): T[] {
   return [];
 }
 
-interface ApiStudent {
-  id: number;
-  firstname?: string;
-  lastname?: string;
-  matricule?: string;
-}
-
+interface ApiStudent { id: number; firstname?: string; lastname?: string; matricule?: string }
 interface ApiCard {
   id: number;
   card_number: string;
-  card_type: string;
-  status: string;
   issue_date: string | null;
   expiry_date: string | null;
-  qr_code: string | null;
-  is_printed: boolean;
-  access_permissions: string[] | null;
-  replaced_by_card_id: number | null;
-  student?: ApiStudent | null;
-  academic_year?: { id: number; name: string } | null;
+  verification_code: string | null;
+  status: string;
+  student?: { id: number; matricule?: string; name?: string; classe?: string | null } | null;
 }
 
-const CARD_STATUS_LABELS: Record<string, string> = {
-  active: 'Active',
-  suspended: 'Suspendue',
-  expired: 'Expirée',
-  lost: 'Perdue',
-  stolen: 'Volée',
-  replaced: 'Remplacée',
-};
-
-const getCardStatusChipColor = (status: string): 'default' | 'success' | 'warning' | 'error' => {
-  switch (status) {
-    case 'active': return 'success';
-    case 'suspended': return 'warning';
-    case 'lost':
-    case 'stolen': return 'error';
-    default: return 'default';
-  }
-};
-
 const fmtDate = (d: string | null): string => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
-const studentName = (s?: ApiStudent | null): string => (s ? `${s.firstname ?? ''} ${s.lastname ?? ''}`.trim() || '—' : '—');
-
-const GENERATION_DISABLED_TOOLTIP = 'Indisponible (modèle non configuré)';
 
 export const CardDashboard: React.FC = () => {
   const qc = useQueryClient();
-  const [tabIndex, setTabIndex] = useState(0);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<ApiCard | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newStudentId, setNewStudentId] = useState('');
+  const [downloading, setDownloading] = useState<number | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const notify = (message: string, severity: 'success' | 'error' = 'success') => setSnackbar({ open: true, message, severity });
 
   const { data: cardsResp, isLoading, isError } = useQuery({
-    queryKey: ['student-cards'],
-    queryFn: async () => (await api().get('/admin/documents/cards', { params: { per_page: 100 } })).data,
+    queryKey: ['secondary-cards'],
+    queryFn: async () => (await api().get('/admin/documents/secondary-cards')).data,
   });
-  const allCards = useMemo(() => toArray<ApiCard>(cardsResp), [cardsResp]);
+  const cards = useMemo(() => toArray<ApiCard>(cardsResp), [cardsResp]);
 
-  const cards = useMemo(() => allCards.filter(c => c.card_type !== 'access_badge'), [allCards]);
-  const badges = useMemo(() => allCards.filter(c => c.card_type === 'access_badge'), [allCards]);
+  const { data: studentsResp } = useQuery({
+    queryKey: ['students-for-cards'],
+    queryFn: async () => (await api().get('/admin/enrollment/students', { params: { per_page: 100 } })).data,
+  });
+  const students = useMemo(
+    () => toArray<ApiStudent>(studentsResp).map(s => ({ id: s.id, label: `${s.matricule ?? ''} — ${s.lastname ?? ''} ${s.firstname ?? ''}`.trim() })),
+    [studentsResp],
+  );
 
-  const statusMutation = useMutation({
-    mutationFn: async ({ id, action }: { id: number; action: 'suspend' | 'activate' }) =>
-      (await api().post(`/admin/documents/cards/${id}/${action}`)).data,
-    onSuccess: (_d, vars) => {
-      notify(vars.action === 'suspend' ? 'Carte suspendue.' : 'Carte activée.');
-      qc.invalidateQueries({ queryKey: ['student-cards'] });
+  const createMutation = useMutation({
+    mutationFn: async () => (await api().post('/admin/documents/secondary-cards', { student_id: Number(newStudentId) })).data,
+    onSuccess: () => {
+      notify('Carte générée.');
+      setCreateOpen(false);
+      setNewStudentId('');
+      qc.invalidateQueries({ queryKey: ['secondary-cards'] });
     },
-    onError: (e: any) => notify(e?.response?.data?.message ?? 'Action impossible.', 'error'),
+    onError: (e: any) => notify(e?.response?.data?.message ?? 'Échec de la génération.', 'error'),
   });
 
-  const handleViewDetail = (card: ApiCard) => {
-    setSelectedCard(card);
-    setDetailOpen(true);
+  const handleDownload = async (card: ApiCard) => {
+    setDownloading(card.id);
+    try {
+      const res = await api().get(`/admin/documents/secondary-cards/${card.id}/download`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${card.card_number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      notify('Échec du téléchargement.', 'error');
+    } finally {
+      setDownloading(null);
+    }
   };
-
-  const activeCount = cards.filter(c => c.status === 'active').length;
-  const suspendedCount = cards.filter(c => c.status === 'suspended').length;
-  const totalCards = cards.length;
-  const totalBadges = badges.length;
 
   return (
     <Box sx={{ p: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">Administration</Link>
-        <Link underline="hover" color="inherit" href="#">Documents Officiels</Link>
-        <Typography color="text.primary">Cartes Étudiants</Typography>
-      </Breadcrumbs>
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Cartes Étudiants &amp; Badges d&apos;Accès
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title={GENERATION_DISABLED_TOOLTIP}>
-            <span>
-              <Button variant="outlined" disabled>Génération par Lot</Button>
-            </span>
-          </Tooltip>
-          <Tooltip title={GENERATION_DISABLED_TOOLTIP}>
-            <span>
-              <Button variant="contained" disabled>+ Nouvelle Carte</Button>
-            </span>
-          </Tooltip>
-        </Box>
+        <Typography variant="h4" fontWeight="bold">Cartes Scolaires</Typography>
+        <Button variant="contained" onClick={() => setCreateOpen(true)}>+ Nouvelle Carte</Button>
       </Box>
-
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[
-          { label: 'Total cartes', value: totalCards, color: '#1976d2' },
-          { label: 'Cartes actives', value: activeCount, color: '#4caf50' },
-          { label: 'Cartes suspendues', value: suspendedCount, color: '#ff9800' },
-          { label: 'Badges d\'accès', value: totalBadges, color: '#9c27b0' },
-        ].map((stat, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>{stat.value}</Typography>
-                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
 
       <Card>
         <CardContent>
-          <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 2 }}>
-            <Tab label="Cartes Étudiants" />
-            <Tab label="Badges d'Accès" />
-          </Tabs>
-
           {isLoading && <Box display="flex" justifyContent="center" p={3}><CircularProgress /></Box>}
           {isError && <Alert severity="error">Erreur lors du chargement des cartes.</Alert>}
-
-          {!isLoading && !isError && tabIndex === 0 && (
-            cards.length === 0 ? <Alert severity="info">Aucune carte enregistrée.</Alert> : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>N° Carte</TableCell>
-                      <TableCell>Étudiant</TableCell>
-                      <TableCell>Matricule</TableCell>
-                      <TableCell>Émise le</TableCell>
-                      <TableCell>Expire le</TableCell>
-                      <TableCell>Statut</TableCell>
-                      <TableCell align="center">Actions</TableCell>
+          {!isLoading && !isError && cards.length === 0 && <Alert severity="info">Aucune carte enregistrée. Générez-en une.</Alert>}
+          {!isLoading && !isError && cards.length > 0 && (
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>N° Carte</TableCell>
+                    <TableCell>Élève</TableCell>
+                    <TableCell>Matricule</TableCell>
+                    <TableCell>Classe</TableCell>
+                    <TableCell>Émise le</TableCell>
+                    <TableCell>Expire le</TableCell>
+                    <TableCell>Code</TableCell>
+                    <TableCell align="center">Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {cards.map(card => (
+                    <TableRow key={card.id} hover>
+                      <TableCell><Typography fontWeight="medium">{card.card_number}</Typography></TableCell>
+                      <TableCell>{card.student?.name ?? '—'}</TableCell>
+                      <TableCell>{card.student?.matricule ?? '—'}</TableCell>
+                      <TableCell>{card.student?.classe ?? '—'}</TableCell>
+                      <TableCell>{fmtDate(card.issue_date)}</TableCell>
+                      <TableCell>{fmtDate(card.expiry_date)}</TableCell>
+                      <TableCell><Chip size="small" label={card.verification_code} /></TableCell>
+                      <TableCell align="center">
+                        <Button size="small" variant="outlined" disabled={downloading === card.id} onClick={() => handleDownload(card)}>
+                          {downloading === card.id ? '…' : 'PDF'}
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {cards.map(card => (
-                      <TableRow key={card.id} hover>
-                        <TableCell><Typography fontWeight="medium">{card.card_number}</Typography></TableCell>
-                        <TableCell><Typography fontWeight="medium">{studentName(card.student)}</Typography></TableCell>
-                        <TableCell><Typography variant="body2">{card.student?.matricule ?? '—'}</Typography></TableCell>
-                        <TableCell>{fmtDate(card.issue_date)}</TableCell>
-                        <TableCell>{fmtDate(card.expiry_date)}</TableCell>
-                        <TableCell>
-                          <Chip size="small" label={CARD_STATUS_LABELS[card.status] ?? card.status} color={getCardStatusChipColor(card.status)} />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                            <Button size="small" variant="outlined" onClick={() => handleViewDetail(card)}>Détails</Button>
-                            {card.status === 'active' && (
-                              <Button size="small" variant="outlined" color="warning" disabled={statusMutation.isPending}
-                                onClick={() => statusMutation.mutate({ id: card.id, action: 'suspend' })}>Suspendre</Button>
-                            )}
-                            {card.status === 'suspended' && (
-                              <Button size="small" variant="contained" color="success" disabled={statusMutation.isPending}
-                                onClick={() => statusMutation.mutate({ id: card.id, action: 'activate' })}>Activer</Button>
-                            )}
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )
-          )}
-
-          {!isLoading && !isError && tabIndex === 1 && (
-            badges.length === 0 ? <Alert severity="info">Aucun badge d&apos;accès enregistré.</Alert> : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>N° Badge</TableCell>
-                      <TableCell>Étudiant</TableCell>
-                      <TableCell>Permissions</TableCell>
-                      <TableCell>Expire le</TableCell>
-                      <TableCell>Statut</TableCell>
-                      <TableCell align="center">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {badges.map(badge => (
-                      <TableRow key={badge.id} hover>
-                        <TableCell><Typography fontWeight="medium">{badge.card_number}</Typography></TableCell>
-                        <TableCell>
-                          <Typography fontWeight="medium">{studentName(badge.student)}</Typography>
-                          <Typography variant="caption" color="text.secondary">{badge.student?.matricule ?? ''}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                            {(badge.access_permissions ?? []).map((perm, idx) => (
-                              <Chip key={idx} size="small" label={perm} variant="outlined" />
-                            ))}
-                            {(!badge.access_permissions || badge.access_permissions.length === 0) && '—'}
-                          </Box>
-                        </TableCell>
-                        <TableCell>{fmtDate(badge.expiry_date)}</TableCell>
-                        <TableCell>
-                          <Chip size="small" label={CARD_STATUS_LABELS[badge.status] ?? badge.status} color={getCardStatusChipColor(badge.status)} />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                            {badge.status === 'active' && (
-                              <Button size="small" variant="outlined" color="warning" disabled={statusMutation.isPending}
-                                onClick={() => statusMutation.mutate({ id: badge.id, action: 'suspend' })}>Suspendre</Button>
-                            )}
-                            {badge.status === 'suspended' && (
-                              <Button size="small" variant="contained" color="success" disabled={statusMutation.isPending}
-                                onClick={() => statusMutation.mutate({ id: badge.id, action: 'activate' })}>Activer</Button>
-                            )}
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </CardContent>
       </Card>
 
-      <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box>
-              <Typography variant="h6">Carte {selectedCard?.card_number}</Typography>
-              <Typography variant="body2" color="text.secondary">{studentName(selectedCard?.student)}</Typography>
-            </Box>
-            {selectedCard && (
-              <Chip label={CARD_STATUS_LABELS[selectedCard.status] ?? selectedCard.status} color={getCardStatusChipColor(selectedCard.status)} />
-            )}
-          </Box>
-        </DialogTitle>
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Nouvelle carte scolaire</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Étudiant</Typography>
-                <Typography fontWeight="bold">{studentName(selectedCard?.student)}</Typography>
-                <Typography variant="body2">{selectedCard?.student?.matricule ?? '—'}</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Période de validité</Typography>
-                <Typography>{fmtDate(selectedCard?.issue_date ?? null)} - {fmtDate(selectedCard?.expiry_date ?? null)}</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">QR Code</Typography>
-                <Typography>{selectedCard?.qr_code || 'Non généré'}</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Imprimée</Typography>
-                <Typography>{selectedCard?.is_printed ? 'Oui' : 'Non'}</Typography>
-              </Paper>
-            </Grid>
-          </Grid>
+          <FormControl fullWidth sx={{ mt: 1 }}>
+            <InputLabel>Élève</InputLabel>
+            <Select label="Élève" value={newStudentId} onChange={e => setNewStudentId(String(e.target.value))}>
+              {students.map(s => <MenuItem key={s.id} value={s.id}>{s.label}</MenuItem>)}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDetailOpen(false)}>Fermer</Button>
+          <Button onClick={() => setCreateOpen(false)}>Annuler</Button>
+          <Button variant="contained" disabled={!newStudentId || createMutation.isPending} onClick={() => createMutation.mutate()}>
+            {createMutation.isPending ? 'Génération…' : 'Générer'}
+          </Button>
         </DialogActions>
       </Dialog>
 

@@ -17,14 +17,6 @@ export interface Accountant extends User {
 }
 
 /**
- * Accounting Clerk-specific user (extends base User type)
- * Accounting Clerks have the "Agent Comptable" role
- */
-export interface AccountingClerk extends User {
-  // Additional accounting clerk-specific fields can be added here
-}
-
-/**
  * Paginated response for cashiers
  */
 export interface PaginatedCashiersResponse extends PaginatedUsersResponse {
@@ -39,18 +31,11 @@ export interface PaginatedAccountantsResponse extends PaginatedUsersResponse {
 }
 
 /**
- * Paginated response for accounting clerks
- */
-export interface PaginatedAccountingClerksResponse extends PaginatedUsersResponse {
-  data: AccountingClerk[];
-}
-
-/**
  * Financial user types union
  */
-export type FinancialUser = Cashier | Accountant | AccountingClerk;
+export type FinancialUser = Cashier | Accountant;
 
 /**
  * Financial role names
  */
-export type FinancialRole = 'Caissier' | 'Comptable' | 'Agent Comptable';
+export type FinancialRole = 'Caissier' | 'Comptable';
