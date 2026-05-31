@@ -26,4 +26,33 @@ export const settingsService = {
   async remove(key: string): Promise<void> {
     await createApiClient().delete(`/admin/settings/${key}`);
   },
+
+  async getSchoolProfile(): Promise<SchoolProfile> {
+    const { data } = await createApiClient().get<{ data: SchoolProfile }>(
+      '/admin/settings/school-profile'
+    );
+    return data.data;
+  },
+
+  async updateSchoolProfile(form: FormData): Promise<SchoolProfile> {
+    const { data } = await createApiClient().post<{ data: SchoolProfile }>(
+      '/admin/settings/school-profile',
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return data.data;
+  },
 };
+
+export interface SchoolProfile {
+  name: string | null;
+  nif: string | null;
+  rccm: string | null;
+  address: string | null;
+  city: string | null;
+  bp: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  logo: string | null;
+}

@@ -38,6 +38,22 @@ export const enrollmentMenuConfig: ModuleMenuConfig = {
           isActive: true,
         },
         {
+          id: 'enrollment-reenroll',
+          label: 'Réinscription',
+          route: '/admin/enrollment/reenroll',
+          icon: {
+            type: 'emoji',
+            value: '🎓',
+          },
+          order: 2,
+          module: 'Enrollment',
+          parentId: 'enrollment',
+          roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
           id: 'enrollment-groups',
           label: 'Affectation Classes',
           route: '/admin/enrollment/groups',

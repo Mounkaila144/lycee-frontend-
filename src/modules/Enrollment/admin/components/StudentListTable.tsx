@@ -8,6 +8,15 @@ import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
 import IconButton from '@mui/material/IconButton'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Box from '@mui/material/Box'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 // Third-party Imports
 import { createColumnHelper } from '@tanstack/react-table'
@@ -25,6 +34,7 @@ import { StudentDetailDialog } from './StudentDetailDialog'
 import { StudentImportWizard } from './StudentImportWizard'
 import { PedagogicalEnrollmentWizard } from './PedagogicalEnrollmentWizard'
 import { StudentFinancialDialog } from './StudentFinancialDialog'
+import { StudentReenrollDialog } from './StudentReenrollDialog'
 
 // Shared DataTable Components
 import { DataTable, StandardMobileCard } from '@/components/shared/DataTable'
@@ -61,6 +71,7 @@ const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'matricule', label: 'Matricule', defaultVisible: true },
   { id: 'firstname', label: 'Prénom', defaultVisible: true },
   { id: 'lastname', label: 'Nom', defaultVisible: true },
+  { id: 'classe', label: 'Classe', defaultVisible: true },
   { id: 'email', label: 'Email', defaultVisible: true },
   { id: 'mobile', label: 'Mobile', defaultVisible: true },
   { id: 'status', label: 'Statut', defaultVisible: true },
@@ -81,7 +92,7 @@ const StudentListTable = () => {
   const { tenantId } = useTenant()
 
   // Context
-  const { students, loading, pagination, setPage, setPageSize, setSearch, refresh, params } =
+  const { students, loading, pagination, setPage, setPageSize, setSearch, refresh, params, updateParams, classes } =
     useStudentsContext()
 
   // States
@@ -95,6 +106,16 @@ const StudentListTable = () => {
   const [isEditMode, setIsEditMode] = useState(false)
   const [enrollmentDialogOpen, setEnrollmentDialogOpen] = useState(false)
   const [enrollmentStudent, setEnrollmentStudent] = useState<Student | null>(null)
+  const [reenrollDialogOpen, setReenrollDialogOpen] = useState(false)
+  const [reenrollStudent, setReenrollStudent] = useState<Student | null>(null)
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' })
+
+  const notify = (message: string, severity: 'success' | 'error' = 'success') => setSnackbar({ open: true, message, severity })
+
+  const handleOpenReenroll = useCallback((student: Student) => {
+    setReenrollStudent(student)
+    setReenrollDialogOpen(true)
+  }, [])
 
   // Column visibility
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
@@ -299,6 +320,18 @@ const StudentListTable = () => {
           <Typography className='font-medium'>{row.original.lastname || '-'}</Typography>
         )
       }),
+      columnHelper.display({
+        id: 'classe',
+        header: 'Classe',
+        cell: ({ row }) => {
+          const classe = (row.original as any).classe
+          return classe?.name ? (
+            <Chip size='small' variant='tonal' color='primary' label={classe.name} />
+          ) : (
+            <Typography color='text.disabled'>-</Typography>
+          )
+        }
+      }),
       columnHelper.accessor('email', {
         id: 'email',
         header: 'Email',
@@ -395,6 +428,13 @@ const StudentListTable = () => {
             </IconButton>
             <IconButton
               size='small'
+              onClick={() => handleOpenReenroll(row.original)}
+              title='Réinscrire'
+            >
+              <i className='ri-graduation-cap-line text-textSecondary' />
+            </IconButton>
+            <IconButton
+              size='small'
               onClick={() => handleOpenDeleteDialog(row.original)}
               title='Supprimer'
             >
@@ -405,7 +445,7 @@ const StudentListTable = () => {
         enableSorting: false
       })
     ],
-    [handleViewClick, handleOpenEditDialog, handleOpenFinancial, handleOpenDeleteDialog, handleOpenEnrollmentDialog]
+    [handleViewClick, handleOpenEditDialog, handleOpenFinancial, handleOpenReenroll, handleOpenDeleteDialog, handleOpenEnrollmentDialog]
   )
 
   // DataTable configuration
@@ -528,6 +568,28 @@ const StudentListTable = () => {
 
   return (
     <>
+      <Card className='mbe-6'>
+        <CardContent>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+            <FormControl size='small' sx={{ minWidth: 220 }}>
+              <InputLabel>Classe</InputLabel>
+              <Select
+                label='Classe'
+                value={params.class_id != null ? String(params.class_id) : ''}
+                onChange={e => updateParams({ class_id: e.target.value === '' ? undefined : Number(e.target.value), page: 1 })}
+              >
+                <MenuItem value=''>Toutes les classes</MenuItem>
+                {classes.map(c => (
+                  <MenuItem key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </CardContent>
+      </Card>
+
       <DataTable {...tableConfig} />
 
       {/* Form Dialog (Add/Edit) */}
@@ -588,6 +650,19 @@ const StudentListTable = () => {
           onEnrollmentComplete={handleEnrollmentSuccess}
         />
       )}
+
+      {/* Re-enrollment Dialog (single student) */}
+      <StudentReenrollDialog
+        open={reenrollDialogOpen}
+        student={reenrollStudent}
+        onClose={() => setReenrollDialogOpen(false)}
+        onSuccess={(m) => { notify(m); refresh() }}
+        onError={(m) => notify(m, 'error')}
+      />
+
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(p => ({ ...p, open: false }))}>
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(p => ({ ...p, open: false }))}>{snackbar.message}</Alert>
+      </Snackbar>
     </>
   )
 }

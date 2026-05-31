@@ -79,6 +79,9 @@ class StudentService {
       if (params?.programme_id) {
         queryParams.append('programme_id', String(params.programme_id));
       }
+      if (params?.class_id) {
+        queryParams.append('class_id', String(params.class_id));
+      }
       if (params?.sex) {
         queryParams.append('sex', params.sex);
       }
@@ -100,9 +103,23 @@ class StudentService {
       const queryString = queryParams.toString();
       const url = queryString ? `${this.baseUrl}?${queryString}` : this.baseUrl;
 
-      const response = await client.get<PaginatedStudentsResponse>(url);
+      const response = await client.get<
+        PaginatedStudentsResponse & { meta?: { current_page: number; last_page: number; per_page: number; total: number } }
+      >(url);
 
-      return response.data;
+      const body = response.data;
+
+      // The backend wraps pagination under `meta` ({ data, meta: {...} }); the
+      // hook expects a flat shape. Normalize so pagination isn't undefined.
+      const meta = body.meta;
+
+      return {
+        data: body.data ?? [],
+        current_page: meta?.current_page ?? body.current_page ?? 1,
+        last_page: meta?.last_page ?? body.last_page ?? 1,
+        per_page: meta?.per_page ?? body.per_page ?? (params?.per_page ?? 15),
+        total: meta?.total ?? body.total ?? (body.data?.length ?? 0),
+      };
     } catch (error) {
       console.error('Error fetching students:', error);
       throw error;

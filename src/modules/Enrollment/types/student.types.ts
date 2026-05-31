@@ -169,6 +169,7 @@ export interface StudentFilters {
   search?: string;
   status?: StudentStatus;
   programme_id?: number;
+  class_id?: number;
   sex?: Sex;
   nationality?: string;
   year_enrolled?: number;

@@ -48,6 +48,7 @@ function toArray<T>(resp: unknown): T[] {
 }
 
 interface Option { id: number; name: string; code?: string }
+interface Semester { id: number; name: string; academic_year?: { name?: string; is_active?: boolean } }
 interface EvaluationRow {
   id: number;
   type: string;
@@ -89,7 +90,12 @@ export const SecondaryGradeEntry: React.FC = () => {
   const { data: semestersResp } = useQuery({ queryKey: ['semesters'], queryFn: async () => (await api().get('/admin/semesters')).data });
   const classes = useMemo(() => toArray<Option>(classesResp), [classesResp]);
   const subjects = useMemo(() => toArray<Option>(subjectsResp), [subjectsResp]);
-  const semesters = useMemo(() => toArray<Option>(semestersResp), [semestersResp]);
+  // N'afficher que les périodes de l'année scolaire active (évite les doublons S1/S2 des autres années).
+  const semesters = useMemo(() => {
+    const all = toArray<Semester>(semestersResp);
+    const activeOnly = all.filter(s => s.academic_year?.is_active);
+    return activeOnly.length ? activeOnly : all;
+  }, [semestersResp]);
 
   const canQuery = !!classId && !!subjectId;
   const { data: evalsResp, isLoading: evalsLoading } = useQuery({
@@ -166,33 +172,39 @@ export const SecondaryGradeEntry: React.FC = () => {
       {/* Selectors */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Classe</InputLabel>
-                <Select label="Classe" value={classId} onChange={e => { setClassId(String(e.target.value)); setSelectedEval(null); }}>
-                  {classes.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Matière</InputLabel>
-                <Select label="Matière" value={subjectId} onChange={e => { setSubjectId(String(e.target.value)); setSelectedEval(null); }}>
-                  {subjects.map(s => <MenuItem key={s.id} value={s.id}>{s.code ? `${s.code} — ${s.name}` : s.name}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Période</InputLabel>
-                <Select label="Période" value={semesterId} onChange={e => { setSemesterId(String(e.target.value)); setSelectedEval(null); }}>
-                  <MenuItem value="">Toutes</MenuItem>
-                  {semesters.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <TextField
+              select
+              size="small"
+              label="Classe"
+              value={classId}
+              onChange={e => { setClassId(String(e.target.value)); setSelectedEval(null); }}
+              sx={{ flex: 1, minWidth: 220 }}
+            >
+              {classes.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+            </TextField>
+            <TextField
+              select
+              size="small"
+              label="Matière"
+              value={subjectId}
+              onChange={e => { setSubjectId(String(e.target.value)); setSelectedEval(null); }}
+              sx={{ flex: 1, minWidth: 220 }}
+            >
+              {subjects.map(s => <MenuItem key={s.id} value={s.id}>{s.code ? `${s.code} — ${s.name}` : s.name}</MenuItem>)}
+            </TextField>
+            <TextField
+              select
+              size="small"
+              label="Période"
+              value={semesterId}
+              onChange={e => { setSemesterId(String(e.target.value)); setSelectedEval(null); }}
+              sx={{ flex: 1, minWidth: 220 }}
+            >
+              <MenuItem value="">Toutes</MenuItem>
+              {semesters.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
+            </TextField>
+          </Box>
         </CardContent>
       </Card>
 

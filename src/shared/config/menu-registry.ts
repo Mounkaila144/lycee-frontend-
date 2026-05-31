@@ -19,6 +19,7 @@ import { attendanceMenuConfig } from '@/modules/Attendance/menu.config';
 import { examsMenuConfig } from '@/modules/Exams/menu.config';
 import { financeMenuConfig } from '@/modules/Finance/menu.config';
 import { payrollMenuConfig } from '@/modules/Payroll/menu.config';
+import { teacherPayrollMenuConfig } from '@/modules/TeacherPayroll/menu.config';
 import { documentsMenuConfig } from '@/modules/Documents/menu.config';
 // Modules ajoutés par le sprint role-coverage (Stories Parent/Étudiant/Messaging/Settings)
 import { portailParentMenuConfig } from '@/modules/PortailParent/menu.config';
@@ -46,6 +47,7 @@ const moduleMenuConfigs: ModuleMenuConfig[] = [
   examsMenuConfig,
   financeMenuConfig,
   payrollMenuConfig,
+  teacherPayrollMenuConfig,
   documentsMenuConfig,
   portailParentMenuConfig,
   portailEtudiantMenuConfig,

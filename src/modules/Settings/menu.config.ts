@@ -8,6 +8,18 @@ export const settingsMenuConfig: ModuleMenuConfig = {
   module: 'Settings',
   menus: [
     {
+      id: 'school-settings',
+      label: 'Paramètres',
+      route: '/admin/settings/school',
+      icon: { type: 'emoji', value: '🏫' },
+      order: 199,
+      module: 'Settings',
+      roles: ['admin'],
+      requiredRoles: ['Administrator'],
+      isVisible: true,
+      isActive: true,
+    },
+    {
       id: 'tenant-settings',
       label: 'Réglages',
       route: '/admin/settings/tenant',

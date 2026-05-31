@@ -14,6 +14,7 @@ import { useStudents } from '../hooks/useStudents';
 
 // Service Imports
 import { programmeService } from '@/modules/StructureAcademique/admin/services/programmeService';
+import { createApiClient } from '@/shared/lib/api-client';
 import { useTenant } from '@/shared/lib/tenant-context';
 
 // Type Imports
@@ -39,6 +40,7 @@ interface StudentsContextType {
   deleteStudent: (studentId: number) => Promise<void>;
   programmes: Programme[];
   loadingProgrammes: boolean;
+  classes: { id: number; name: string }[];
 }
 
 const StudentsContext = createContext<StudentsContextType | undefined>(undefined);
@@ -62,6 +64,18 @@ export const StudentList = () => {
   const { tenantId } = useTenant();
   const [programmes, setProgrammes] = useState<Programme[]>([]);
   const [loadingProgrammes, setLoadingProgrammes] = useState(false);
+  const [classes, setClasses] = useState<{ id: number; name: string }[]>([]);
+
+  // Load classes once for the secondary "Classe" filter
+  useEffect(() => {
+    createApiClient(tenantId || undefined)
+      .get('/admin/classes', { params: { per_page: 100 } })
+      .then(res => {
+        const raw = (res.data?.data ?? res.data) as unknown;
+        setClasses(Array.isArray(raw) ? (raw as { id: number; name: string }[]) : []);
+      })
+      .catch(() => setClasses([]));
+  }, [tenantId]);
 
   // Load programmes once when component mounts
   useEffect(() => {
@@ -85,7 +99,7 @@ export const StudentList = () => {
   }, [tenantId]);
 
   return (
-    <StudentsContext.Provider value={{ ...studentsData, programmes, loadingProgrammes }}>
+    <StudentsContext.Provider value={{ ...studentsData, programmes, loadingProgrammes, classes }}>
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
           <StudentListTable />

@@ -16,10 +16,16 @@
     ],
     "deny": []
   },
+  "enabledMcpjsonServers": [
+    "chrome-devtools"
+  ],
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["@anthropic/claude-mcp-devtools@latest"]
+      "args": [
+        "@anthropic/claude-mcp-devtools@latest"
+      ]
     }
-  }
+  },
+  "enableAllProjectMcpServers": true
 }
