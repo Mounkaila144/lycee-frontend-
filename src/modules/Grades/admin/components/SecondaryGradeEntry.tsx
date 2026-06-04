@@ -88,8 +88,29 @@ export const SecondaryGradeEntry: React.FC = () => {
   const { data: classesResp } = useQuery({ queryKey: ['classes'], queryFn: async () => (await api().get('/admin/classes')).data });
   const { data: subjectsResp } = useQuery({ queryKey: ['subjects'], queryFn: async () => (await api().get('/admin/subjects')).data });
   const { data: semestersResp } = useQuery({ queryKey: ['semesters'], queryFn: async () => (await api().get('/admin/semesters')).data });
-  const classes = useMemo(() => toArray<Option>(classesResp), [classesResp]);
-  const subjects = useMemo(() => toArray<Option>(subjectsResp), [subjectsResp]);
+  // Teaching scope: a Professeur only sees the classes/subjects they are assigned to.
+  const { data: scopeResp } = useQuery({ queryKey: ['my-teaching-assignments'], queryFn: async () => (await api().get('/admin/my-teaching-assignments')).data });
+  const scope = (scopeResp as any)?.data ?? { is_restricted: false, assignments: [] };
+  const isRestricted: boolean = !!scope.is_restricted;
+  const assignments: { class_id: number; subject_id: number }[] = scope.assignments ?? [];
+
+  const allClasses = useMemo(() => toArray<Option>(classesResp), [classesResp]);
+  const allSubjects = useMemo(() => toArray<Option>(subjectsResp), [subjectsResp]);
+
+  // Restrict the class list to assigned classes for teachers.
+  const classes = useMemo(() => {
+    if (!isRestricted) return allClasses;
+    const allowed = new Set(assignments.map(a => a.class_id));
+    return allClasses.filter(c => allowed.has(c.id));
+  }, [isRestricted, assignments, allClasses]);
+
+  // Restrict the subject list to subjects assigned within the selected class.
+  const subjects = useMemo(() => {
+    if (!isRestricted) return allSubjects;
+    const cid = Number(classId);
+    const allowed = new Set(assignments.filter(a => a.class_id === cid).map(a => a.subject_id));
+    return allSubjects.filter(s => allowed.has(s.id));
+  }, [isRestricted, assignments, allSubjects, classId]);
   // N'afficher que les périodes de l'année scolaire active (évite les doublons S1/S2 des autres années).
   const semesters = useMemo(() => {
     const all = toArray<Semester>(semestersResp);
@@ -178,7 +199,7 @@ export const SecondaryGradeEntry: React.FC = () => {
               size="small"
               label="Classe"
               value={classId}
-              onChange={e => { setClassId(String(e.target.value)); setSelectedEval(null); }}
+              onChange={e => { setClassId(String(e.target.value)); setSubjectId(''); setSelectedEval(null); }}
               sx={{ flex: 1, minWidth: 220 }}
             >
               {classes.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}

@@ -26,6 +26,7 @@ import UserAddModal from './UserAddModal'
 import UserEditModal from './UserEditModal'
 import { RolesManagementDialog } from './RolesManagementDialog'
 import { PermissionsManagementDialog } from './PermissionsManagementDialog'
+import { TeacherAssignmentsDialog } from './TeacherAssignmentsDialog'
 
 // Shared DataTable Components
 import { DataTable, StandardMobileCard } from '@/components/shared/DataTable'
@@ -90,6 +91,7 @@ const UserListTable = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [rolesDialogOpen, setRolesDialogOpen] = useState(false)
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false)
+  const [assignmentsUser, setAssignmentsUser] = useState<User | null>(null)
 
   // Removed complex column filters - API only supports simple filters
 
@@ -313,6 +315,15 @@ const UserListTable = () => {
             <IconButton size='small' onClick={() => handleOpenEditModal(row.original)}>
               <i className='ri-edit-box-line text-textSecondary' />
             </IconButton>
+            {row.original.roles?.includes('Professeur') && (
+              <IconButton
+                size='small'
+                title={t('Teaching assignments')}
+                onClick={() => setAssignmentsUser(row.original)}
+              >
+                <i className='ri-book-2-line text-textSecondary' />
+              </IconButton>
+            )}
           </div>
         ),
         enableSorting: false
@@ -469,6 +480,13 @@ const UserListTable = () => {
       <PermissionsManagementDialog
         open={permissionsDialogOpen}
         onClose={() => setPermissionsDialogOpen(false)}
+      />
+
+      {/* Teaching Assignments Dialog (Professeur only) */}
+      <TeacherAssignmentsDialog
+        open={!!assignmentsUser}
+        onClose={() => setAssignmentsUser(null)}
+        teacher={assignmentsUser}
       />
     </>
   )

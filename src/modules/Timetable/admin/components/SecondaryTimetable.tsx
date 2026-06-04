@@ -49,6 +49,15 @@ interface Slot {
   teacher?: { id: number; name: string } | null;
 }
 
+interface Assignment {
+  id: number;
+  teacher_id: number;
+  class_id: number;
+  subject_id: number;
+  subject?: { id: number; name: string; code?: string } | null;
+  teacher?: { id: number; firstname?: string; lastname?: string; username?: string } | null;
+}
+
 export const SecondaryTimetable: React.FC = () => {
   const qc = useQueryClient();
   const [classId, setClassId] = useState('');
@@ -59,11 +68,37 @@ export const SecondaryTimetable: React.FC = () => {
   const [form, setForm] = useState({ subject_id: '', teacher_id: '', day_of_week: 'Lundi', start_time: '08:00', end_time: '09:00', room_name: '' });
 
   const { data: classesResp } = useQuery({ queryKey: ['classes'], queryFn: async () => (await api().get('/admin/classes')).data });
-  const { data: subjectsResp } = useQuery({ queryKey: ['subjects'], queryFn: async () => (await api().get('/admin/subjects')).data });
-  const { data: teachersResp } = useQuery({ queryKey: ['teachers'], queryFn: async () => (await api().get('/admin/teachers')).data });
   const classes = useMemo(() => toArray<{ id: number; name: string }>(classesResp), [classesResp]);
-  const subjects = useMemo(() => toArray<{ id: number; name: string; code?: string }>(subjectsResp), [subjectsResp]);
-  const teachers = useMemo(() => toArray<any>(teachersResp).map(t => ({ id: t.id, name: t.full_name || `${t.firstname ?? ''} ${t.lastname ?? ''}`.trim() || t.username })), [teachersResp]);
+
+  // Teaching assignments for the selected class drive who can teach what here:
+  // the admin may only schedule a teacher on a subject they are assigned to in
+  // this class. No assignment ⇒ not selectable.
+  const { data: assignmentsResp } = useQuery({
+    queryKey: ['class-assignments', classId],
+    queryFn: async () => (await api().get('/admin/teacher-assignments', { params: { class_id: classId } })).data,
+    enabled: !!classId,
+  });
+  const assignments = useMemo(() => toArray<Assignment>(assignmentsResp), [assignmentsResp]);
+
+  const teacherName = (a: Assignment): string =>
+    a.teacher ? (`${a.teacher.firstname ?? ''} ${a.teacher.lastname ?? ''}`.trim() || a.teacher.username || `#${a.teacher_id}`) : `#${a.teacher_id}`;
+
+  // Distinct teachers assigned to this class.
+  const teachers = useMemo(() => {
+    const map = new Map<number, { id: number; name: string }>();
+    assignments.forEach(a => { if (!map.has(a.teacher_id)) map.set(a.teacher_id, { id: a.teacher_id, name: teacherName(a) }); });
+    return Array.from(map.values());
+  }, [assignments]);
+
+  // Subjects the currently picked teacher is assigned to in this class.
+  const subjectsForTeacher = useMemo(() => {
+    if (!form.teacher_id) return [];
+    const map = new Map<number, { id: number; name: string; code?: string }>();
+    assignments
+      .filter(a => a.teacher_id === Number(form.teacher_id) && a.subject)
+      .forEach(a => { map.set(a.subject!.id, a.subject!); });
+    return Array.from(map.values());
+  }, [assignments, form.teacher_id]);
 
   const { data: slotsResp, isLoading } = useQuery({
     queryKey: ['class-slots', classId],
@@ -107,7 +142,7 @@ export const SecondaryTimetable: React.FC = () => {
               {classes.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button variant="contained" disabled={!classId} onClick={() => setCreateOpen(true)}>+ Nouveau créneau</Button>
+          <Button variant="contained" disabled={!classId} onClick={() => { setForm({ subject_id: '', teacher_id: '', day_of_week: 'Lundi', start_time: '08:00', end_time: '09:00', room_name: '' }); setCreateOpen(true); }}>+ Nouveau créneau</Button>
         </Box>
       </Box>
 
@@ -150,17 +185,25 @@ export const SecondaryTimetable: React.FC = () => {
         <DialogTitle>Nouveau créneau</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel>Matière</InputLabel>
-              <Select label="Matière" value={form.subject_id} onChange={e => setForm(f => ({ ...f, subject_id: String(e.target.value) }))}>
-                {subjects.map(s => <MenuItem key={s.id} value={s.id}>{s.code ? `${s.code} — ${s.name}` : s.name}</MenuItem>)}
-              </Select>
-            </FormControl>
+            {assignments.length === 0 && (
+              <Alert severity="warning">
+                Aucun enseignant n'est affecté à cette classe. Affectez d'abord les matières aux enseignants (liste des utilisateurs → « Matières enseignées »).
+              </Alert>
+            )}
             <FormControl fullWidth>
               <InputLabel>Enseignant</InputLabel>
-              <Select label="Enseignant" value={form.teacher_id} onChange={e => setForm(f => ({ ...f, teacher_id: String(e.target.value) }))}>
-                <MenuItem value="">—</MenuItem>
+              <Select
+                label="Enseignant"
+                value={form.teacher_id}
+                onChange={e => setForm(f => ({ ...f, teacher_id: String(e.target.value), subject_id: '' }))}
+              >
                 {teachers.map(t => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth disabled={!form.teacher_id}>
+              <InputLabel>Matière</InputLabel>
+              <Select label="Matière" value={form.subject_id} onChange={e => setForm(f => ({ ...f, subject_id: String(e.target.value) }))}>
+                {subjectsForTeacher.map(s => <MenuItem key={s.id} value={s.id}>{s.code ? `${s.code} — ${s.name}` : s.name}</MenuItem>)}
               </Select>
             </FormControl>
             <FormControl fullWidth>
@@ -178,7 +221,7 @@ export const SecondaryTimetable: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateOpen(false)}>Annuler</Button>
-          <Button variant="contained" disabled={!form.subject_id || createMutation.isPending} onClick={() => createMutation.mutate()}>
+          <Button variant="contained" disabled={!form.teacher_id || !form.subject_id || createMutation.isPending} onClick={() => createMutation.mutate()}>
             {createMutation.isPending ? 'Ajout…' : 'Ajouter'}
           </Button>
         </DialogActions>
