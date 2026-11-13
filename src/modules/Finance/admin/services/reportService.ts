@@ -2,87 +2,75 @@ import { createApiClient } from '@/shared/lib/api-client';
 
 import type {
   FinanceDashboardData,
-  PaymentJournalEntry,
+  PaymentJournal,
   AgingBalance,
-  UnpaidStatement,
+  UnpaidStatementsReport,
   CashFlowForecast,
-  CollectionStatistics,
   AccountingExport,
-  PaginatedResponse,
+  AccountingExportParams,
 } from '../../types';
 
+/**
+ * Rapports financiers — GET /admin/finance/reports/*.
+ *
+ * Le backend enveloppe toutes les réponses dans `{ data: ... }` :
+ * chaque méthode renvoie directement le contenu de `data`.
+ */
 class ReportService {
   private baseUrl = '/admin/finance/reports';
 
   async getDashboard(academicYearId?: number, tenantId?: string): Promise<FinanceDashboardData> {
     const client = createApiClient(tenantId);
-    const response = await client.get<FinanceDashboardData>(
-      `${this.baseUrl}/dashboard`,
-      { params: { academic_year_id: academicYearId } },
-    );
 
-    return response.data;
+    const response = await client.get<{ data: FinanceDashboardData }>(`${this.baseUrl}/dashboard`, {
+      params: { academic_year_id: academicYearId },
+    });
+
+    return response.data.data;
   }
 
   async getPaymentJournal(
-    params?: { date_from?: string; date_to?: string; page?: number; per_page?: number },
+    params: { start_date: string; end_date: string; payment_method?: string },
     tenantId?: string,
-  ): Promise<PaginatedResponse<PaymentJournalEntry>> {
+  ): Promise<PaymentJournal> {
     const client = createApiClient(tenantId);
-    const response = await client.get<PaginatedResponse<PaymentJournalEntry>>(
-      `${this.baseUrl}/payment-journal`,
-      { params },
-    );
+    const response = await client.get<{ data: PaymentJournal }>(`${this.baseUrl}/payment-journal`, { params });
 
-    return response.data;
+    return response.data.data;
   }
 
-  async getAgingBalance(academicYearId?: number, tenantId?: string): Promise<AgingBalance[]> {
+  async getAgingBalance(tenantId?: string): Promise<AgingBalance> {
     const client = createApiClient(tenantId);
-    const response = await client.get<AgingBalance[]>(
-      `${this.baseUrl}/aging-balance`,
-      { params: { academic_year_id: academicYearId } },
-    );
+    const response = await client.get<{ data: AgingBalance }>(`${this.baseUrl}/aging-balance`);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async getUnpaidStatements(academicYearId?: number, tenantId?: string): Promise<UnpaidStatement[]> {
+  async getUnpaidStatements(studentId?: number, tenantId?: string): Promise<UnpaidStatementsReport> {
     const client = createApiClient(tenantId);
-    const response = await client.get<UnpaidStatement[]>(
-      `${this.baseUrl}/unpaid-statements`,
-      { params: { academic_year_id: academicYearId } },
-    );
 
-    return response.data;
+    const response = await client.get<{ data: UnpaidStatementsReport }>(`${this.baseUrl}/unpaid-statements`, {
+      params: { student_id: studentId },
+    });
+
+    return response.data.data;
   }
 
-  async getCashFlowForecast(tenantId?: string): Promise<CashFlowForecast[]> {
+  async getCashFlowForecast(months = 6, tenantId?: string): Promise<CashFlowForecast> {
     const client = createApiClient(tenantId);
-    const response = await client.get<CashFlowForecast[]>(`${this.baseUrl}/cash-flow-forecast`);
 
-    return response.data;
+    const response = await client.get<{ data: CashFlowForecast }>(`${this.baseUrl}/cash-flow-forecast`, {
+      params: { months },
+    });
+
+    return response.data.data;
   }
 
-  async getCollectionStatistics(academicYearId?: number, tenantId?: string): Promise<CollectionStatistics> {
+  async exportAccounting(params: AccountingExportParams, tenantId?: string): Promise<AccountingExport> {
     const client = createApiClient(tenantId);
-    const response = await client.get<CollectionStatistics>(
-      `${this.baseUrl}/collection-statistics`,
-      { params: { academic_year_id: academicYearId } },
-    );
+    const response = await client.get<{ data: AccountingExport }>(`${this.baseUrl}/accounting-export`, { params });
 
-    return response.data;
-  }
-
-  async exportAccounting(data: AccountingExport, tenantId?: string): Promise<Blob> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<Blob>(
-      `${this.baseUrl}/accounting-export`,
-      data,
-      { responseType: 'blob' },
-    );
-
-    return response.data;
+    return response.data.data;
   }
 }
 

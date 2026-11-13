@@ -6,3 +6,4 @@ export * from './exception.types';
 export * from './consultation.types';
 export * from './notification.types';
 export * from './report.types';
+export * from './lycee.types';

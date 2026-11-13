@@ -1,365 +1,627 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import MenuItem from '@mui/material/MenuItem';
+import Snackbar from '@mui/material/Snackbar';
+import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Alert from '@mui/material/Alert';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
 import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-
-import type {
-  SalaryScale,
-  PayrollComponent,
-  Advance,
-  AdvanceStatus,
-} from '../../types';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 import {
-  COMPONENT_TYPE_LABELS,
-  COMPONENT_TYPE_COLORS,
-  ADVANCE_STATUS_LABELS,
+  useAdvances,
+  useApproveAdvance,
+  useCreatePayrollComponent,
+  useCreateSalaryScale,
+  useDisburseAdvance,
+  useEmployees,
+  usePayrollComponents,
+  useRequestAdvance,
+  useSalaryScales,
+} from '../hooks';
+import { formatCurrency, formatDate, getPayrollErrorMessage } from '../utils/payrollFormatters';
+import {
   ADVANCE_STATUS_COLORS,
+  ADVANCE_STATUS_LABELS,
+  ADVANCE_TYPE_LABELS,
+  CALCULATION_TYPE_LABELS,
+  COMPONENT_TYPE_LABELS,
+  SALARY_SCALE_TYPE_LABELS,
+} from '../../types';
+import type {
+  Advance,
+  AdvanceType,
+  CalculationType,
+  ComponentType,
+  CreateAdvanceRequest,
+  CreatePayrollComponentRequest,
+  CreateSalaryScaleRequest,
+  DisbursementMethod,
+  PayrollComponent,
+  SalaryScaleType,
 } from '../../types';
 
-// ──── Demo Data ────
+type SnackbarState = { open: boolean; message: string; severity: 'success' | 'error' };
 
-const DEMO_SALARY_SCALES: SalaryScale[] = [
-  { id: 1, name: 'Grille A - Cadre supérieur', code: 'GR-A', grade: 'A', echelon: 1, base_amount: 500000, description: 'Cadres supérieurs et directeurs', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 2, name: 'Grille A - Cadre supérieur échelon 2', code: 'GR-A2', grade: 'A', echelon: 2, base_amount: 550000, description: null, is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 3, name: 'Grille B - Cadre moyen', code: 'GR-B', grade: 'B', echelon: 1, base_amount: 350000, description: 'Enseignants et techniciens', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 4, name: 'Grille C - Agent', code: 'GR-C', grade: 'C', echelon: 1, base_amount: 200000, description: 'Agents administratifs', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 5, name: 'Grille D - Stagiaire', code: 'GR-D', grade: 'D', echelon: 1, base_amount: 100000, description: 'Stagiaires', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-];
+const today = () => new Date().toISOString().slice(0, 10);
 
-const DEMO_COMPONENTS: PayrollComponent[] = [
-  { id: 1, name: 'Prime de rendement', code: 'PRIM-REND', type: 'bonus', is_taxable: true, is_mandatory: false, default_amount: 50000, percentage: null, description: 'Prime trimestrielle de rendement', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 2, name: 'Indemnité de transport', code: 'IND-TRANS', type: 'allowance', is_taxable: false, is_mandatory: true, default_amount: 25000, percentage: null, description: 'Indemnité mensuelle de transport', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 3, name: 'Indemnité de logement', code: 'IND-LOG', type: 'allowance', is_taxable: false, is_mandatory: false, default_amount: 75000, percentage: null, description: null, is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 4, name: 'Heures supplémentaires', code: 'HS', type: 'overtime', is_taxable: true, is_mandatory: false, default_amount: null, percentage: 150, description: 'Taux horaire majoré à 150%', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 5, name: 'Retenue absence', code: 'RET-ABS', type: 'deduction', is_taxable: false, is_mandatory: false, default_amount: null, percentage: null, description: 'Retenue pour absence non justifiée', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-  { id: 6, name: 'Prime d\'ancienneté', code: 'PRIM-ANC', type: 'bonus', is_taxable: true, is_mandatory: true, default_amount: null, percentage: 5, description: '5% par tranche de 2 ans', is_active: true, created_at: '2025-01-01T00:00:00', updated_at: '2025-01-01T00:00:00' },
-];
+const componentValue = (component: PayrollComponent): string => {
+  if (component.calculation_type === 'percentage') return `${Number(component.percentage ?? 0)} %`;
+  if (component.calculation_type === 'fixed') return formatCurrency(component.amount);
 
-const DEMO_ADVANCES: Advance[] = [
-  { id: 1, employee_id: 1, amount: 200000, reason: 'Frais médicaux urgents', requested_date: '2026-03-10', approved_date: '2026-03-12', disbursed_date: '2026-03-13', repayment_months: 3, status: 'disbursed', approved_by: 10, employee: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'EMP-001' }, created_at: '2026-03-10T00:00:00', updated_at: '2026-03-13T00:00:00' },
-  { id: 2, employee_id: 2, amount: 150000, reason: 'Rentrée scolaire enfants', requested_date: '2026-03-15', approved_date: '2026-03-16', disbursed_date: null, repayment_months: 2, status: 'approved', approved_by: 10, employee: { id: 2, firstname: 'Fatima', lastname: 'Moussa', matricule: 'EMP-002' }, created_at: '2026-03-15T00:00:00', updated_at: '2026-03-16T00:00:00' },
-  { id: 3, employee_id: 3, amount: 100000, reason: 'Avance sur salaire', requested_date: '2026-03-20', approved_date: null, disbursed_date: null, repayment_months: 1, status: 'requested', approved_by: null, employee: { id: 3, firstname: 'Ibrahim', lastname: 'Souleymane', matricule: 'EMP-003' }, created_at: '2026-03-20T00:00:00', updated_at: '2026-03-20T00:00:00' },
-];
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
-};
-
-const getAdvanceStatusChipColor = (status: AdvanceStatus): 'default' | 'primary' | 'warning' | 'success' | 'error' => {
-  switch (status) {
-    case 'requested': return 'warning';
-    case 'approved': return 'primary';
-    case 'disbursed': return 'success';
-    case 'rejected': return 'error';
-    case 'repaid': return 'default';
-    default: return 'default';
-  }
+  return `${formatCurrency(component.rate)} / ${component.calculation_type === 'hourly' ? 'h' : 'j'}`;
 };
 
 export const PayrollComponentsDashboard: React.FC = () => {
-  const [tabIndex, setTabIndex] = useState(0);
-  const [createScaleOpen, setCreateScaleOpen] = useState(false);
-  const [createComponentOpen, setCreateComponentOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [tab, setTab] = useState(0);
+  const [snackbar, setSnackbar] = useState<SnackbarState>({ open: false, message: '', severity: 'success' });
+  const [scaleForm, setScaleForm] = useState<CreateSalaryScaleRequest | null>(null);
+  const [componentForm, setComponentForm] = useState<Partial<CreatePayrollComponentRequest> | null>(null);
+  const [advanceForm, setAdvanceForm] = useState<Partial<CreateAdvanceRequest> | null>(null);
+  const [disbursing, setDisbursing] = useState<Advance | null>(null);
+  const [disburseMethod, setDisburseMethod] = useState<DisbursementMethod>('cash');
 
-  const salaryScales = DEMO_SALARY_SCALES;
-  const components = DEMO_COMPONENTS;
-  const advances = DEMO_ADVANCES;
+  const scales = useSalaryScales();
+  const components = usePayrollComponents();
+  const advances = useAdvances();
+  const { data: employeesPage } = useEmployees({ status: 'active', per_page: 200 });
+  const employees = employeesPage?.data ?? [];
 
-  const handleApproveAdvance = useCallback((advance: Advance) => {
-    setSnackbar({ open: true, message: `Avance de ${formatCurrency(advance.amount)} approuvée pour ${advance.employee?.firstname} ${advance.employee?.lastname}`, severity: 'success' });
-  }, []);
+  const createScale = useCreateSalaryScale();
+  const createComponent = useCreatePayrollComponent();
+  const requestAdvance = useRequestAdvance();
+  const approveAdvance = useApproveAdvance();
+  const disburseAdvance = useDisburseAdvance();
 
-  const handleDisburseAdvance = useCallback((advance: Advance) => {
-    setSnackbar({ open: true, message: `Avance de ${formatCurrency(advance.amount)} décaissée`, severity: 'success' });
-  }, []);
+  const notify = (message: string, severity: SnackbarState['severity'] = 'success') =>
+    setSnackbar({ open: true, message, severity });
 
-  const bonusCount = components.filter(c => c.type === 'bonus').length;
-  const allowanceCount = components.filter(c => c.type === 'allowance').length;
-  const deductionCount = components.filter(c => c.type === 'deduction').length;
-  const pendingAdvances = advances.filter(a => a.status === 'requested').length;
+  const onError = (err: unknown) => notify(getPayrollErrorMessage(err), 'error');
+
+  const employeeName = (employee?: { first_name: string; last_name: string }) =>
+    employee ? `${employee.first_name} ${employee.last_name}` : '—';
+
+  const employeeSelect = (value: number | undefined, onChange: (id: number) => void) => (
+    <TextField select label="Employé" value={value ?? ''} onChange={event => onChange(Number(event.target.value))}>
+      {employees.map(employee => (
+        <MenuItem key={employee.id} value={employee.id}>
+          {employee.employee_code} — {employee.first_name} {employee.last_name}
+        </MenuItem>
+      ))}
+    </TextField>
+  );
+
+  const handleCreateScale = () => {
+    if (!scaleForm) return;
+
+    createScale.mutate(scaleForm, {
+      onSuccess: () => {
+        setScaleForm(null);
+        notify('Grille salariale créée');
+      },
+      onError,
+    });
+  };
+
+  const handleCreateComponent = () => {
+    if (!componentForm) return;
+
+    createComponent.mutate(componentForm as CreatePayrollComponentRequest, {
+      onSuccess: () => {
+        setComponentForm(null);
+        notify('Élément de paie créé');
+      },
+      onError,
+    });
+  };
+
+  const handleRequestAdvance = () => {
+    if (!advanceForm) return;
+
+    requestAdvance.mutate(advanceForm as CreateAdvanceRequest, {
+      onSuccess: () => {
+        setAdvanceForm(null);
+        notify('Demande d’avance enregistrée');
+      },
+      onError,
+    });
+  };
+
+  const handleDisburse = () => {
+    if (!disbursing) return;
+
+    disburseAdvance.mutate(
+      { advanceId: disbursing.id, data: { method: disburseMethod } },
+      {
+        onSuccess: () => {
+          setDisbursing(null);
+          notify('Avance décaissée');
+        },
+        onError,
+      },
+    );
+  };
+
+  const loadingOrError = (query: { isLoading: boolean; isError: boolean; error: unknown }) => (
+    <>
+      {query.isLoading && <CircularProgress size={24} />}
+      {query.isError && <Alert severity="error">{getPayrollErrorMessage(query.error, 'Chargement impossible')}</Alert>}
+    </>
+  );
 
   return (
     <Box sx={{ p: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">Administration</Link>
-        <Link underline="hover" color="inherit" href="#">Paie & RH</Link>
-        <Typography color="text.primary">Éléments de Paie</Typography>
-      </Breadcrumbs>
-
       <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
         Éléments de Paie
       </Typography>
 
-      {/* Stats Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[
-          { label: 'Grilles salariales', value: salaryScales.length, color: '#1976d2' },
-          { label: 'Primes', value: bonusCount, color: '#4caf50' },
-          { label: 'Indemnités / Retenues', value: allowanceCount + deductionCount, color: '#ff9800' },
-          { label: 'Avances en attente', value: pendingAdvances, color: '#f44336' },
-        ].map((stat, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 2 }}>
+        <Tab label="Primes, indemnités & retenues" />
+        <Tab label="Avances sur salaire" />
+        <Tab label="Grilles salariales" />
+      </Tabs>
 
-      {/* Tabs */}
-      <Card>
-        <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ px: 2, pt: 1 }}>
-          <Tab label="Grilles Salariales" />
-          <Tab label="Composantes de Paie" />
-          <Tab label="Avances sur Salaire" />
-        </Tabs>
-        <CardContent>
-          {/* Tab 0: Salary Scales */}
-          {tabIndex === 0 && (
-            <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6">Grilles Salariales</Typography>
-                <Button variant="contained" size="small" onClick={() => setCreateScaleOpen(true)}>
-                  + Nouvelle Grille
-                </Button>
-              </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Code</TableCell>
-                      <TableCell>Nom</TableCell>
-                      <TableCell>Grade</TableCell>
-                      <TableCell>Échelon</TableCell>
-                      <TableCell>Montant de base</TableCell>
-                      <TableCell>Statut</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {salaryScales.map(scale => (
-                      <TableRow key={scale.id} hover>
-                        <TableCell><Typography fontWeight="medium">{scale.code}</Typography></TableCell>
-                        <TableCell>
-                          <Typography fontWeight="medium">{scale.name}</Typography>
-                          {scale.description && <Typography variant="caption" color="text.secondary">{scale.description}</Typography>}
-                        </TableCell>
-                        <TableCell>{scale.grade}</TableCell>
-                        <TableCell>{scale.echelon}</TableCell>
-                        <TableCell><Typography fontWeight="bold">{formatCurrency(scale.base_amount)}</Typography></TableCell>
-                        <TableCell>
-                          <Chip size="small" label={scale.is_active ? 'Actif' : 'Inactif'} color={scale.is_active ? 'success' : 'default'} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
+      {tab === 0 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h6">Éléments par employé</Typography>
+              <Button
+                variant="contained"
+                onClick={() => setComponentForm({ component_type: 'allowance', calculation_type: 'fixed', name: '' })}
+              >
+                + Nouvel élément
+              </Button>
+            </Box>
+            {loadingOrError(components)}
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Employé</TableCell>
+                  <TableCell>Libellé</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Calcul</TableCell>
+                  <TableCell align="right">Valeur</TableCell>
+                  <TableCell>Statut</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(components.data ?? []).length === 0 && !components.isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      Aucun élément de paie.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {(components.data ?? []).map(component => (
+                  <TableRow key={component.id}>
+                    <TableCell>{employeeName(component.employee)}</TableCell>
+                    <TableCell>{component.name}</TableCell>
+                    <TableCell>
+                      <Chip
+                        size="small"
+                        label={COMPONENT_TYPE_LABELS[component.component_type] ?? component.component_type}
+                        color={component.component_type === 'deduction' ? 'error' : 'primary'}
+                      />
+                    </TableCell>
+                    <TableCell>{CALCULATION_TYPE_LABELS[component.calculation_type]}</TableCell>
+                    <TableCell align="right">{componentValue(component)}</TableCell>
+                    <TableCell>{component.status === 'active' ? 'Actif' : component.status}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Tab 1: Payroll Components */}
-          {tabIndex === 1 && (
-            <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6">Composantes de Paie</Typography>
-                <Button variant="contained" size="small" onClick={() => setCreateComponentOpen(true)}>
-                  + Nouvelle Composante
-                </Button>
-              </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Code</TableCell>
-                      <TableCell>Nom</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Montant / %</TableCell>
-                      <TableCell>Imposable</TableCell>
-                      <TableCell>Obligatoire</TableCell>
-                      <TableCell>Statut</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {components.map(comp => (
-                      <TableRow key={comp.id} hover>
-                        <TableCell><Typography fontWeight="medium">{comp.code}</Typography></TableCell>
-                        <TableCell>
-                          <Typography fontWeight="medium">{comp.name}</Typography>
-                          {comp.description && <Typography variant="caption" color="text.secondary">{comp.description}</Typography>}
-                        </TableCell>
-                        <TableCell>
-                          <Chip size="small" label={COMPONENT_TYPE_LABELS[comp.type]} sx={{ bgcolor: COMPONENT_TYPE_COLORS[comp.type], color: 'white' }} />
-                        </TableCell>
-                        <TableCell>
-                          {comp.default_amount ? formatCurrency(comp.default_amount) : comp.percentage ? `${comp.percentage}%` : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Chip size="small" label={comp.is_taxable ? 'Oui' : 'Non'} color={comp.is_taxable ? 'warning' : 'default'} variant="outlined" />
-                        </TableCell>
-                        <TableCell>
-                          <Chip size="small" label={comp.is_mandatory ? 'Oui' : 'Non'} color={comp.is_mandatory ? 'primary' : 'default'} variant="outlined" />
-                        </TableCell>
-                        <TableCell>
-                          <Chip size="small" label={comp.is_active ? 'Actif' : 'Inactif'} color={comp.is_active ? 'success' : 'default'} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
+      {tab === 1 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h6">Avances</Typography>
+              <Button
+                variant="contained"
+                onClick={() => setAdvanceForm({ advance_type: 'salary_advance', number_of_installments: 1, reason: '' })}
+              >
+                + Demande d’avance
+              </Button>
+            </Box>
+            {loadingOrError(advances)}
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>N°</TableCell>
+                  <TableCell>Employé</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell align="right">Montant</TableCell>
+                  <TableCell align="right">Solde</TableCell>
+                  <TableCell>Demandée le</TableCell>
+                  <TableCell>Statut</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(advances.data ?? []).length === 0 && !advances.isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      Aucune avance.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {(advances.data ?? []).map(advance => (
+                  <TableRow key={advance.id}>
+                    <TableCell>{advance.advance_number}</TableCell>
+                    <TableCell>{employeeName(advance.employee)}</TableCell>
+                    <TableCell>{ADVANCE_TYPE_LABELS[advance.advance_type]}</TableCell>
+                    <TableCell align="right">{formatCurrency(advance.amount)}</TableCell>
+                    <TableCell align="right">{formatCurrency(advance.balance)}</TableCell>
+                    <TableCell>{formatDate(advance.request_date)}</TableCell>
+                    <TableCell>
+                      <Chip
+                        size="small"
+                        label={ADVANCE_STATUS_LABELS[advance.status]}
+                        color={ADVANCE_STATUS_COLORS[advance.status]}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      {advance.status === 'pending' && (
+                        <Button
+                          size="small"
+                          disabled={approveAdvance.isPending}
+                          onClick={() =>
+                            approveAdvance.mutate(advance.id, { onSuccess: () => notify('Avance approuvée'), onError })
+                          }
+                        >
+                          Approuver
+                        </Button>
+                      )}
+                      {advance.status === 'approved' && (
+                        <Button size="small" onClick={() => setDisbursing(advance)}>
+                          Décaisser
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Tab 2: Advances */}
-          {tabIndex === 2 && (
-            <>
-              <Typography variant="h6" sx={{ mb: 2 }}>Avances sur Salaire</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Employé</TableCell>
-                      <TableCell>Montant</TableCell>
-                      <TableCell>Motif</TableCell>
-                      <TableCell>Remboursement</TableCell>
-                      <TableCell>Date demande</TableCell>
-                      <TableCell>Statut</TableCell>
-                      <TableCell align="center">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {advances.map(advance => (
-                      <TableRow key={advance.id} hover>
-                        <TableCell>
-                          <Typography fontWeight="medium">{advance.employee?.firstname} {advance.employee?.lastname}</Typography>
-                          <Typography variant="caption" color="text.secondary">{advance.employee?.matricule}</Typography>
-                        </TableCell>
-                        <TableCell><Typography fontWeight="bold">{formatCurrency(advance.amount)}</Typography></TableCell>
-                        <TableCell>{advance.reason || '-'}</TableCell>
-                        <TableCell>{advance.repayment_months} mois</TableCell>
-                        <TableCell>{new Date(advance.requested_date).toLocaleDateString('fr-FR')}</TableCell>
-                        <TableCell>
-                          <Chip size="small" label={ADVANCE_STATUS_LABELS[advance.status]} color={getAdvanceStatusChipColor(advance.status)} />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                            {advance.status === 'requested' && (
-                              <Button size="small" variant="contained" color="primary" onClick={() => handleApproveAdvance(advance)}>
-                                Approuver
-                              </Button>
-                            )}
-                            {advance.status === 'approved' && (
-                              <Button size="small" variant="contained" color="success" onClick={() => handleDisburseAdvance(advance)}>
-                                Décaisser
-                              </Button>
-                            )}
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      {tab === 2 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h6">Grilles salariales</Typography>
+              <Button
+                variant="contained"
+                onClick={() =>
+                  setScaleForm({
+                    code: '',
+                    name: '',
+                    type: 'teaching',
+                    effective_from: today(),
+                    grades: [{ grade: '', min_salary: 0, max_salary: 0 }],
+                  })
+                }
+              >
+                + Nouvelle grille
+              </Button>
+            </Box>
+            {loadingOrError(scales)}
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Code</TableCell>
+                  <TableCell>Nom</TableCell>
+                  <TableCell>Catégorie</TableCell>
+                  <TableCell>Échelons</TableCell>
+                  <TableCell>En vigueur depuis</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(scales.data ?? []).length === 0 && !scales.isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      Aucune grille salariale.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {(scales.data ?? []).map(scale => (
+                  <TableRow key={scale.id}>
+                    <TableCell>{scale.code}</TableCell>
+                    <TableCell>{scale.name}</TableCell>
+                    <TableCell>{SALARY_SCALE_TYPE_LABELS[scale.type]}</TableCell>
+                    <TableCell>
+                      {(scale.grades ?? []).map(grade => (
+                        <Typography key={grade.grade} variant="body2">
+                          {grade.grade} : {formatCurrency(grade.min_salary)} – {formatCurrency(grade.max_salary)}
+                        </Typography>
+                      ))}
+                    </TableCell>
+                    <TableCell>{formatDate(scale.effective_from)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Create Salary Scale Dialog */}
-      <Dialog open={createScaleOpen} onClose={() => setCreateScaleOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Nouvelle Grille Salariale</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="Nom" fullWidth placeholder="Ex: Grille A - Cadre supérieur" />
-            <TextField label="Code" fullWidth placeholder="Ex: GR-A" />
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6 }}>
-                <TextField label="Grade" fullWidth placeholder="Ex: A" />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField label="Échelon" type="number" fullWidth defaultValue={1} />
-              </Grid>
-            </Grid>
-            <TextField label="Montant de base (FCFA)" type="number" fullWidth placeholder="Ex: 500000" />
-            <TextField label="Description" fullWidth multiline rows={2} />
-          </Box>
-        </DialogContent>
+      {/* Nouvel élément de paie */}
+      <Dialog open={!!componentForm} onClose={() => setComponentForm(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Nouvel élément de paie</DialogTitle>
+        {componentForm && (
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              {employeeSelect(componentForm.employee_id, id => setComponentForm({ ...componentForm, employee_id: id }))}
+              <TextField
+                select
+                label="Type"
+                value={componentForm.component_type}
+                onChange={event =>
+                  setComponentForm({ ...componentForm, component_type: event.target.value as ComponentType })
+                }
+              >
+                {Object.entries(COMPONENT_TYPE_LABELS).map(([value, label]) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Libellé"
+                value={componentForm.name ?? ''}
+                onChange={event => setComponentForm({ ...componentForm, name: event.target.value })}
+              />
+              <TextField
+                select
+                label="Mode de calcul"
+                value={componentForm.calculation_type}
+                onChange={event =>
+                  setComponentForm({ ...componentForm, calculation_type: event.target.value as CalculationType })
+                }
+              >
+                {(['fixed', 'percentage'] as CalculationType[]).map(value => (
+                  <MenuItem key={value} value={value}>
+                    {CALCULATION_TYPE_LABELS[value]}
+                  </MenuItem>
+                ))}
+              </TextField>
+              {componentForm.calculation_type === 'percentage' ? (
+                <TextField
+                  label="Pourcentage du salaire de base"
+                  type="number"
+                  value={componentForm.percentage ?? ''}
+                  onChange={event => setComponentForm({ ...componentForm, percentage: Number(event.target.value) })}
+                />
+              ) : (
+                <TextField
+                  label="Montant mensuel (FCFA)"
+                  type="number"
+                  value={componentForm.amount ?? ''}
+                  onChange={event => setComponentForm({ ...componentForm, amount: Number(event.target.value) })}
+                />
+              )}
+            </Box>
+          </DialogContent>
+        )}
         <DialogActions>
-          <Button onClick={() => setCreateScaleOpen(false)}>Annuler</Button>
-          <Button variant="contained" onClick={() => { setCreateScaleOpen(false); setSnackbar({ open: true, message: 'Grille salariale créée', severity: 'success' }); }}>
+          <Button onClick={() => setComponentForm(null)}>Annuler</Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateComponent}
+            disabled={createComponent.isPending || !componentForm?.employee_id || !componentForm?.name}
+          >
             Créer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Create Component Dialog */}
-      <Dialog open={createComponentOpen} onClose={() => setCreateComponentOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Nouvelle Composante de Paie</DialogTitle>
+      {/* Demande d'avance */}
+      <Dialog open={!!advanceForm} onClose={() => setAdvanceForm(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Demande d’avance</DialogTitle>
+        {advanceForm && (
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              {employeeSelect(advanceForm.employee_id, id => setAdvanceForm({ ...advanceForm, employee_id: id }))}
+              <TextField
+                select
+                label="Type"
+                value={advanceForm.advance_type}
+                onChange={event => setAdvanceForm({ ...advanceForm, advance_type: event.target.value as AdvanceType })}
+              >
+                {Object.entries(ADVANCE_TYPE_LABELS).map(([value, label]) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Montant (FCFA)"
+                type="number"
+                value={advanceForm.amount ?? ''}
+                onChange={event => setAdvanceForm({ ...advanceForm, amount: Number(event.target.value) })}
+              />
+              <TextField
+                label="Nombre de mensualités"
+                type="number"
+                value={advanceForm.number_of_installments ?? 1}
+                onChange={event =>
+                  setAdvanceForm({ ...advanceForm, number_of_installments: Math.max(1, Number(event.target.value)) })
+                }
+              />
+              <TextField
+                label="Motif"
+                multiline
+                minRows={2}
+                value={advanceForm.reason ?? ''}
+                onChange={event => setAdvanceForm({ ...advanceForm, reason: event.target.value })}
+              />
+            </Box>
+          </DialogContent>
+        )}
+        <DialogActions>
+          <Button onClick={() => setAdvanceForm(null)}>Annuler</Button>
+          <Button
+            variant="contained"
+            onClick={handleRequestAdvance}
+            disabled={
+              requestAdvance.isPending || !advanceForm?.employee_id || !advanceForm?.amount || !advanceForm?.reason
+            }
+          >
+            Enregistrer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Décaissement */}
+      <Dialog open={!!disbursing} onClose={() => setDisbursing(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Décaisser l’avance {disbursing?.advance_number}</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="Nom" fullWidth placeholder="Ex: Prime de rendement" />
-            <TextField label="Code" fullWidth placeholder="Ex: PRIM-REND" />
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select label="Type" defaultValue="bonus">
-                <MenuItem value="bonus">Prime</MenuItem>
-                <MenuItem value="allowance">Indemnité</MenuItem>
-                <MenuItem value="overtime">Heures supplémentaires</MenuItem>
-                <MenuItem value="deduction">Retenue</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField label="Montant par défaut (FCFA)" type="number" fullWidth />
-            <TextField label="Pourcentage (%)" type="number" fullWidth />
-            <TextField label="Description" fullWidth multiline rows={2} />
-          </Box>
+          <TextField
+            select
+            fullWidth
+            sx={{ mt: 1 }}
+            label="Mode de décaissement"
+            value={disburseMethod}
+            onChange={event => setDisburseMethod(event.target.value as DisbursementMethod)}
+          >
+            <MenuItem value="cash">Espèces</MenuItem>
+            <MenuItem value="bank_transfer">Virement</MenuItem>
+            <MenuItem value="check">Chèque</MenuItem>
+          </TextField>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateComponentOpen(false)}>Annuler</Button>
-          <Button variant="contained" onClick={() => { setCreateComponentOpen(false); setSnackbar({ open: true, message: 'Composante créée', severity: 'success' }); }}>
+          <Button onClick={() => setDisbursing(null)}>Annuler</Button>
+          <Button variant="contained" onClick={handleDisburse} disabled={disburseAdvance.isPending}>
+            Décaisser
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Nouvelle grille */}
+      <Dialog open={!!scaleForm} onClose={() => setScaleForm(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>Nouvelle grille salariale</DialogTitle>
+        {scaleForm && (
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              <TextField
+                label="Code"
+                value={scaleForm.code}
+                onChange={event => setScaleForm({ ...scaleForm, code: event.target.value })}
+              />
+              <TextField
+                label="Nom"
+                value={scaleForm.name}
+                onChange={event => setScaleForm({ ...scaleForm, name: event.target.value })}
+              />
+              <TextField
+                select
+                label="Catégorie"
+                value={scaleForm.type}
+                onChange={event => setScaleForm({ ...scaleForm, type: event.target.value as SalaryScaleType })}
+              >
+                {Object.entries(SALARY_SCALE_TYPE_LABELS).map(([value, label]) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="En vigueur à partir du"
+                type="date"
+                value={scaleForm.effective_from}
+                onChange={event => setScaleForm({ ...scaleForm, effective_from: event.target.value })}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <Typography variant="subtitle2">Échelons</Typography>
+              {scaleForm.grades.map((grade, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    size="small"
+                    label="Échelon"
+                    value={grade.grade}
+                    onChange={event => {
+                      const grades = [...scaleForm.grades];
+
+                      grades[index] = { ...grade, grade: event.target.value };
+                      setScaleForm({ ...scaleForm, grades });
+                    }}
+                  />
+                  <TextField
+                    size="small"
+                    type="number"
+                    label="Min"
+                    value={grade.min_salary || ''}
+                    onChange={event => {
+                      const grades = [...scaleForm.grades];
+
+                      grades[index] = { ...grade, min_salary: Number(event.target.value) };
+                      setScaleForm({ ...scaleForm, grades });
+                    }}
+                  />
+                  <TextField
+                    size="small"
+                    type="number"
+                    label="Max"
+                    value={grade.max_salary || ''}
+                    onChange={event => {
+                      const grades = [...scaleForm.grades];
+
+                      grades[index] = { ...grade, max_salary: Number(event.target.value) };
+                      setScaleForm({ ...scaleForm, grades });
+                    }}
+                  />
+                </Box>
+              ))}
+              <Button
+                size="small"
+                onClick={() =>
+                  setScaleForm({ ...scaleForm, grades: [...scaleForm.grades, { grade: '', min_salary: 0, max_salary: 0 }] })
+                }
+              >
+                + Ajouter un échelon
+              </Button>
+            </Box>
+          </DialogContent>
+        )}
+        <DialogActions>
+          <Button onClick={() => setScaleForm(null)}>Annuler</Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateScale}
+            disabled={createScale.isPending || !scaleForm?.code || !scaleForm?.name}
+          >
             Créer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
         <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
           {snackbar.message}
         </Alert>

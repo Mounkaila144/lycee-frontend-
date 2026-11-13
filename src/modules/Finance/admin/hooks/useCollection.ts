@@ -1,61 +1,58 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { collectionService } from '../services';
-import type {
-  CreateReminderRequest,
-  CreateServiceBlockRequest,
-  CreatePaymentPlanRequest,
-  CreateWriteOffRequest,
-  ReminderFilters,
-} from '../../types';
+import type { BlockListFilters, BlockType, ReminderListFilters } from '../services/collectionService';
+import { collectionService } from '../services/collectionService';
 
-export const useReminders = (filters?: ReminderFilters, tenantId?: string) => {
-  return useQuery({
-    queryKey: ['reminders', filters],
+const invalidateCollection = (qc: ReturnType<typeof useQueryClient>) => {
+  qc.invalidateQueries({ queryKey: ['collection'] });
+  qc.invalidateQueries({ queryKey: ['invoices'] });
+};
+
+export const useCollectionStatistics = (tenantId?: string) =>
+  useQuery({
+    queryKey: ['collection', 'statistics'],
+    queryFn: () => collectionService.getStatistics(tenantId),
+  });
+
+export const useReminders = (filters?: ReminderListFilters, tenantId?: string) =>
+  useQuery({
+    queryKey: ['collection', 'reminders', filters],
     queryFn: () => collectionService.getReminders(filters, tenantId),
+    placeholderData: keepPreviousData,
   });
-};
 
-export const useCreateReminder = (tenantId?: string) => {
+export const useGenerateReminders = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateReminderRequest) =>
-      collectionService.createReminder(data, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['reminders'] });
-    },
+    mutationFn: () => collectionService.generateReminders(tenantId),
+    onSuccess: () => invalidateCollection(qc),
   });
 };
 
-export const useSendReminder = (tenantId?: string) => {
+export const useSendReminders = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (reminderId: number) =>
-      collectionService.sendReminder(reminderId, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['reminders'] });
-    },
+    mutationFn: () => collectionService.sendReminders(tenantId),
+    onSuccess: () => invalidateCollection(qc),
   });
 };
 
-export const useServiceBlocks = (tenantId?: string) => {
-  return useQuery({
-    queryKey: ['service-blocks'],
-    queryFn: () => collectionService.getServiceBlocks(tenantId),
+export const useServiceBlocks = (filters?: BlockListFilters, tenantId?: string) =>
+  useQuery({
+    queryKey: ['collection', 'blocks', filters],
+    queryFn: () => collectionService.getServiceBlocks(filters, tenantId),
+    placeholderData: keepPreviousData,
   });
-};
 
 export const useCreateServiceBlock = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateServiceBlockRequest) =>
+    mutationFn: (data: { student_id: number; block_type: BlockType; reason: string; related_invoice_ids?: number[] }) =>
       collectionService.createServiceBlock(data, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['service-blocks'] });
-    },
+    onSuccess: () => invalidateCollection(qc),
   });
 };
 
@@ -63,18 +60,8 @@ export const useLiftServiceBlock = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (blockId: number) =>
-      collectionService.liftServiceBlock(blockId, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['service-blocks'] });
-    },
-  });
-};
-
-export const usePaymentPlans = (tenantId?: string) => {
-  return useQuery({
-    queryKey: ['payment-plans'],
-    queryFn: () => collectionService.getPaymentPlans(tenantId),
+    mutationFn: (blockId: number) => collectionService.liftServiceBlock(blockId, tenantId),
+    onSuccess: () => invalidateCollection(qc),
   });
 };
 
@@ -82,60 +69,18 @@ export const useCreatePaymentPlan = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePaymentPlanRequest) =>
+    mutationFn: (data: { invoice_id: number; number_of_installments: number; first_due_date?: string }) =>
       collectionService.createPaymentPlan(data, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['payment-plans'] });
-    },
+    onSuccess: () => invalidateCollection(qc),
   });
 };
 
-export const useCancelPaymentPlan = (tenantId?: string) => {
+export const useWriteOff = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (planId: number) =>
-      collectionService.cancelPaymentPlan(planId, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['payment-plans'] });
-    },
-  });
-};
-
-export const useWriteOffs = (tenantId?: string) => {
-  return useQuery({
-    queryKey: ['write-offs'],
-    queryFn: () => collectionService.getWriteOffs(tenantId),
-  });
-};
-
-export const useCreateWriteOff = (tenantId?: string) => {
-  const qc = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateWriteOffRequest) =>
-      collectionService.createWriteOff(data, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['write-offs'] });
-    },
-  });
-};
-
-export const useApproveWriteOff = (tenantId?: string) => {
-  const qc = useQueryClient();
-
-  return useMutation({
-    mutationFn: (writeOffId: number) =>
-      collectionService.approveWriteOff(writeOffId, tenantId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['write-offs'] });
-    },
-  });
-};
-
-export const useCollectionStatistics = (academicYearId?: number, tenantId?: string) => {
-  return useQuery({
-    queryKey: ['collection-statistics', academicYearId],
-    queryFn: () => collectionService.getCollectionStatistics(academicYearId, tenantId),
+    mutationFn: ({ invoiceId, reason }: { invoiceId: number; reason: string }) =>
+      collectionService.writeOff(invoiceId, reason, tenantId),
+    onSuccess: () => invalidateCollection(qc),
   });
 };

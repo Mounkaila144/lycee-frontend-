@@ -15,7 +15,6 @@ import type {
   BatchValidationResult,
   EnrollmentValidationQueryParams,
   EnrollmentValidationStatistics,
-  MyEnrollmentStatus,
 } from '../../types/validation.types';
 
 /**
@@ -331,55 +330,3 @@ export const useValidationStatistics = (academicYearId?: number, programId?: num
   };
 };
 
-/**
- * Custom hook for student's own enrollment status (frontend)
- */
-export const useMyEnrollmentStatus = (academicYearId?: number) => {
-  const { tenantId: rawTenantId } = useTenant();
-  const tenantId = rawTenantId ?? undefined;
-  const [status, setStatus] = useState<MyEnrollmentStatus | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchStatus = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await enrollmentValidationService.getMyEnrollmentStatus(academicYearId, tenantId);
-      setStatus(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch enrollment status'));
-    } finally {
-      setLoading(false);
-    }
-  }, [academicYearId, tenantId]);
-
-  const downloadMyContract = useCallback(async () => {
-    try {
-      const blob = await enrollmentValidationService.downloadMyContract(tenantId);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'contrat_pedagogique.pdf';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to download contract'));
-      throw err;
-    }
-  }, [tenantId]);
-
-  useEffect(() => {
-    fetchStatus();
-  }, [fetchStatus]);
-
-  return {
-    status,
-    loading,
-    error,
-    refresh: fetchStatus,
-    downloadMyContract,
-  };
-};

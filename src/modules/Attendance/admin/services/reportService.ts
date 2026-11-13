@@ -4,20 +4,28 @@ import type {
   AttendanceRates,
   AbsenteeEntry,
   DetailedStatistics,
+  SemesterSummary,
 } from '../../types';
 
 class AttendanceReportService {
   private baseUrl = '/admin/attendance/reports';
 
+  async getSemesters(tenantId?: string): Promise<SemesterSummary[]> {
+    const client = createApiClient(tenantId);
+    const response = await client.get<{ data: SemesterSummary[] }>('/admin/semesters');
+
+    return response.data.data;
+  }
+
   async getAttendanceRates(
     semesterId: number,
-    groupId?: number,
+    classeId?: number,
     tenantId?: string,
   ): Promise<AttendanceRates> {
     const client = createApiClient(tenantId);
     const response = await client.get<AttendanceRates>(
       `${this.baseUrl}/rates`,
-      { params: { semester_id: semesterId, group_id: groupId } },
+      { params: { semester_id: semesterId, classe_id: classeId } },
     );
 
     return response.data;

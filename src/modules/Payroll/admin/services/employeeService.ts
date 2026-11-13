@@ -1,135 +1,88 @@
 import { createApiClient } from '@/shared/lib/api-client';
 
 import type {
-  Employee,
   Contract,
-  Amendment,
-  CreateEmployeeRequest,
-  UpdateEmployeeRequest,
   CreateContractRequest,
-  CreateAmendmentRequest,
-  TerminateContractRequest,
+  CreateEmployeeRequest,
+  Employee,
   EmployeeFilters,
+  MessageResponse,
   PaginatedResponse,
+  TerminateContractRequest,
+  UpdateEmployeeRequest,
 } from '../../types';
 
+/**
+ * Employés et contrats — `Modules/Payroll/Routes/admin.php` (Epic 1).
+ */
 class EmployeeService {
   private baseUrl = '/admin/payroll/employees';
 
-  async getEmployees(
-    filters?: EmployeeFilters,
-    tenantId?: string,
-  ): Promise<PaginatedResponse<Employee>> {
+  async getEmployees(filters?: EmployeeFilters, tenantId?: string): Promise<PaginatedResponse<Employee>> {
     const client = createApiClient(tenantId);
-    const response = await client.get<PaginatedResponse<Employee>>(
-      this.baseUrl,
-      { params: filters },
-    );
+    const response = await client.get<PaginatedResponse<Employee>>(this.baseUrl, { params: filters });
 
     return response.data;
   }
 
-  async getEmployee(
-    employeeId: number,
-    tenantId?: string,
-  ): Promise<Employee> {
+  async getEmployee(employeeId: number, tenantId?: string): Promise<Employee> {
     const client = createApiClient(tenantId);
-    const response = await client.get<Employee>(
-      `${this.baseUrl}/${employeeId}`,
-    );
+    const response = await client.get<{ data: Employee }>(`${this.baseUrl}/${employeeId}`);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async createEmployee(
-    data: CreateEmployeeRequest,
-    tenantId?: string,
-  ): Promise<Employee> {
+  async createEmployee(data: CreateEmployeeRequest, tenantId?: string): Promise<Employee> {
     const client = createApiClient(tenantId);
-    const response = await client.post<Employee>(
-      this.baseUrl,
-      data,
-    );
+    const response = await client.post<MessageResponse<Employee>>(this.baseUrl, data);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async updateEmployee(
-    employeeId: number,
-    data: UpdateEmployeeRequest,
-    tenantId?: string,
-  ): Promise<Employee> {
+  async updateEmployee(employeeId: number, data: UpdateEmployeeRequest, tenantId?: string): Promise<Employee> {
     const client = createApiClient(tenantId);
-    const response = await client.put<Employee>(
-      `${this.baseUrl}/${employeeId}`,
-      data,
-    );
+    const response = await client.put<MessageResponse<Employee>>(`${this.baseUrl}/${employeeId}`, data);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async deleteEmployee(
-    employeeId: number,
-    tenantId?: string,
-  ): Promise<{ message: string }> {
+  async deleteEmployee(employeeId: number, tenantId?: string): Promise<void> {
     const client = createApiClient(tenantId);
-    const response = await client.delete<{ message: string }>(
-      `${this.baseUrl}/${employeeId}`,
-    );
 
-    return response.data;
+    await client.delete(`${this.baseUrl}/${employeeId}`);
   }
 
-  async getContracts(
-    employeeId: number,
-    tenantId?: string,
-  ): Promise<Contract[]> {
+  async createContract(employeeId: number, data: CreateContractRequest, tenantId?: string): Promise<Contract> {
     const client = createApiClient(tenantId);
-    const response = await client.get<Contract[]>(
-      `${this.baseUrl}/${employeeId}/contracts`,
-    );
+    const response = await client.post<MessageResponse<Contract>>(`${this.baseUrl}/${employeeId}/contracts`, data);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async createContract(
-    data: CreateContractRequest,
-    tenantId?: string,
-  ): Promise<Contract> {
+  async activateContract(employeeId: number, contractId: number, tenantId?: string): Promise<Contract> {
     const client = createApiClient(tenantId);
-    const response = await client.post<Contract>(
-      `/admin/payroll/contracts`,
-      data,
+
+    const response = await client.post<MessageResponse<Contract>>(
+      `${this.baseUrl}/${employeeId}/contracts/${contractId}/activate`,
     );
 
-    return response.data;
-  }
-
-  async createAmendment(
-    data: CreateAmendmentRequest,
-    tenantId?: string,
-  ): Promise<Amendment> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<Amendment>(
-      `/admin/payroll/amendments`,
-      data,
-    );
-
-    return response.data;
+    return response.data.data;
   }
 
   async terminateContract(
+    employeeId: number,
     contractId: number,
     data: TerminateContractRequest,
     tenantId?: string,
-  ): Promise<{ message: string; contract: Contract }> {
+  ): Promise<Contract> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; contract: Contract }>(
-      `/admin/payroll/contracts/${contractId}/terminate`,
+
+    const response = await client.post<MessageResponse<Contract>>(
+      `${this.baseUrl}/${employeeId}/contracts/${contractId}/terminate`,
       data,
     );
 
-    return response.data;
+    return response.data.data;
   }
 }
 

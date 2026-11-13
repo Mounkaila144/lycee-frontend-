@@ -7,102 +7,124 @@ import type {
   AssignSupervisorRequest,
   MarkAttendanceRequest,
   ReportIncidentRequest,
-  IncidentFilters,
+  AttendanceStatistics,
+  IncidentsSummary,
 } from '../../types';
 
+/**
+ * Backend : Modules/Exams/Routes/admin.php — préfixe /admin/exams/supervision
+ */
 class ExamSupervisionService {
-  private baseUrl = '/admin/exams';
+  private baseUrl = '/admin/exams/supervision';
 
-  async assignSupervisor(
+  async assignSupervisors(
     sessionId: number,
-    data: AssignSupervisorRequest,
+    supervisors: AssignSupervisorRequest[],
     tenantId?: string,
-  ): Promise<ExamSupervisor> {
+  ): Promise<ExamSupervisor[]> {
     const client = createApiClient(tenantId);
-    const response = await client.post<ExamSupervisor>(
+    const response = await client.post<ExamSupervisor[]>(
       `${this.baseUrl}/sessions/${sessionId}/supervisors`,
-      data,
-    );
-
-    return response.data;
-  }
-
-  async removeSupervisor(
-    sessionId: number,
-    supervisorId: number,
-    tenantId?: string,
-  ): Promise<{ message: string }> {
-    const client = createApiClient(tenantId);
-    const response = await client.delete<{ message: string }>(
-      `${this.baseUrl}/sessions/${sessionId}/supervisors/${supervisorId}`,
+      { supervisors },
     );
 
     return response.data;
   }
 
   async markSupervisorPresent(
-    sessionId: number,
     supervisorId: number,
     tenantId?: string,
-  ): Promise<{ message: string; supervisor: ExamSupervisor }> {
+  ): Promise<ExamSupervisor> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; supervisor: ExamSupervisor }>(
-      `${this.baseUrl}/sessions/${sessionId}/supervisors/${supervisorId}/mark-present`,
+    const response = await client.put<ExamSupervisor>(
+      `${this.baseUrl}/supervisors/${supervisorId}/present`,
     );
 
     return response.data;
   }
 
   async replaceSupervisor(
-    sessionId: number,
     supervisorId: number,
     data: { replacement_teacher_id: number },
     tenantId?: string,
-  ): Promise<{ message: string; supervisor: ExamSupervisor }> {
+  ): Promise<ExamSupervisor> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; supervisor: ExamSupervisor }>(
-      `${this.baseUrl}/sessions/${sessionId}/supervisors/${supervisorId}/replace`,
+    const response = await client.post<ExamSupervisor>(
+      `${this.baseUrl}/supervisors/${supervisorId}/replace`,
       data,
     );
 
     return response.data;
   }
 
-  async getAttendanceSheet(
-    sessionId: number,
+  async getTeacherSchedule(
+    teacherId: number,
+    params?: { start_date?: string; end_date?: string },
     tenantId?: string,
-  ): Promise<ExamAttendanceSheet[]> {
+  ): Promise<ExamSupervisor[]> {
     const client = createApiClient(tenantId);
-    const response = await client.get<ExamAttendanceSheet[]>(
-      `${this.baseUrl}/sessions/${sessionId}/attendance`,
+    const response = await client.get<ExamSupervisor[]>(
+      `${this.baseUrl}/teachers/${teacherId}/schedule`,
+      { params },
     );
 
     return response.data;
   }
 
   async markStudentAttendance(
-    sessionId: number,
+    sheetId: number,
     data: MarkAttendanceRequest,
     tenantId?: string,
   ): Promise<ExamAttendanceSheet> {
     const client = createApiClient(tenantId);
-    const response = await client.post<ExamAttendanceSheet>(
-      `${this.baseUrl}/sessions/${sessionId}/attendance`,
+    const response = await client.put<ExamAttendanceSheet>(
+      `${this.baseUrl}/attendance-sheets/${sheetId}/status`,
       data,
     );
 
     return response.data;
   }
 
-  async getIncidents(
-    sessionId: number,
-    filters?: IncidentFilters,
-    tenantId?: string,
-  ): Promise<ExamIncident[]> {
+  async recordSubmission(sheetId: number, tenantId?: string): Promise<ExamAttendanceSheet> {
+    const client = createApiClient(tenantId);
+    const response = await client.post<ExamAttendanceSheet>(
+      `${this.baseUrl}/attendance-sheets/${sheetId}/submit`,
+    );
+
+    return response.data;
+  }
+
+  async verifySheet(sheetId: number, tenantId?: string): Promise<ExamAttendanceSheet> {
+    const client = createApiClient(tenantId);
+    const response = await client.post<ExamAttendanceSheet>(
+      `${this.baseUrl}/attendance-sheets/${sheetId}/verify`,
+    );
+
+    return response.data;
+  }
+
+  async getAttendanceStats(sessionId: number, tenantId?: string): Promise<AttendanceStatistics> {
+    const client = createApiClient(tenantId);
+    const response = await client.get<AttendanceStatistics>(
+      `${this.baseUrl}/sessions/${sessionId}/attendance-stats`,
+    );
+
+    return response.data;
+  }
+
+  async getIncidents(sessionId: number, tenantId?: string): Promise<ExamIncident[]> {
     const client = createApiClient(tenantId);
     const response = await client.get<ExamIncident[]>(
       `${this.baseUrl}/sessions/${sessionId}/incidents`,
-      { params: filters },
+    );
+
+    return response.data;
+  }
+
+  async getIncidentsSummary(sessionId: number, tenantId?: string): Promise<IncidentsSummary> {
+    const client = createApiClient(tenantId);
+    const response = await client.get<IncidentsSummary>(
+      `${this.baseUrl}/sessions/${sessionId}/incidents/summary`,
     );
 
     return response.data;
@@ -114,42 +136,36 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamIncident> {
     const client = createApiClient(tenantId);
-    const formData = new FormData();
-    if (data.student_id) {
-      formData.append('student_id', String(data.student_id));
-    }
-    formData.append('type', data.type);
-    formData.append('title', data.title);
-    if (data.description) {
-      formData.append('description', data.description);
-    }
-    formData.append('severity', data.severity);
-    formData.append('occurred_at_time', data.occurred_at_time);
-    if (data.witnesses) {
-      formData.append('witnesses', data.witnesses);
-    }
-    if (data.evidence) {
-      formData.append('evidence', data.evidence);
-    }
-
-    const response = await client.post<ExamIncident>(
-      `${this.baseUrl}/sessions/${sessionId}/incidents`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
-    );
+    const response = await client.post<ExamIncident>(`${this.baseUrl}/incidents`, {
+      ...data,
+      exam_session_id: sessionId,
+    });
 
     return response.data;
   }
 
   async updateIncidentStatus(
-    sessionId: number,
     incidentId: number,
-    data: { status: string; action_taken?: string },
+    data: { status: string; resolution_notes?: string },
     tenantId?: string,
   ): Promise<ExamIncident> {
     const client = createApiClient(tenantId);
     const response = await client.put<ExamIncident>(
-      `${this.baseUrl}/sessions/${sessionId}/incidents/${incidentId}`,
+      `${this.baseUrl}/incidents/${incidentId}/status`,
+      data,
+    );
+
+    return response.data;
+  }
+
+  async escalateIncident(
+    incidentId: number,
+    data: { reason: string },
+    tenantId?: string,
+  ): Promise<ExamIncident> {
+    const client = createApiClient(tenantId);
+    const response = await client.post<ExamIncident>(
+      `${this.baseUrl}/incidents/${incidentId}/escalate`,
       data,
     );
 

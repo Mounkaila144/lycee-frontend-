@@ -37,45 +37,71 @@ export interface ChildSummary {
 
 export interface ChildGrade {
   id: number;
-  subject: string;
-  score: number;
+  subject: string | null;
+  evaluation: string | null;
+  type: string | null;
+  score: number | null;
   max_score: number;
-  semester: string;
-  evaluation_date: string;
+  is_absent: boolean;
+  comment: string | null;
+  semester: string | null;
+  evaluation_date: string | null;
 }
 
 export interface ChildAttendanceRecord {
   id: number;
-  date: string;
+  date: string | null;
+  subject: string | null;
+  start_time: string | null;
+  end_time: string | null;
   status: 'Présent' | 'Absent' | 'Retard' | 'Excusé';
-  notes?: string;
+  delay_minutes: number | null;
+  notes: string | null;
+}
+
+export interface ChildInvoicePayment {
+  id: number;
+  payment_date: string | null;
+  amount: number;
+  payment_method: string;
+  receipt_number: string | null;
 }
 
 export interface ChildInvoice {
   id: number;
+  invoice_number: string;
+  description: string | null;
   amount: number;
+  paid_amount: number;
+  balance: number;
   currency: string;
-  status: 'pending' | 'paid' | 'overdue';
-  due_date: string;
-  description: string;
+  status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
+  invoice_date: string | null;
+  due_date: string | null;
+  payments: ChildInvoicePayment[];
 }
 
 export interface ChildTimetableSlot {
   id: number;
   day: string;
+  day_of_week: string;
   start_time: string;
   end_time: string;
-  subject: string;
-  classroom: string;
-  teacher: string;
+  subject: string | null;
+  subject_code: string | null;
+  classroom: string | null;
+  teacher: string | null;
+  classe: string | null;
+  type: string;
 }
 
 export interface ChildDocument {
   id: number;
-  type: 'bulletin' | 'certificat' | 'attestation' | 'autre';
+  type: string;
   title: string;
-  download_url: string;
-  generated_at: string;
+  document_number: string | null;
+  download_url: string | null;
+  generated_at: string | null;
 }
 
 export interface Announcement {

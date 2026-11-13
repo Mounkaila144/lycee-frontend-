@@ -10,6 +10,7 @@ import type {
   PaginatedResponse,
   ScheduleValidation,
   RoomSummary,
+  ValidateScheduleRequest,
 } from '../../types';
 
 class ExamSessionService {
@@ -70,21 +71,18 @@ class ExamSessionService {
   async deleteSession(
     sessionId: number,
     tenantId?: string,
-  ): Promise<{ message: string }> {
+  ): Promise<void> {
     const client = createApiClient(tenantId);
-    const response = await client.delete<{ message: string }>(
-      `${this.baseUrl}/sessions/${sessionId}`,
-    );
 
-    return response.data;
+    await client.delete(`${this.baseUrl}/sessions/${sessionId}`);
   }
 
   async publishSession(
     sessionId: number,
     tenantId?: string,
-  ): Promise<{ message: string; session: ExamSession }> {
+  ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; session: ExamSession }>(
+    const response = await client.post<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/publish`,
     );
 
@@ -93,11 +91,13 @@ class ExamSessionService {
 
   async cancelSession(
     sessionId: number,
+    reason?: string,
     tenantId?: string,
-  ): Promise<{ message: string; session: ExamSession }> {
+  ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; session: ExamSession }>(
+    const response = await client.post<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/cancel`,
+      { reason },
     );
 
     return response.data;
@@ -116,24 +116,26 @@ class ExamSessionService {
   }
 
   async validateSchedule(
-    sessionId: number,
+    data: ValidateScheduleRequest,
     tenantId?: string,
   ): Promise<ScheduleValidation> {
     const client = createApiClient(tenantId);
-    const response = await client.get<ScheduleValidation>(
-      `${this.baseUrl}/sessions/${sessionId}/validate-schedule`,
+    const response = await client.post<ScheduleValidation>(
+      `${this.baseUrl}/sessions/validate-schedule`,
+      data,
     );
 
     return response.data;
   }
 
   async getAvailableRooms(
-    sessionId: number,
+    params: { date: string; start_time: string; end_time: string },
     tenantId?: string,
   ): Promise<RoomSummary[]> {
     const client = createApiClient(tenantId);
     const response = await client.get<RoomSummary[]>(
-      `${this.baseUrl}/sessions/${sessionId}/available-rooms`,
+      `${this.baseUrl}/sessions/available-rooms`,
+      { params },
     );
 
     return response.data;
@@ -143,9 +145,9 @@ class ExamSessionService {
     sessionId: number,
     data: AssignRoomRequest,
     tenantId?: string,
-  ): Promise<ExamRoomAssignment> {
+  ): Promise<ExamRoomAssignment[]> {
     const client = createApiClient(tenantId);
-    const response = await client.post<ExamRoomAssignment>(
+    const response = await client.post<ExamRoomAssignment[]>(
       `${this.baseUrl}/sessions/${sessionId}/rooms`,
       data,
     );
@@ -157,13 +159,10 @@ class ExamSessionService {
     sessionId: number,
     roomAssignmentId: number,
     tenantId?: string,
-  ): Promise<{ message: string }> {
+  ): Promise<void> {
     const client = createApiClient(tenantId);
-    const response = await client.delete<{ message: string }>(
-      `${this.baseUrl}/sessions/${sessionId}/rooms/${roomAssignmentId}`,
-    );
 
-    return response.data;
+    await client.delete(`${this.baseUrl}/sessions/${sessionId}/rooms/${roomAssignmentId}`);
   }
 }
 

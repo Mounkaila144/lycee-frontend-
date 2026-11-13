@@ -1,37 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/modules/UsersGuard';
-import { MenuManager } from '@/modules/Dashboard';
+import Alert from '@mui/material/Alert';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
 
+/**
+ * L'ancien gestionnaire de menus (MenuManager) appelait `/api/admin/menus`,
+ * endpoint qui n'existe pas côté Laravel. Les menus sont désormais définis
+ * dans le code (`src/modules/<Module>/menu.config.ts`, agrégés par
+ * `src/shared/config/menu-registry.ts`) et filtrés par rôle.
+ */
 export default function MenuManagementPage() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/admin/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return null;
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <MenuManager />
-        </div>
-      </div>
-    </div>
+    <Card>
+      <CardHeader title='Gestion des menus' />
+      <CardContent>
+        <Alert severity='info'>
+          Les menus de navigation sont définis par module dans l&apos;application et filtrés automatiquement selon le
+          rôle de l&apos;utilisateur. Ils ne sont pas modifiables depuis cette interface.
+        </Alert>
+      </CardContent>
+    </Card>
   );
 }

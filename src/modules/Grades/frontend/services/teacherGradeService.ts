@@ -543,7 +543,7 @@ class TeacherGradeService {
 
   /**
    * Get absence policy for an evaluation
-   * GET /api/frontend/teacher/evaluations/{id}/absence-policy
+   * GET /api/frontend/teacher/evaluations/{id}/absences/policy
    */
   async getAbsencePolicy(
     evaluationId: number,
@@ -552,7 +552,7 @@ class TeacherGradeService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<AbsencePolicy>>(
-        `${this.baseUrl}/evaluations/${evaluationId}/absence-policy`
+        `${this.baseUrl}/evaluations/${evaluationId}/absences/policy`
       );
 
       return response.data.data;
@@ -590,7 +590,7 @@ class TeacherGradeService {
 
   /**
    * Mark multiple students as absent
-   * POST /api/frontend/teacher/evaluations/{id}/mark-absent
+   * POST /api/frontend/teacher/evaluations/{id}/absences/mark-absent
    */
   async markStudentsAbsent(
     evaluationId: number,
@@ -600,12 +600,12 @@ class TeacherGradeService {
   ): Promise<{ marked: number; message: string }> {
     try {
       const client = createApiClient(tenantId);
-      const response = await client.post<ApiResponse<{ marked: number; message: string }>>(
-        `${this.baseUrl}/evaluations/${evaluationId}/mark-absent`,
+      const response = await client.post<{ message: string; marked_count: number }>(
+        `${this.baseUrl}/evaluations/${evaluationId}/absences/mark-absent`,
         { student_ids: studentIds, absence_type: absenceType }
       );
 
-      return response.data.data;
+      return { marked: response.data.marked_count, message: response.data.message };
     } catch (error: unknown) {
       console.error('Error marking students absent:', error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -692,7 +692,7 @@ class TeacherGradeService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.post<ApiResponse<ReplacementEvaluation>>(
-        `${this.baseUrl}/evaluations/${evaluationId}/replacement`,
+        `${this.baseUrl}/evaluations/${evaluationId}/absences/schedule-replacement`,
         { student_id: studentId, ...data }
       );
 

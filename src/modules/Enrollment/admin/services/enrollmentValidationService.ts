@@ -10,7 +10,6 @@ import type {
   EnrollmentValidationQueryParams,
   PaginatedEnrollmentsValidationResponse,
   EnrollmentValidationStatistics,
-  MyEnrollmentStatus,
 } from '../../types/validation.types';
 
 /**
@@ -38,7 +37,6 @@ class EnrollmentValidationService {
   // Base URL for general enrollment endpoints
   private enrollmentsUrl = '/admin/enrollment/enrollments';
   // Frontend URL for student access
-  private frontendUrl = '/frontend/enrollment';
 
   /**
    * Fetch enrollments for validation
@@ -293,7 +291,7 @@ class EnrollmentValidationService {
 
   /**
    * Get validation statistics
-   * Uses /admin/enrollment/enrollments/statistics endpoint
+   * Uses /admin/enrollment/validation/stats endpoint (programme/semester filters optional)
    */
   async getStatistics(academicYearId?: number, programId?: number, tenantId?: string): Promise<EnrollmentValidationStatistics> {
     try {
@@ -310,7 +308,7 @@ class EnrollmentValidationService {
       }
 
       const queryString = queryParams.toString();
-      const url = queryString ? `${this.enrollmentsUrl}/statistics?${queryString}` : `${this.enrollmentsUrl}/statistics`;
+      const url = queryString ? `${this.validationUrl}/stats?${queryString}` : `${this.validationUrl}/stats`;
 
       const response = await client.get<any>(url);
 
@@ -364,58 +362,6 @@ class EnrollmentValidationService {
     }
   }
 
-  /**
-   * Get my enrollment status (student frontend)
-   */
-  async getMyEnrollmentStatus(academicYearId?: number, tenantId?: string): Promise<MyEnrollmentStatus> {
-    try {
-      const client = createApiClient(tenantId);
-      const params = academicYearId ? { academic_year_id: academicYearId } : {};
-      const response = await client.get<{ data: MyEnrollmentStatus }>(
-        `${this.frontendUrl}/my-enrollment/status`,
-        { params }
-      );
-
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching my enrollment status:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get my enrollment history (student frontend)
-   */
-  async getMyEnrollmentHistory(tenantId?: string): Promise<PedagogicalEnrollment[]> {
-    try {
-      const client = createApiClient(tenantId);
-      const response = await client.get<{ data: PedagogicalEnrollment[] }>(
-        `${this.frontendUrl}/my-enrollment/history`
-      );
-
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching my enrollment history:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Download my contract (student frontend)
-   */
-  async downloadMyContract(tenantId?: string): Promise<Blob> {
-    try {
-      const client = createApiClient(tenantId);
-      const response = await client.get(`${this.frontendUrl}/my-enrollment/contract`, {
-        responseType: 'blob',
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('Error downloading my contract:', error);
-      throw error;
-    }
-  }
 }
 
 // Export singleton instance

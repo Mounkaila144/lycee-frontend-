@@ -1,7 +1,7 @@
 // ──── Enums / Constants ────
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
-export type SessionStatus = 'open' | 'completed' | 'cancelled';
+export type SessionStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled';
 export type SessionMethod = 'manual' | 'mobile' | 'qr_code' | 'imported';
 export type JustificationType = 'medical' | 'family' | 'administrative' | 'other';
 export type JustificationStatus = 'pending' | 'approved' | 'rejected';
@@ -20,6 +20,19 @@ export const ATTENDANCE_STATUS_COLORS: Record<AttendanceStatus, string> = {
   absent: '#f44336',
   late: '#ff9800',
   excused: '#2196f3',
+};
+
+export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {
+  draft: 'En cours',
+  in_progress: 'En cours',
+  completed: 'Terminée',
+  cancelled: 'Annulée',
+};
+
+export const JUSTIFICATION_STATUS_LABELS: Record<JustificationStatus, string> = {
+  pending: 'En attente',
+  approved: 'Approuvé',
+  rejected: 'Rejeté',
 };
 
 export const JUSTIFICATION_TYPE_LABELS: Record<JustificationType, string> = {
@@ -52,12 +65,26 @@ export interface ModuleSummary {
   code: string;
 }
 
+export interface ClasseSummary {
+  id: number;
+  name: string;
+  academic_year_id?: number;
+  head_teacher_id?: number | null;
+  active_enrollments_count?: number;
+}
+
+export interface SubjectSummary {
+  id: number;
+  name: string;
+  code?: string;
+}
+
 export interface TimetableSlotSummary {
   id: number;
-  module_id: number;
+  module_id: number | null;
   teacher_id: number;
-  group_id: number;
-  room_id: number;
+  group_id: number | null;
+  room_id: number | null;
   day_of_week: string;
   start_time: string;
   end_time: string;
@@ -67,7 +94,9 @@ export interface TimetableSlotSummary {
 
 export interface AttendanceSession {
   id: number;
-  timetable_slot_id: number;
+  timetable_slot_id: number | null;
+  classe_id: number | null;
+  subject_id: number | null;
   session_date: string;
   start_time: string | null;
   end_time: string | null;
@@ -77,9 +106,14 @@ export interface AttendanceSession {
   completed_by: number | null;
   completed_at: string | null;
   notes: string | null;
-  timetable_slot?: TimetableSlotSummary;
+  timetable_slot?: TimetableSlotSummary | null;
+  classe?: ClasseSummary | null;
+  subject?: SubjectSummary | null;
   creator?: StudentSummary;
   records?: AttendanceRecord[];
+  records_count?: number;
+  present_count?: number;
+  absent_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -96,8 +130,21 @@ export interface AttendanceRecord {
   modified_by: number | null;
   modification_reason: string | null;
   student?: StudentSummary;
+  student_profile?: StudentSummary | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface AttendanceSheet {
+  session: AttendanceSession;
+  records: AttendanceRecord[];
+  summary: {
+    total: number;
+    present: number;
+    absent: number;
+    late: number;
+    excused: number;
+  };
 }
 
 export interface AbsenceJustification {
@@ -141,9 +188,14 @@ export interface AttendanceAlert {
 // ──── Request Types ────
 
 export interface CreateSessionRequest {
-  timetable_slot_id: number;
+  classe_id?: number;
+  timetable_slot_id?: number;
+  subject_id?: number;
   session_date: string;
+  start_time?: string;
+  end_time?: string;
   method?: SessionMethod;
+  notes?: string;
 }
 
 export interface RecordAttendanceRequest {
@@ -158,8 +210,12 @@ export interface ModifyRecordRequest {
   reason: string;
 }
 
+/**
+ * Côté administration, `student_id` = compte utilisateur de l'élève (users.id).
+ * Côté portail Parent / Élève, `student_id` = fiche élève (students.id), facultatif pour un Élève.
+ */
 export interface SubmitJustificationRequest {
-  student_id: number;
+  student_id?: number;
   absence_date_from: string;
   absence_date_to: string;
   type: JustificationType;
@@ -182,50 +238,81 @@ export interface QRCodeAttendanceRequest {
 
 export interface SessionFilters {
   semester_id?: number;
+  classe_id?: number;
+  session_date?: string;
   status?: SessionStatus;
+  page?: number;
+  per_page?: number;
 }
 
 export interface JustificationFilters {
   status?: JustificationStatus;
   student_id?: number;
+  type?: JustificationType;
+  page?: number;
+  per_page?: number;
 }
 
 export interface ReportFilters {
   semester_id: number;
-  group_id?: number;
+  classe_id?: number;
 }
 
 // ──── Response Types ────
 
 export interface AttendanceRates {
-  overall_rate: number;
-  by_module: Array<{
-    module_id: number;
-    module_name: string;
-    rate: number;
-    total_sessions: number;
-  }>;
-  by_group: Array<{
-    group_id: number;
-    group_name: string;
-    rate: number;
-  }>;
+  total_sessions: number;
+  present_count: number;
+  absent_count: number;
+  late_count: number;
+  excused_count: number;
+  presence_rate: number;
+  absence_rate: number;
 }
 
 export interface AbsenteeEntry {
-  student: StudentSummary;
-  absence_count: number;
-  absence_rate: number;
-  last_absence_date: string;
+  student_id: number;
+  student_name: string;
+  student_email: string;
+  statistics: AttendanceRates;
 }
 
 export interface DetailedStatistics {
-  total_sessions: number;
-  total_students: number;
-  average_attendance_rate: number;
-  by_day: Array<{ day: string; rate: number }>;
-  by_module: Array<{ module_name: string; rate: number }>;
-  trend: Array<{ week: string; rate: number }>;
+  global: AttendanceRates;
+  by_module: Array<{
+    module_id: number | null;
+    module_name: string;
+    total_records: number;
+    present_count: number;
+    absent_count: number;
+    late_count: number;
+  }>;
+  by_classe: Array<{
+    classe_id: number | null;
+    classe_name: string;
+    total_records: number;
+    present_count: number;
+    absent_count: number;
+  }>;
+  by_day: Array<{ day_of_week: number; total_records: number; absent_count: number }>;
+  semester_id: number;
+}
+
+export interface SemesterSummary {
+  id: number;
+  name: string;
+  academic_year_id: number;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+}
+
+export interface FamilyStudent {
+  id: number;
+  user_id: number | null;
+  matricule: string | null;
+  firstname: string;
+  lastname: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -237,13 +324,6 @@ export interface PaginatedResponse<T> {
 }
 
 export interface StudentHistory {
-  records: AttendanceRecord[];
-  stats: {
-    total: number;
-    present: number;
-    absent: number;
-    late: number;
-    excused: number;
-    attendance_rate: number;
-  };
+  records: Array<AttendanceRecord & { session?: AttendanceSession }>;
+  statistics: AttendanceRates;
 }

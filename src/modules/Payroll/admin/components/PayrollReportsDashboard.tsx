@@ -2,328 +2,248 @@
 
 import React, { useState } from 'react';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid2';
+import MenuItem from '@mui/material/MenuItem';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Alert from '@mui/material/Alert';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
-import type {
-  PayrollJournalEntry,
-  SocialChargesReport,
-  SalaryStatistics,
-  ContractType,
-} from '../../types';
+import { usePayrollJournal, usePayrollPeriods, useSalaryStatistics, useSocialCharges } from '../hooks';
+import { formatCurrency, getPayrollErrorMessage } from '../utils/payrollFormatters';
+import type { Money } from '../../types';
 
-import {
-  CONTRACT_TYPE_LABELS,
-  CONTRACT_TYPE_COLORS,
-} from '../../types';
-
-// ──── Demo Data ────
-
-const DEMO_DASHBOARD_STATS = {
-  total_employees: 12,
-  active_contracts: 11,
-  total_payroll_cost: 4850000,
-  pending_advances: 2,
-  current_period_status: 'draft' as const,
-};
-
-const DEMO_JOURNAL: PayrollJournalEntry[] = [
-  { employee: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'EMP-001' }, base_salary: 450000, gross_salary: 525000, net_salary: 420000, total_bonuses: 75000, total_deductions: 105000 },
-  { employee: { id: 2, firstname: 'Fatima', lastname: 'Moussa', matricule: 'EMP-002' }, base_salary: 300000, gross_salary: 350000, net_salary: 280000, total_bonuses: 50000, total_deductions: 70000 },
-  { employee: { id: 3, firstname: 'Ibrahim', lastname: 'Souleymane', matricule: 'EMP-003' }, base_salary: 350000, gross_salary: 400000, net_salary: 320000, total_bonuses: 50000, total_deductions: 80000 },
-  { employee: { id: 4, firstname: 'Aïssa', lastname: 'Abdou', matricule: 'EMP-004' }, base_salary: 100000, gross_salary: 100000, net_salary: 85000, total_bonuses: 0, total_deductions: 15000 },
-  { employee: { id: 6, firstname: 'Hawa', lastname: 'Issa', matricule: 'EMP-006' }, base_salary: 500000, gross_salary: 600000, net_salary: 480000, total_bonuses: 100000, total_deductions: 120000 },
-];
-
-const DEMO_SOCIAL_CHARGES: SocialChargesReport[] = [
-  { period_label: 'Janvier 2026', cnss_total: 618000, income_tax_total: 475000, amo_total: 237500, grand_total: 1330500 },
-  { period_label: 'Février 2026', cnss_total: 630500, income_tax_total: 485000, amo_total: 242500, grand_total: 1358000 },
-  { period_label: 'Mars 2026', cnss_total: 0, income_tax_total: 0, amo_total: 0, grand_total: 0 },
-];
-
-const DEMO_SALARY_STATS: SalaryStatistics = {
-  average_salary: 380000,
-  median_salary: 350000,
-  min_salary: 100000,
-  max_salary: 550000,
-  total_mass: 4850000,
-  by_department: [
-    { department: 'Informatique', average: 425000, count: 4 },
-    { department: 'Administration', average: 320000, count: 3 },
-    { department: 'Comptabilité', average: 280000, count: 2 },
-    { department: 'Services généraux', average: 200000, count: 3 },
-  ],
-  by_contract_type: [
-    { type: 'CDI', average: 420000, count: 8 },
-    { type: 'CDD', average: 350000, count: 2 },
-    { type: 'Stage', average: 100000, count: 1 },
-    { type: 'Interim', average: 250000, count: 1 },
-  ],
-};
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
-};
+const StatCard: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <Card>
+    <CardContent sx={{ textAlign: 'center' }}>
+      <Typography variant="h6" fontWeight="bold">
+        {value}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+    </CardContent>
+  </Card>
+);
 
 export const PayrollReportsDashboard: React.FC = () => {
-  const [tabIndex, setTabIndex] = useState(0);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [periodId, setPeriodId] = useState<number | undefined>();
 
-  const stats = DEMO_DASHBOARD_STATS;
-  const journal = DEMO_JOURNAL;
-  const socialCharges = DEMO_SOCIAL_CHARGES;
-  const salaryStats = DEMO_SALARY_STATS;
+  const statistics = useSalaryStatistics({ year });
+  const { data: periods = [] } = usePayrollPeriods();
+  const calculatedPeriods = periods.filter(period => !['draft', 'in_progress'].includes(period.status));
+  const journal = usePayrollJournal(periodId);
+  const charges = useSocialCharges(periodId);
 
-  const journalTotalGross = journal.reduce((sum, e) => sum + e.gross_salary, 0);
-  const journalTotalNet = journal.reduce((sum, e) => sum + e.net_salary, 0);
-  const journalTotalDeductions = journal.reduce((sum, e) => sum + e.total_deductions, 0);
+  const stats = statistics.data;
+  const hasStats = !!stats?.overview;
+
+  const chargeRows: { label: string; employee: Money; employer: Money; total: Money }[] = charges.data
+    ? [
+        {
+          label: 'CNSS',
+          employee: charges.data.cnss.employee_contributions,
+          employer: charges.data.cnss.employer_contributions,
+          total: charges.data.cnss.total,
+        },
+        {
+          label: 'AMO',
+          employee: charges.data.amo.employee_contributions,
+          employer: charges.data.amo.employer_contributions,
+          total: charges.data.amo.total,
+        },
+        {
+          label: 'CIMR',
+          employee: charges.data.cimr.employee_contributions,
+          employer: charges.data.cimr.employer_contributions,
+          total: charges.data.cimr.total,
+        },
+      ]
+    : [];
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">Administration</Link>
-        <Link underline="hover" color="inherit" href="#">Paie & RH</Link>
-        <Typography color="text.primary">Rapports RH</Typography>
-      </Breadcrumbs>
+    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Typography variant="h4" fontWeight="bold">
+          Rapports RH
+        </Typography>
+        <TextField
+          size="small"
+          type="number"
+          label="Année"
+          value={year}
+          onChange={event => setYear(Number(event.target.value))}
+          sx={{ width: 120 }}
+        />
+      </Box>
 
-      <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
-        Rapports & Statistiques RH
-      </Typography>
-
-      {/* Dashboard Stats */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[
-          { label: 'Total employés', value: stats.total_employees, color: '#1976d2' },
-          { label: 'Contrats actifs', value: stats.active_contracts, color: '#4caf50' },
-          { label: 'Coût total paie', value: formatCurrency(stats.total_payroll_cost), color: '#ff9800' },
-          { label: 'Avances en attente', value: stats.pending_advances, color: '#f44336' },
-        ].map((stat, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, fontSize: typeof stat.value === 'string' ? '1.3rem' : undefined }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
-              </CardContent>
-            </Card>
+      {/* Statistiques salariales annuelles */}
+      {statistics.isLoading && <CircularProgress />}
+      {statistics.isError && (
+        <Alert severity="error">{getPayrollErrorMessage(statistics.error, 'Impossible de charger les statistiques')}</Alert>
+      )}
+      {!statistics.isLoading && !hasStats && (
+        <Alert severity="info">{stats?.message ?? 'Aucune donnée disponible'} pour {year}.</Alert>
+      )}
+      {hasStats && (
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Employés payés" value={String(stats.overview?.total_employees ?? 0)} />
           </Grid>
-        ))}
-      </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Coût total de la paie" value={formatCurrency(stats.overview?.total_payroll_cost)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Coût mensuel moyen" value={formatCurrency(stats.overview?.average_monthly_cost)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Salaire net moyen" value={formatCurrency(stats.salary_distribution?.average_net_salary)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Salaire de base médian" value={formatCurrency(stats.salary_distribution?.median_base_salary)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Salaire de base min" value={formatCurrency(stats.salary_distribution?.min_base_salary)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Salaire de base max" value={formatCurrency(stats.salary_distribution?.max_base_salary)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <StatCard label="Taux de retenues" value={`${Number(stats.deductions?.deduction_rate ?? 0)} %`} />
+          </Grid>
+        </Grid>
+      )}
 
-      {/* Tabs */}
+      {/* Rapports par période */}
       <Card>
-        <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ px: 2, pt: 1 }}>
-          <Tab label="Journal de Paie" />
-          <Tab label="Charges Sociales" />
-          <Tab label="Statistiques Salariales" />
-        </Tabs>
-        <CardContent>
-          {/* Tab 0: Payroll Journal */}
-          {tabIndex === 0 && (
-            <>
-              <Typography variant="h6" sx={{ mb: 2 }}>Journal de Paie - Février 2026</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Matricule</TableCell>
-                      <TableCell>Employé</TableCell>
-                      <TableCell>Salaire de base</TableCell>
-                      <TableCell>Primes</TableCell>
-                      <TableCell>Brut</TableCell>
-                      <TableCell>Retenues</TableCell>
-                      <TableCell>Net</TableCell>
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography variant="h6">Journal de paie et charges sociales</Typography>
+          <TextField
+            select
+            size="small"
+            label="Période calculée"
+            value={periodId ?? ''}
+            onChange={event => setPeriodId(Number(event.target.value))}
+            sx={{ maxWidth: 320 }}
+          >
+            {calculatedPeriods.length === 0 && <MenuItem disabled>Aucune période calculée</MenuItem>}
+            {calculatedPeriods.map(period => (
+              <MenuItem key={period.id} value={period.id}>
+                {period.name || period.period_code}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          {periodId && (journal.isLoading || charges.isLoading) && <CircularProgress />}
+          {journal.isError && <Alert severity="error">{getPayrollErrorMessage(journal.error)}</Alert>}
+
+          {journal.data && (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Matricule</TableCell>
+                    <TableCell>Employé</TableCell>
+                    <TableCell>Service</TableCell>
+                    <TableCell align="right">Base</TableCell>
+                    <TableCell align="right">Brut</TableCell>
+                    <TableCell align="right">Retenues</TableCell>
+                    <TableCell align="right">Net</TableCell>
+                    <TableCell align="right">Coût total</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {journal.data.employees.map(row => (
+                    <TableRow key={row.employee_code}>
+                      <TableCell>{row.employee_code}</TableCell>
+                      <TableCell>{row.full_name}</TableCell>
+                      <TableCell>{row.department || '—'}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.base_salary)}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.gross_salary)}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.deductions?.total)}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.net_salary)}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.total_cost)}</TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {journal.map((entry, idx) => (
-                      <TableRow key={idx} hover>
-                        <TableCell><Typography fontWeight="medium">{entry.employee.matricule}</Typography></TableCell>
-                        <TableCell>{entry.employee.firstname} {entry.employee.lastname}</TableCell>
-                        <TableCell>{formatCurrency(entry.base_salary)}</TableCell>
-                        <TableCell>{formatCurrency(entry.total_bonuses)}</TableCell>
-                        <TableCell>{formatCurrency(entry.gross_salary)}</TableCell>
-                        <TableCell><Typography color="error">{formatCurrency(entry.total_deductions)}</Typography></TableCell>
-                        <TableCell><Typography fontWeight="bold" color="success.main">{formatCurrency(entry.net_salary)}</Typography></TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow sx={{ bgcolor: 'action.hover' }}>
-                      <TableCell colSpan={4}><Typography fontWeight="bold">TOTAL</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold">{formatCurrency(journalTotalGross)}</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold" color="error">{formatCurrency(journalTotalDeductions)}</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold" color="success.main">{formatCurrency(journalTotalNet)}</Typography></TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
+                  ))}
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <strong>Totaux ({journal.data.summary.total_employees ?? 0} employés)</strong>
+                    </TableCell>
+                    <TableCell align="right">
+                      <strong>{formatCurrency(journal.data.summary.total_gross_salary)}</strong>
+                    </TableCell>
+                    <TableCell align="right">
+                      <strong>{formatCurrency(journal.data.summary.total_deductions)}</strong>
+                    </TableCell>
+                    <TableCell align="right">
+                      <strong>{formatCurrency(journal.data.summary.total_net_salary)}</strong>
+                    </TableCell>
+                    <TableCell align="right">
+                      <strong>{formatCurrency(journal.data.summary.total_cost)}</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
 
-          {/* Tab 1: Social Charges */}
-          {tabIndex === 1 && (
-            <>
-              <Typography variant="h6" sx={{ mb: 2 }}>Charges Sociales - 2026</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Période</TableCell>
-                      <TableCell>CNSS</TableCell>
-                      <TableCell>IR</TableCell>
-                      <TableCell>AMO</TableCell>
-                      <TableCell>Total</TableCell>
+          {charges.data && (
+            <Box>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Charges sociales et fiscales
+              </Typography>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Organisme</TableCell>
+                    <TableCell align="right">Part salariale</TableCell>
+                    <TableCell align="right">Part patronale</TableCell>
+                    <TableCell align="right">Total</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {chargeRows.map(row => (
+                    <TableRow key={row.label}>
+                      <TableCell>{row.label}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.employee)}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.employer)}</TableCell>
+                      <TableCell align="right">{formatCurrency(row.total)}</TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {socialCharges.map((charge, idx) => (
-                      <TableRow key={idx} hover>
-                        <TableCell><Typography fontWeight="medium">{charge.period_label}</Typography></TableCell>
-                        <TableCell>{charge.cnss_total > 0 ? formatCurrency(charge.cnss_total) : '-'}</TableCell>
-                        <TableCell>{charge.income_tax_total > 0 ? formatCurrency(charge.income_tax_total) : '-'}</TableCell>
-                        <TableCell>{charge.amo_total > 0 ? formatCurrency(charge.amo_total) : '-'}</TableCell>
-                        <TableCell><Typography fontWeight="bold">{charge.grand_total > 0 ? formatCurrency(charge.grand_total) : '-'}</Typography></TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow sx={{ bgcolor: 'action.hover' }}>
-                      <TableCell><Typography fontWeight="bold">TOTAL</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold">{formatCurrency(socialCharges.reduce((s, c) => s + c.cnss_total, 0))}</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold">{formatCurrency(socialCharges.reduce((s, c) => s + c.income_tax_total, 0))}</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold">{formatCurrency(socialCharges.reduce((s, c) => s + c.amo_total, 0))}</Typography></TableCell>
-                      <TableCell><Typography fontWeight="bold" color="primary">{formatCurrency(socialCharges.reduce((s, c) => s + c.grand_total, 0))}</Typography></TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
-
-          {/* Tab 2: Salary Statistics */}
-          {tabIndex === 2 && (
-            <>
-              <Typography variant="h6" sx={{ mb: 2 }}>Statistiques Salariales</Typography>
-
-              {/* Key metrics */}
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                {[
-                  { label: 'Salaire moyen', value: formatCurrency(salaryStats.average_salary), color: '#1976d2' },
-                  { label: 'Salaire médian', value: formatCurrency(salaryStats.median_salary), color: '#4caf50' },
-                  { label: 'Salaire minimum', value: formatCurrency(salaryStats.min_salary), color: '#ff9800' },
-                  { label: 'Salaire maximum', value: formatCurrency(salaryStats.max_salary), color: '#9c27b0' },
-                ].map((stat, idx) => (
-                  <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                      <Typography variant="subtitle2" color="text.secondary">{stat.label}</Typography>
-                      <Typography variant="h6" fontWeight="bold" sx={{ color: stat.color }}>
-                        {stat.value}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-
-              {/* By Department */}
-              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>Par département</Typography>
-              <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Département</TableCell>
-                      <TableCell>Effectif</TableCell>
-                      <TableCell>Salaire moyen</TableCell>
-                      <TableCell>Répartition</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {salaryStats.by_department.map((dept, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell><Typography fontWeight="medium">{dept.department}</Typography></TableCell>
-                        <TableCell>{dept.count}</TableCell>
-                        <TableCell>{formatCurrency(dept.average)}</TableCell>
-                        <TableCell sx={{ width: '30%' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={(dept.count / salaryStats.by_department.reduce((s, d) => s + d.count, 0)) * 100}
-                              sx={{ flex: 1, height: 8, borderRadius: 4 }}
-                            />
-                            <Typography variant="caption">
-                              {Math.round((dept.count / salaryStats.by_department.reduce((s, d) => s + d.count, 0)) * 100)}%
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {/* By Contract Type */}
-              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>Par type de contrat</Typography>
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Effectif</TableCell>
-                      <TableCell>Salaire moyen</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {salaryStats.by_contract_type.map((ct, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell>
-                          <Chip
-                            size="small"
-                            label={CONTRACT_TYPE_LABELS[ct.type]}
-                            sx={{ bgcolor: CONTRACT_TYPE_COLORS[ct.type], color: 'white' }}
-                          />
-                        </TableCell>
-                        <TableCell>{ct.count}</TableCell>
-                        <TableCell><Typography fontWeight="bold">{formatCurrency(ct.average)}</Typography></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              <Paper variant="outlined" sx={{ p: 2, mt: 3, textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">Masse salariale totale</Typography>
-                <Typography variant="h4" fontWeight="bold" color="primary">
-                  {formatCurrency(salaryStats.total_mass)}
-                </Typography>
-              </Paper>
-            </>
+                  ))}
+                  <TableRow>
+                    <TableCell>Impôts et taxes</TableCell>
+                    <TableCell align="right">{formatCurrency(charges.data.taxes.income_tax)}</TableCell>
+                    <TableCell align="right">
+                      {formatCurrency(
+                        Number(charges.data.taxes.professional_tax) + Number(charges.data.taxes.training_tax),
+                      )}
+                    </TableCell>
+                    <TableCell align="right">{formatCurrency(charges.data.taxes.total)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Total général</strong>
+                    </TableCell>
+                    <TableCell colSpan={3} align="right">
+                      <strong>{formatCurrency(charges.data.summary.grand_total)}</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Box>
           )}
         </CardContent>
       </Card>
-
-      {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

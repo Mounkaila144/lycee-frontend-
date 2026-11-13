@@ -1,5 +1,13 @@
 import { createApiClient } from '@/shared/lib/api-client'
-import type { Classe, ClasseFormData, ClasseQueryParams, ClasseStats } from '../../types/classe.types'
+import type {
+  Classe,
+  ClasseFormData,
+  ClasseQueryParams,
+  ClasseStats,
+  ClasseStudent,
+  ClasseStudentsQueryParams,
+  HeadTeacherOption
+} from '../../types/classe.types'
 
 class ClasseService {
   async getClasses(params?: ClasseQueryParams, tenantId?: string): Promise<Classe[]> {
@@ -11,6 +19,12 @@ class ClasseService {
   async getClasse(id: number, tenantId?: string): Promise<Classe> {
     const client = createApiClient(tenantId)
     const response = await client.get<{ data: Classe }>(`/admin/classes/${id}`)
+    return response.data.data
+  }
+
+  async getClasseStudents(id: number, params?: ClasseStudentsQueryParams, tenantId?: string): Promise<ClasseStudent[]> {
+    const client = createApiClient(tenantId)
+    const response = await client.get<{ data: ClasseStudent[] }>(`/admin/classes/${id}/students`, { params })
     return response.data.data
   }
 
@@ -37,9 +51,14 @@ class ClasseService {
     return response.data.data
   }
 
-  async getAvailableHeadTeachers(params?: { academic_year_id?: number; class_id?: number }, tenantId?: string): Promise<{ id: number; firstname: string; lastname: string }[]> {
+  async getAvailableHeadTeachers(
+    params?: { academic_year_id?: number; exclude_class_id?: number },
+    tenantId?: string
+  ): Promise<HeadTeacherOption[]> {
     const client = createApiClient(tenantId)
-    const response = await client.get<{ data: { id: number; firstname: string; lastname: string }[] }>('/admin/classes/available-head-teachers', { params })
+    const response = await client.get<{ data: HeadTeacherOption[] }>('/admin/classes/available-head-teachers', {
+      params
+    })
     return response.data.data
   }
 }

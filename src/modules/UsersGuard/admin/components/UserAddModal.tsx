@@ -39,6 +39,7 @@ import { userService } from '../services/userService'
 
 // Hook Imports - Use new hooks for roles and permissions
 import { useRolesList, usePermissionsList } from '@/modules/UsersGuard'
+import { useAuthUser } from '@/shared/hooks/useAuthUser'
 
 // Type Imports
 import type { CreateUserPayload } from '../../types/user.types'
@@ -58,7 +59,14 @@ const UserAddModal = ({ open, onClose, onSuccess }: UserAddModalProps) => {
 
   // Load roles and permissions from API
   const { roles, loading: loadingRoles, error: rolesError } = useRolesList()
-  const { permissions, loading: loadingPermissions, error: permissionsError } = usePermissionsList()
+
+  // Direct permissions can only be granted by an Administrator (backend returns 403 otherwise)
+  const authUser = useAuthUser()
+  const isAdministrator = authUser?.roles.includes('Administrator') ?? false
+
+  const { permissions, loading: loadingPermissions, error: permissionsError } = usePermissionsList({
+    enabled: isAdministrator
+  })
 
   // Convert tenantId from string | null to string | undefined
   const tenantIdOrUndefined = tenantId || undefined
@@ -334,7 +342,9 @@ const UserAddModal = ({ open, onClose, onSuccess }: UserAddModalProps) => {
                       </Box>
                     )}
                   >
-                    {roles.map((role) => (
+                    {roles
+                      .filter(role => isAdministrator || role.name !== 'Administrator')
+                      .map(role => (
                       <MenuItem key={role.id} value={role.name}>
                         <div className='flex flex-col'>
                           <Typography variant='body1'>{role.display_name || role.name}</Typography>

@@ -136,9 +136,9 @@ export const EnrollmentStatistics: React.FC = () => {
             )}
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {alerts.slice(0, 3).map((alert) => (
+            {alerts.slice(0, 3).map((alert, index) => (
               <Alert
-                key={alert.id}
+                key={alert.id ?? `${alert.category}-${index}`}
                 severity={alert.type === 'error' ? 'error' : alert.type === 'warning' ? 'warning' : 'info'}
                 icon={<i className={AlertSeverityIcon[alert.type]} />}
                 sx={{ py: 0.5 }}

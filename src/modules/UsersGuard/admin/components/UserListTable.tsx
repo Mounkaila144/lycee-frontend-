@@ -34,6 +34,9 @@ import type { DataTableConfig, ColumnConfig } from '@/components/shared/DataTabl
 // Context Imports
 import { useUsersContext } from './UsersList'
 
+// Hook Imports
+import { useAuthUser } from '@/shared/hooks/useAuthUser'
+
 // (No additional service imports needed here)
 
 type UserWithAction = User & {
@@ -83,6 +86,10 @@ const UserListTable = () => {
     refresh,
     deleteUser
   } = useUsersContext()
+
+  // Only Administrator may delete users or manage roles/permissions (backend: role:Administrator)
+  const authUser = useAuthUser()
+  const isAdministrator = authUser?.roles.includes('Administrator') ?? false
 
   // States
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -293,20 +300,22 @@ const UserListTable = () => {
         header: t('Actions'),
         cell: ({ row }) => (
           <div className='flex items-center gap-0.5'>
-            <IconButton
-              size='small'
-              onClick={async () => {
-                if (confirm(t('Are you sure you want to delete this user?'))) {
-                  try {
-                    await deleteUser(row.original.id)
-                  } catch (error) {
-                    console.error('Failed to delete user:', error)
+            {isAdministrator && (
+              <IconButton
+                size='small'
+                onClick={async () => {
+                  if (confirm(t('Are you sure you want to delete this user?'))) {
+                    try {
+                      await deleteUser(row.original.id)
+                    } catch (error) {
+                      console.error('Failed to delete user:', error)
+                    }
                   }
-                }
-              }}
-            >
-              <i className='ri-delete-bin-7-line text-textSecondary' />
-            </IconButton>
+                }}
+              >
+                <i className='ri-delete-bin-7-line text-textSecondary' />
+              </IconButton>
+            )}
             <IconButton size='small'>
               <i className='ri-eye-line text-textSecondary' />
             </IconButton>
@@ -318,7 +327,7 @@ const UserListTable = () => {
         enableSorting: false
       })
     ],
-    [t, deleteUser, handleOpenEditModal]
+    [t, deleteUser, handleOpenEditModal, isAdministrator]
   )
 
   // DataTable configuration
@@ -340,22 +349,26 @@ const UserListTable = () => {
 
     // Actions
     actions: [
-      {
-        label: t('Manage Roles'),
-        icon: 'ri-shield-user-line',
-        color: 'primary',
-        variant: 'outlined',
-        onClick: () => setRolesDialogOpen(true),
-        disabled: loading
-      },
-      {
-        label: t('Manage Permissions'),
-        icon: 'ri-lock-password-line',
-        color: 'primary',
-        variant: 'outlined',
-        onClick: () => setPermissionsDialogOpen(true),
-        disabled: loading
-      },
+      ...(isAdministrator
+        ? [
+            {
+              label: t('Manage Roles'),
+              icon: 'ri-shield-user-line',
+              color: 'primary' as const,
+              variant: 'outlined' as const,
+              onClick: () => setRolesDialogOpen(true),
+              disabled: loading
+            },
+            {
+              label: t('Manage Permissions'),
+              icon: 'ri-lock-password-line',
+              color: 'primary' as const,
+              variant: 'outlined' as const,
+              onClick: () => setPermissionsDialogOpen(true),
+              disabled: loading
+            }
+          ]
+        : []),
       {
         label: t('Add'),
         icon: 'ri-user-add-line',
@@ -418,19 +431,23 @@ const UserListTable = () => {
               }
             ]}
             actions={[
-              {
-                icon: 'ri-delete-bin-7-line',
-                color: 'error',
-                onClick: async () => {
-                  if (confirm(t('Are you sure you want to delete this user?'))) {
-                    try {
-                      await deleteUser(user.id)
-                    } catch (error) {
-                      console.error('Failed to delete user:', error)
+              ...(isAdministrator
+                ? [
+                    {
+                      icon: 'ri-delete-bin-7-line',
+                      color: 'error' as const,
+                      onClick: async () => {
+                        if (confirm(t('Are you sure you want to delete this user?'))) {
+                          try {
+                            await deleteUser(user.id)
+                          } catch (error) {
+                            console.error('Failed to delete user:', error)
+                          }
+                        }
+                      }
                     }
-                  }
-                }
-              },
+                  ]
+                : []),
               {
                 icon: 'ri-eye-line',
                 color: 'default',

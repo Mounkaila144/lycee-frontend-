@@ -1,34 +1,26 @@
 import { createApiClient } from '@/shared/lib/api-client';
 
 import type {
+  ExamSession,
   ExamAttendanceSheet,
   AssignStudentsRequest,
   StudentSummary,
   PreparationChecklist,
 } from '../../types';
 
+/**
+ * Backend : Modules/Exams/Routes/admin.php — préfixe /admin/exams/management
+ */
 class ExamManagementService {
-  private baseUrl = '/admin/exams';
-
-  async getMaterials(
-    sessionId: number,
-    tenantId?: string,
-  ): Promise<{ allowed_materials: string; instructions: string }> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<{ allowed_materials: string; instructions: string }>(
-      `${this.baseUrl}/sessions/${sessionId}/materials`,
-    );
-
-    return response.data;
-  }
+  private baseUrl = '/admin/exams/management';
 
   async updateMaterials(
     sessionId: number,
-    data: { allowed_materials: string; instructions: string },
+    data: { materials: string[] },
     tenantId?: string,
-  ): Promise<{ message: string }> {
+  ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
-    const response = await client.put<{ message: string }>(
+    const response = await client.put<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/materials`,
       data,
     );
@@ -40,9 +32,9 @@ class ExamManagementService {
     sessionId: number,
     data: { instructions: string },
     tenantId?: string,
-  ): Promise<{ message: string }> {
+  ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
-    const response = await client.put<{ message: string }>(
+    const response = await client.put<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/instructions`,
       data,
     );
@@ -54,10 +46,10 @@ class ExamManagementService {
     sessionId: number,
     data: AssignStudentsRequest,
     tenantId?: string,
-  ): Promise<{ message: string; assigned: number }> {
+  ): Promise<ExamAttendanceSheet[]> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; assigned: number }>(
-      `${this.baseUrl}/sessions/${sessionId}/assign-students`,
+    const response = await client.post<ExamAttendanceSheet[]>(
+      `${this.baseUrl}/sessions/${sessionId}/students/assign`,
       data,
     );
 
@@ -67,13 +59,33 @@ class ExamManagementService {
   async autoAssignStudents(
     sessionId: number,
     tenantId?: string,
-  ): Promise<{ message: string; assigned: number }> {
+  ): Promise<ExamAttendanceSheet[]> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; assigned: number }>(
-      `${this.baseUrl}/sessions/${sessionId}/auto-assign`,
+    const response = await client.post<ExamAttendanceSheet[]>(
+      `${this.baseUrl}/sessions/${sessionId}/students/auto-assign`,
     );
 
     return response.data;
+  }
+
+  async reassignStudent(
+    sheetId: number,
+    data: { room_assignment_id: number; seat_number?: string },
+    tenantId?: string,
+  ): Promise<ExamAttendanceSheet> {
+    const client = createApiClient(tenantId);
+    const response = await client.put<ExamAttendanceSheet>(
+      `${this.baseUrl}/attendance-sheets/${sheetId}/reassign`,
+      data,
+    );
+
+    return response.data;
+  }
+
+  async removeStudent(sheetId: number, tenantId?: string): Promise<void> {
+    const client = createApiClient(tenantId);
+
+    await client.delete(`${this.baseUrl}/attendance-sheets/${sheetId}`);
   }
 
   async getEligibleStudents(
@@ -83,18 +95,6 @@ class ExamManagementService {
     const client = createApiClient(tenantId);
     const response = await client.get<StudentSummary[]>(
       `${this.baseUrl}/sessions/${sessionId}/eligible-students`,
-    );
-
-    return response.data;
-  }
-
-  async getAssignedStudents(
-    sessionId: number,
-    tenantId?: string,
-  ): Promise<ExamAttendanceSheet[]> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<ExamAttendanceSheet[]>(
-      `${this.baseUrl}/sessions/${sessionId}/students`,
     );
 
     return response.data;

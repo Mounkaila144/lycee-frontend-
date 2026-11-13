@@ -1,63 +1,35 @@
 import { createApiClient } from '@/shared/lib/api-client';
+import type {
+  StudentAttendanceRecord,
+  StudentCard,
+  StudentDashboard,
+  StudentDocument,
+  StudentGrade,
+  StudentInvoice,
+  StudentProfile,
+  StudentReenrollment,
+} from '../types';
+import type { PortalTimetableSlot } from '@/modules/Timetable/types/lycee.types';
 
 interface StudentPortalResponse<T> {
   data: T;
   meta?: Record<string, unknown>;
 }
 
+const get = async <T>(path: string): Promise<T> => {
+  const { data } = await createApiClient().get<StudentPortalResponse<T>>(`/frontend/student${path}`);
+
+  return data.data;
+};
+
 export const studentPortalService = {
-  async me() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any>>(
-      '/frontend/student/me'
-    );
-    return data.data;
-  },
-  async dashboard() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any>>(
-      '/frontend/student/dashboard'
-    );
-    return data.data;
-  },
-  async myGrades() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any[]>>(
-      '/frontend/student/my-grades'
-    );
-    return data.data;
-  },
-  async myAttendance() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any[]>>(
-      '/frontend/student/my-attendance'
-    );
-    return data.data;
-  },
-  async myInvoices() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any[]>>(
-      '/frontend/student/my-invoices'
-    );
-    return data.data;
-  },
-  async myDocuments() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any[]>>(
-      '/frontend/student/my-documents'
-    );
-    return data.data;
-  },
-  async myTimetable() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any[]>>(
-      '/frontend/student/my-timetable'
-    );
-    return data.data;
-  },
-  async myCard() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any>>(
-      '/frontend/student/my-card'
-    );
-    return data.data;
-  },
-  async reenrollment() {
-    const { data } = await createApiClient().get<StudentPortalResponse<any>>(
-      '/frontend/student/reenrollment'
-    );
-    return data.data;
-  },
+  me: () => get<StudentProfile>('/me'),
+  dashboard: () => get<StudentDashboard>('/dashboard'),
+  myGrades: () => get<StudentGrade[]>('/my-grades'),
+  myAttendance: () => get<StudentAttendanceRecord[]>('/my-attendance'),
+  myInvoices: () => get<StudentInvoice[]>('/my-invoices'),
+  myDocuments: () => get<StudentDocument[]>('/my-documents'),
+  myTimetable: () => get<PortalTimetableSlot[]>('/my-timetable'),
+  myCard: () => get<StudentCard>('/my-card'),
+  reenrollment: () => get<StudentReenrollment>('/reenrollment'),
 };

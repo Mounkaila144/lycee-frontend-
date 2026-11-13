@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 
+import CircularProgress from '@mui/material/CircularProgress';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -20,95 +22,37 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
-import ButtonGroup from '@mui/material/ButtonGroup';
+
+import { useTenant } from '@/shared/lib/tenant-context';
 
 import type {
   ExamSession,
   ExamSessionStatus,
-  ExamType,
 } from '../../types';
+
+import {
+  useExamSessions,
+  usePublishExamSession,
+  useCancelExamSession,
+  useDuplicateExamSession,
+  useDeleteExamSession,
+} from '../hooks';
 
 import {
   EXAM_TYPE_LABELS,
   EXAM_TYPE_COLORS,
   EXAM_SESSION_STATUS_LABELS,
-  EXAM_SESSION_STATUS_COLORS,
 } from '../../types';
-
-// ──── Demo Data ────
-
-const DEMO_SESSIONS: ExamSession[] = [
-  {
-    id: 1, module_id: 1, evaluation_period_id: 1, academic_year_id: 1,
-    title: 'Examen Final - Algorithmes', description: 'Examen de fin de semestre',
-    type: 'written', exam_date: '2026-04-15', start_time: '08:00', end_time: '11:00',
-    duration_minutes: 180, total_capacity: 120, status: 'scheduled',
-    instructions: 'Aucun document autorisé', allowed_materials: 'Calculatrice simple',
-    is_published: true, published_at: '2026-03-20T10:00:00', created_by: 1,
-    module: { id: 1, name: 'Algorithmes', code: 'ALGO' },
-    creator: { id: 1, firstname: 'Dr.', lastname: 'Dupont' },
-    created_at: '2026-03-15T08:00:00', updated_at: '2026-03-20T10:00:00',
-  },
-  {
-    id: 2, module_id: 2, evaluation_period_id: 1, academic_year_id: 1,
-    title: 'Examen Partiel - Base de données', description: 'Contrôle continu n°2',
-    type: 'written', exam_date: '2026-04-16', start_time: '10:00', end_time: '12:00',
-    duration_minutes: 120, total_capacity: 80, status: 'draft',
-    instructions: null, allowed_materials: null,
-    is_published: false, published_at: null, created_by: 2,
-    module: { id: 2, name: 'Base de données', code: 'BDD' },
-    creator: { id: 2, firstname: 'Prof.', lastname: 'Martin' },
-    created_at: '2026-03-18T09:00:00', updated_at: '2026-03-18T09:00:00',
-  },
-  {
-    id: 3, module_id: 3, evaluation_period_id: 1, academic_year_id: 1,
-    title: 'TP Noté - Réseaux', description: 'Configuration routeurs et switchs',
-    type: 'practical', exam_date: '2026-04-10', start_time: '14:00', end_time: '17:00',
-    duration_minutes: 180, total_capacity: 30, status: 'completed',
-    instructions: 'Accès aux équipements réseau du laboratoire', allowed_materials: 'Notes de cours',
-    is_published: true, published_at: '2026-03-12T08:00:00', created_by: 3,
-    module: { id: 3, name: 'Réseaux', code: 'RES' },
-    creator: { id: 3, firstname: 'Dr.', lastname: 'Bernard' },
-    created_at: '2026-03-10T14:00:00', updated_at: '2026-04-10T17:00:00',
-  },
-  {
-    id: 4, module_id: 4, evaluation_period_id: 1, academic_year_id: 1,
-    title: 'Oral - Systèmes d\'exploitation', description: 'Présentation projet OS',
-    type: 'oral', exam_date: '2026-04-18', start_time: '09:00', end_time: '12:00',
-    duration_minutes: 15, total_capacity: 25, status: 'scheduled',
-    instructions: 'Présentation de 10 min + 5 min questions', allowed_materials: 'Support de présentation',
-    is_published: true, published_at: '2026-03-22T14:00:00', created_by: 1,
-    module: { id: 4, name: 'Systèmes d\'exploitation', code: 'SYS' },
-    creator: { id: 1, firstname: 'Dr.', lastname: 'Dupont' },
-    created_at: '2026-03-20T11:00:00', updated_at: '2026-03-22T14:00:00',
-  },
-  {
-    id: 5, module_id: 5, evaluation_period_id: 1, academic_year_id: 1,
-    title: 'Examen Final - Programmation Web', description: null,
-    type: 'written', exam_date: '2026-04-20', start_time: '08:00', end_time: '10:00',
-    duration_minutes: 120, total_capacity: 100, status: 'cancelled',
-    instructions: null, allowed_materials: null,
-    is_published: false, published_at: null, created_by: 2,
-    module: { id: 5, name: 'Programmation Web', code: 'WEB' },
-    creator: { id: 2, firstname: 'Prof.', lastname: 'Martin' },
-    created_at: '2026-03-19T10:00:00', updated_at: '2026-03-25T16:00:00',
-  },
-];
 
 const getStatusChipColor = (status: ExamSessionStatus): 'default' | 'primary' | 'warning' | 'success' | 'error' => {
   switch (status) {
     case 'draft': return 'default';
+    case 'planned':
     case 'scheduled': return 'primary';
     case 'ongoing': return 'warning';
     case 'completed': return 'success';
@@ -123,8 +67,25 @@ export const ExamSessionsDashboard: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState<ExamSession | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
-  // Demo data
-  const sessions = DEMO_SESSIONS;
+  const { tenantId } = useTenant();
+  const [page, setPage] = useState(1);
+  const { data: sessionsPage, isLoading, isError } = useExamSessions({ page }, tenantId || undefined);
+  const sessions: ExamSession[] = sessionsPage?.data ?? [];
+
+  const publishMutation = usePublishExamSession(tenantId || undefined);
+  const cancelMutation = useCancelExamSession(tenantId || undefined);
+  const duplicateMutation = useDuplicateExamSession(tenantId || undefined);
+  const deleteMutation = useDeleteExamSession(tenantId || undefined);
+
+  const notify = useCallback((message: string, severity: 'success' | 'error') => {
+    setSnackbar({ open: true, message, severity });
+  }, []);
+
+  const errorMessage = (error: unknown, fallback: string): string => {
+    const responseMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+
+    return responseMessage || fallback;
+  };
 
   const handleViewDetail = useCallback((session: ExamSession) => {
     setSelectedSession(session);
@@ -132,18 +93,50 @@ export const ExamSessionsDashboard: React.FC = () => {
   }, []);
 
   const handlePublish = useCallback((session: ExamSession) => {
-    setSnackbar({ open: true, message: `"${session.title}" a été publié avec succès`, severity: 'success' });
-  }, []);
+    publishMutation.mutate(session.id, {
+      onSuccess: () => notify(`"${session.title}" a été publié avec succès`, 'success'),
+      onError: error => notify(errorMessage(error, 'Échec de la publication'), 'error'),
+    });
+  }, [publishMutation, notify]);
 
   const handleCancel = useCallback((session: ExamSession) => {
-    setSnackbar({ open: true, message: `"${session.title}" a été annulé`, severity: 'success' });
-  }, []);
+    if (!window.confirm(`Annuler la session "${session.title}" ?`)) {
+      return;
+    }
+
+    cancelMutation.mutate({ sessionId: session.id }, {
+      onSuccess: () => notify(`"${session.title}" a été annulé`, 'success'),
+      onError: error => notify(errorMessage(error, 'Échec de l\'annulation'), 'error'),
+    });
+  }, [cancelMutation, notify]);
 
   const handleDuplicate = useCallback((session: ExamSession) => {
-    setSnackbar({ open: true, message: `"${session.title}" a été dupliqué`, severity: 'success' });
-  }, []);
+    duplicateMutation.mutate(session.id, {
+      onSuccess: () => notify(`"${session.title}" a été dupliqué`, 'success'),
+      onError: error => notify(errorMessage(error, 'Échec de la duplication'), 'error'),
+    });
+  }, [duplicateMutation, notify]);
 
-  const scheduledCount = sessions.filter(s => s.status === 'scheduled').length;
+  const handleDelete = useCallback((session: ExamSession) => {
+    if (!window.confirm(`Supprimer définitivement la session "${session.title}" ?`)) {
+      return;
+    }
+
+    deleteMutation.mutate(session.id, {
+      onSuccess: () => notify(`"${session.title}" a été supprimé`, 'success'),
+      onError: error => notify(errorMessage(error, 'Échec de la suppression'), 'error'),
+    });
+  }, [deleteMutation, notify]);
+
+  const formatMaterials = (materials: ExamSession['allowed_materials']): string => {
+    if (!materials || (Array.isArray(materials) && materials.length === 0)) {
+      return 'Aucun';
+    }
+
+    return Array.isArray(materials) ? materials.join(', ') : materials;
+  };
+
+  const scheduledCount = sessions.filter(s => s.status === 'planned' || s.status === 'scheduled').length;
   const completedCount = sessions.filter(s => s.status === 'completed').length;
   const totalCapacity = sessions.reduce((sum, s) => sum + s.total_capacity, 0);
   const publishedCount = sessions.filter(s => s.is_published).length;
@@ -197,6 +190,21 @@ export const ExamSessionsDashboard: React.FC = () => {
       <Card>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2 }}>Sessions d&apos;Examen</Typography>
+          {isLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          {isError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Impossible de charger les sessions d&apos;examen.
+            </Alert>
+          )}
+          {!isLoading && !isError && sessions.length === 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Aucune session d&apos;examen planifiée pour le moment.
+            </Alert>
+          )}
           <TableContainer>
             <Table>
               <TableHead>
@@ -284,7 +292,7 @@ export const ExamSessionsDashboard: React.FC = () => {
                             Publier
                           </Button>
                         )}
-                        {session.status === 'scheduled' && (
+                        {(session.status === 'planned' || session.status === 'scheduled') && (
                           <Button
                             size="small"
                             variant="outlined"
@@ -304,6 +312,16 @@ export const ExamSessionsDashboard: React.FC = () => {
                             Dupliquer
                           </Button>
                         </Tooltip>
+                        {session.status === 'draft' && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDelete(session)}
+                          >
+                            Supprimer
+                          </Button>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -311,6 +329,19 @@ export const ExamSessionsDashboard: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          {sessionsPage && sessionsPage.last_page > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1, mt: 2 }}>
+              <Button size="small" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+                Précédent
+              </Button>
+              <Typography variant="body2">
+                Page {sessionsPage.current_page} / {sessionsPage.last_page}
+              </Typography>
+              <Button size="small" disabled={page >= sessionsPage.last_page} onClick={() => setPage(p => p + 1)}>
+                Suivant
+              </Button>
+            </Box>
+          )}
         </CardContent>
       </Card>
 
@@ -357,7 +388,7 @@ export const ExamSessionsDashboard: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">Matériels autorisés</Typography>
-                <Typography>{selectedSession?.allowed_materials || 'Aucun'}</Typography>
+                <Typography>{formatMaterials(selectedSession?.allowed_materials ?? null)}</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -368,9 +399,8 @@ export const ExamSessionsDashboard: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">Créé par</Typography>
+                <Typography variant="subtitle2" color="text.secondary">Créé le</Typography>
                 <Typography>
-                  {selectedSession?.creator?.firstname} {selectedSession?.creator?.lastname} le{' '}
                   {selectedSession && new Date(selectedSession.created_at).toLocaleDateString('fr-FR')}
                 </Typography>
               </Paper>
@@ -386,71 +416,14 @@ export const ExamSessionsDashboard: React.FC = () => {
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Nouvelle Session d&apos;Examen</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="Titre" fullWidth placeholder="Ex: Examen Final - Algorithmes" />
-            <TextField label="Description" fullWidth multiline rows={2} />
-            <FormControl fullWidth>
-              <InputLabel>Module</InputLabel>
-              <Select label="Module" defaultValue="">
-                <MenuItem value={1}>ALGO - Algorithmes</MenuItem>
-                <MenuItem value={2}>BDD - Base de données</MenuItem>
-                <MenuItem value={3}>RES - Réseaux</MenuItem>
-                <MenuItem value={4}>SYS - Systèmes d&apos;exploitation</MenuItem>
-                <MenuItem value={5}>WEB - Programmation Web</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select label="Type" defaultValue="written">
-                <MenuItem value="written">Écrit</MenuItem>
-                <MenuItem value="oral">Oral</MenuItem>
-                <MenuItem value="practical">Pratique</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Date de l'examen"
-              type="date"
-              defaultValue="2026-04-20"
-              slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
-            />
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  label="Heure début"
-                  type="time"
-                  defaultValue="08:00"
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  label="Heure fin"
-                  type="time"
-                  defaultValue="11:00"
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  fullWidth
-                />
-              </Grid>
-            </Grid>
-            <TextField label="Durée (minutes)" type="number" defaultValue={180} fullWidth />
-            <TextField label="Capacité totale" type="number" defaultValue={100} fullWidth />
-            <TextField label="Matériels autorisés" fullWidth placeholder="Ex: Calculatrice, documents" />
-            <TextField label="Instructions" fullWidth multiline rows={3} placeholder="Instructions pour les étudiants" />
-          </Box>
+          <Alert severity="info" sx={{ mt: 1 }}>
+            La création d&apos;une session d&apos;examen nécessite un module rattaché à l&apos;année
+            académique. Le référentiel des épreuves du lycée (matières / classes) n&apos;est pas encore
+            relié aux examens : la création depuis cet écran est temporairement indisponible.
+          </Alert>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setCreateOpen(false);
-              setSnackbar({ open: true, message: 'Session d\'examen créée avec succès', severity: 'success' });
-            }}
-          >
-            Créer
-          </Button>
+          <Button onClick={() => setCreateOpen(false)}>Fermer</Button>
         </DialogActions>
       </Dialog>
 

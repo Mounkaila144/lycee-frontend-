@@ -58,7 +58,7 @@ export default function CashierClosePage() {
     <Card>
       <CardHeader
         title='Clôture journalière de caisse'
-        subheader='Story Caissier 05'
+        subheader='Espèces comptées vs encaissements enregistrés dans le système'
         action={
           <Button variant='contained' onClick={() => setDialogOpen(true)}>
             Nouvelle clôture

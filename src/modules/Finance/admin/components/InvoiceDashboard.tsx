@@ -5,7 +5,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
@@ -30,6 +30,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
+import TablePagination from '@mui/material/TablePagination';
 
 import Divider from '@mui/material/Divider';
 
@@ -40,10 +41,12 @@ import { useAcademicYears } from '@/modules/StructureAcademique/admin/hooks/useA
 import { studentService } from '@/modules/Enrollment/admin/services/studentService';
 import type { Student } from '@/modules/Enrollment/types/student.types';
 import { createApiClient } from '@/shared/lib/api-client';
+import { useAuthUser } from '@/shared/hooks/useAuthUser';
 
-import type { Invoice, InvoiceStatus } from '../../types';
+import type { FeeType, Invoice, InvoiceFilters, InvoiceStatus } from '../../types';
 import { INVOICE_STATUS_LABELS } from '../../types';
 import { useInvoices, useFeeTypes, useCreateInvoice } from '../hooks/useInvoices';
+import { ReceiptDialog } from './ReceiptDialog';
 
 const PAYMENT_METHOD_OPTIONS = [
   { value: 'cash', label: 'Espèces' },
@@ -64,6 +67,7 @@ interface PaymentRow {
   id: number;
   invoice_id: number;
   amount: number | string;
+  receipt_number?: string | null;
   payment_method?: string;
   method?: string;
   reference_number?: string | null;
@@ -85,9 +89,10 @@ const getStatusChipColor = (status: InvoiceStatus): 'default' | 'primary' | 'suc
   switch (status) {
     case 'draft': return 'default';
     case 'pending': return 'primary';
+    case 'partial': return 'warning';
     case 'paid': return 'success';
     case 'overdue': return 'error';
-    case 'cancelled': return 'warning';
+    case 'cancelled': return 'default';
     default: return 'default';
   }
 };
@@ -117,9 +122,25 @@ export const InvoiceDashboard: React.FC = () => {
   const { academicYears } = useAcademicYears();
   const activeYear = useMemo(() => academicYears.find(y => y.is_active), [academicYears]);
 
-  const { data: invoicesData, isLoading: invoicesLoading, error: invoicesError } = useInvoices(undefined, tenantId || undefined);
+  const authUser = useAuthUser();
+  const canCreateInvoice = (authUser?.roles ?? []).some(r => r === 'Administrator' || r === 'Comptable');
+
+  const [page, setPage] = useState(0);
+  const [perPage, setPerPage] = useState(20);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('');
+
+  const invoiceFilters: InvoiceFilters = useMemo(() => ({
+    page: page + 1,
+    per_page: perPage,
+    ...(search.trim() ? { search: search.trim() } : {}),
+    ...(statusFilter ? { status: statusFilter } : {}),
+  }), [page, perPage, search, statusFilter]);
+
+  const { data: invoicesData, isLoading: invoicesLoading, error: invoicesError } = useInvoices(invoiceFilters, tenantId || undefined);
   const { data: feeTypesData, isLoading: feeTypesLoading } = useFeeTypes(tenantId || undefined);
   const createInvoiceMutation = useCreateInvoice(tenantId || undefined);
+  const invoicesTotal = (invoicesData as any)?.meta?.total ?? 0;
 
   // Backend renvoie total_amount/paid_amount en string ; on normalise vers le
   // shape attendu par l'UI (amount/paid_amount/remaining_amount en number).
@@ -137,59 +158,31 @@ export const InvoiceDashboard: React.FC = () => {
         remaining_amount: Number(inv.remaining_amount ?? amount - paid),
         reference: inv.reference ?? inv.invoice_number,
         issued_date: inv.issued_date ?? inv.invoice_date,
-        items: inv.items ?? [],
+        items: (inv.items ?? []).map((item: any) => ({
+          ...item,
+          unit_price: Number(item.unit_price ?? 0),
+          amount: Number(item.amount ?? item.total_amount ?? Number(item.unit_price ?? 0) * Number(item.quantity ?? 1)),
+        })),
       } as Invoice;
     });
   }, [invoicesData]);
-  const feeTypes = feeTypesData?.data || [];
 
-  // Charge tous les paiements pour les stats globales.
-  const { data: allPaymentsData } = useQuery({
-    queryKey: ['payments', 'all'],
+  const feeTypes: FeeType[] = (feeTypesData as unknown as { data?: FeeType[] } | undefined)?.data || [];
+
+  // Indicateurs globaux (toutes factures), calculés côté serveur.
+  const { data: financeSummary } = useQuery({
+    queryKey: ['invoices', 'global-summary'],
     queryFn: async () => {
-      const client = createApiClient(tenantId || undefined);
-      const res = await client.get('/admin/finance/payments', { params: { per_page: 200 } });
-      return res.data;
+      const res = await createApiClient(tenantId || undefined).get('/admin/finance/reports/dashboard');
+
+      return (res.data?.data?.summary ?? null) as {
+        total_invoiced: number | string;
+        total_paid: number | string;
+        total_overdue: number | string;
+        collection_rate: number | string;
+      } | null;
     },
   });
-
-  const allPayments: PaymentRow[] = useMemo(() => {
-    const raw = allPaymentsData?.data ?? allPaymentsData ?? [];
-    return Array.isArray(raw) ? raw : [];
-  }, [allPaymentsData]);
-
-  const paymentStats = useMemo(() => {
-    const active = allPayments.filter(p => (p.status ?? 'completed') !== 'refunded' && (p.status ?? 'completed') !== 'failed');
-    const byMethod: Record<string, { count: number; amount: number }> = {};
-
-    active.forEach(p => {
-      const method = p.payment_method ?? p.method ?? 'autre';
-      const entry = byMethod[method] ?? { count: 0, amount: 0 };
-
-      entry.count += 1;
-      entry.amount += Number(p.amount);
-      byMethod[method] = entry;
-    });
-
-    const total = active.reduce((sum, p) => sum + Number(p.amount), 0);
-    const average = active.length > 0 ? total / active.length : 0;
-    const now = new Date();
-    const last30 = active.filter(p => {
-      if (!p.payment_date) return false;
-      const date = new Date(p.payment_date);
-
-      return (now.getTime() - date.getTime()) <= 30 * 24 * 60 * 60 * 1000;
-    });
-
-    return {
-      total,
-      count: active.length,
-      average,
-      last30Amount: last30.reduce((sum, p) => sum + Number(p.amount), 0),
-      last30Count: last30.length,
-      byMethod,
-    };
-  }, [allPayments]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -210,9 +203,11 @@ export const InvoiceDashboard: React.FC = () => {
   const handleDownloadPdf = useCallback(async (invoice: Invoice) => {
     try {
       const client = createApiClient(tenantId || undefined);
+
       const response = await client.get<Blob>(`/admin/finance/invoices/${invoice.id}/pdf`, {
         responseType: 'blob',
       });
+
       const url = window.URL.createObjectURL(response.data);
       const link = document.createElement('a');
 
@@ -318,6 +313,7 @@ export const InvoiceDashboard: React.FC = () => {
             fee_type_id: form.feeTypeId as number,
             quantity: 1,
             unit_price: amount,
+
             // Backend exige description; on dérive du type de frais sélectionné
             description: feeType ? `${feeType.code} — ${feeType.name}` : 'Frais',
           } as any,
@@ -331,10 +327,10 @@ export const InvoiceDashboard: React.FC = () => {
     }
   };
 
-  const totalInvoiced = invoices.reduce((sum, inv) => sum + inv.amount, 0);
-  const totalPaid = invoices.reduce((sum, inv) => sum + inv.paid_amount, 0);
-  const totalOverdue = invoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.remaining_amount, 0);
-  const collectionRate = totalInvoiced > 0 ? Math.round((totalPaid / totalInvoiced) * 100) : 0;
+  const totalInvoiced = Number(financeSummary?.total_invoiced ?? 0);
+  const totalPaid = Number(financeSummary?.total_paid ?? 0);
+  const totalOverdue = Number(financeSummary?.total_overdue ?? 0);
+  const collectionRate = Math.round(Number(financeSummary?.collection_rate ?? 0));
 
   return (
     <Box sx={{ p: 3 }}>
@@ -353,13 +349,15 @@ export const InvoiceDashboard: React.FC = () => {
           Facturation
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="contained" onClick={handleOpenCreate} disabled={feeTypesLoading || !activeYear}>
-            + Nouvelle Facture
-          </Button>
+          {canCreateInvoice && (
+            <Button variant="contained" onClick={handleOpenCreate} disabled={feeTypesLoading || !activeYear}>
+              + Nouvelle Facture
+            </Button>
+          )}
         </Box>
       </Box>
 
-      {!activeYear && !invoicesLoading && (
+      {canCreateInvoice && !activeYear && !invoicesLoading && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           Aucune année académique active. Activez une année dans <strong>Structure / Calendrier académique</strong> avant de créer des factures.
         </Alert>
@@ -394,81 +392,32 @@ export const InvoiceDashboard: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Payment Statistics */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>Statistiques des paiements</Typography>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="caption" color="text.secondary">Paiements enregistrés</Typography>
-                <Typography variant="h6" fontWeight="bold">{paymentStats.count}</Typography>
-                <Typography variant="caption" color="text.secondary">total</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="caption" color="text.secondary">Paiement moyen</Typography>
-                <Typography variant="h6" fontWeight="bold">{formatCurrency(paymentStats.average)}</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="caption" color="text.secondary">30 derniers jours</Typography>
-                <Typography variant="h6" fontWeight="bold" color="success.main">{formatCurrency(paymentStats.last30Amount)}</Typography>
-                <Typography variant="caption" color="text.secondary">{paymentStats.last30Count} paiement(s)</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="caption" color="text.secondary">Total encaissé</Typography>
-                <Typography variant="h6" fontWeight="bold" color="success.main">{formatCurrency(paymentStats.total)}</Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-
-          {Object.keys(paymentStats.byMethod).length > 0 && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Répartition par méthode</Typography>
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Méthode</TableCell>
-                      <TableCell align="right">Paiements</TableCell>
-                      <TableCell align="right">Montant total</TableCell>
-                      <TableCell align="right">Part</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {Object.entries(paymentStats.byMethod)
-                      .sort(([, a], [, b]) => b.amount - a.amount)
-                      .map(([method, stats]) => {
-                        const share = paymentStats.total > 0 ? Math.round((stats.amount / paymentStats.total) * 100) : 0;
-
-                        return (
-                          <TableRow key={method}>
-                            <TableCell>{PAYMENT_METHOD_LABEL[method] ?? method}</TableCell>
-                            <TableCell align="right">{stats.count}</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>{formatCurrency(stats.amount)}</TableCell>
-                            <TableCell align="right">
-                              <Chip size="small" label={`${share}%`} color={share >= 50 ? 'primary' : 'default'} />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Invoices Table */}
       <Card>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2 }}>Liste des Factures</Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+            <TextField
+              size="small"
+              label="Rechercher (n° facture, matricule, nom)"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(0); }}
+              sx={{ minWidth: 300, flex: 1 }}
+            />
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Statut</InputLabel>
+              <Select
+                label="Statut"
+                value={statusFilter}
+                onChange={e => { setStatusFilter(e.target.value as InvoiceStatus | ''); setPage(0); }}
+              >
+                <MenuItem value="">Tous</MenuItem>
+                {(Object.keys(INVOICE_STATUS_LABELS) as InvoiceStatus[]).map(status => (
+                  <MenuItem key={status} value={status}>{INVOICE_STATUS_LABELS[status]}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           {invoicesLoading ? (
             <Box display="flex" justifyContent="center" p={4}>
               <CircularProgress />
@@ -530,7 +479,7 @@ export const InvoiceDashboard: React.FC = () => {
                         <TableCell>
                           <Chip
                             size="small"
-                            label={INVOICE_STATUS_LABELS[invoice.status]}
+                            label={INVOICE_STATUS_LABELS[invoice.status] ?? invoice.status}
                             color={getStatusChipColor(invoice.status)}
                           />
                         </TableCell>
@@ -564,6 +513,16 @@ export const InvoiceDashboard: React.FC = () => {
               </Table>
             </TableContainer>
           )}
+          <TablePagination
+            component="div"
+            count={invoicesTotal}
+            page={page}
+            rowsPerPage={perPage}
+            rowsPerPageOptions={[10, 20, 50, 100]}
+            onPageChange={(_, p) => setPage(p)}
+            onRowsPerPageChange={e => { setPerPage(Number(e.target.value)); setPage(0); }}
+            labelRowsPerPage="Lignes par page"
+          />
         </CardContent>
       </Card>
 
@@ -579,7 +538,7 @@ export const InvoiceDashboard: React.FC = () => {
             </Box>
             {selectedInvoice && (
               <Chip
-                label={INVOICE_STATUS_LABELS[selectedInvoice.status]}
+                label={INVOICE_STATUS_LABELS[selectedInvoice.status] ?? selectedInvoice.status}
                 color={getStatusChipColor(selectedInvoice.status)}
               />
             )}
@@ -778,6 +737,7 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
   const queryClient = useQueryClient();
   const [form, setForm] = useState<PaymentFormState>(defaultPaymentForm);
   const [formError, setFormError] = useState<string | null>(null);
+  const [receiptPaymentId, setReceiptPaymentId] = useState<number | null>(null);
 
   React.useEffect(() => {
     if (invoice) {
@@ -791,14 +751,18 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
     queryFn: async () => {
       const client = createApiClient(tenantId || undefined);
       const res = await client.get('/admin/finance/payments', { params: { invoice_id: invoice!.id, per_page: 100 } });
-      return res.data;
+
+      
+return res.data;
     },
     enabled: !!invoice,
   });
 
   const payments: PaymentRow[] = useMemo(() => {
     const raw = paymentsData?.data ?? paymentsData ?? [];
-    return Array.isArray(raw) ? raw : [];
+
+    
+return Array.isArray(raw) ? raw : [];
   }, [paymentsData]);
 
   // Totaux calculés depuis les paiements chargés pour rester à jour
@@ -809,12 +773,14 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
       .reduce((sum, p) => sum + Number(p.amount), 0),
     [payments],
   );
+
   const totalAmount = invoice?.amount ?? 0;
   const remaining = Math.max(0, totalAmount - computedPaid);
 
   const recordMutation = useMutation({
     mutationFn: async (payload: { amount: number; method: PaymentMethodValue; reference: string; paymentDate: string; notes: string }) => {
       const client = createApiClient(tenantId || undefined);
+
       const res = await client.post('/admin/finance/payments', {
         invoice_id: invoice!.id,
         amount: payload.amount,
@@ -823,7 +789,9 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
         reference_number: payload.reference || undefined,
         notes: payload.notes || undefined,
       });
-      return res.data;
+
+      
+return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
@@ -836,29 +804,40 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
     if (!invoice) return;
 
     const amount = Number(form.amount);
+
     if (!Number.isFinite(amount) || amount <= 0) {
       setFormError('Le montant doit être un nombre positif.');
-      return;
+      
+return;
     }
+
     if (amount > remaining + 0.01) {
       setFormError(`Le montant dépasse le restant dû (${formatCurrency(remaining)}).`);
-      return;
+      
+return;
     }
+
     if (!form.paymentDate) {
       setFormError('La date du paiement est obligatoire.');
-      return;
+      
+return;
     }
 
     try {
-      await recordMutation.mutateAsync({
+      const created = await recordMutation.mutateAsync({
         amount,
         method: form.method,
         reference: form.reference,
         paymentDate: form.paymentDate,
         notes: form.notes,
       });
+
       onSuccess(`Paiement de ${formatCurrency(amount)} enregistré pour ${invoice.reference}.`);
       setForm({ ...defaultPaymentForm(), amount: '' });
+
+      if (created?.data?.id) {
+        setReceiptPaymentId(created.data.id);
+      }
     } catch (err: any) {
       setFormError(err?.response?.data?.message || 'Erreur lors de l\'enregistrement du paiement.');
     }
@@ -925,7 +904,7 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
                   <TableCell>Méthode</TableCell>
                   <TableCell>Référence</TableCell>
                   <TableCell align="right">Montant</TableCell>
-                  <TableCell>Statut</TableCell>
+                  <TableCell>Reçu</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -941,14 +920,22 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
                   payments.map(p => {
                     const method = p.payment_method ?? p.method ?? '';
                     const reference = p.reference_number ?? p.transaction_reference ?? '—';
-                    return (
+
+                    
+return (
                       <TableRow key={p.id}>
                         <TableCell>{p.payment_date ? new Date(p.payment_date).toLocaleDateString('fr-FR') : '—'}</TableCell>
                         <TableCell>{PAYMENT_METHOD_LABEL[method] ?? method}</TableCell>
                         <TableCell>{reference}</TableCell>
                         <TableCell align="right">{formatCurrency(Number(p.amount))}</TableCell>
                         <TableCell>
-                          <Chip size="small" label={p.status ?? 'completed'} color={p.status === 'refunded' ? 'warning' : 'success'} />
+                          {Number(p.amount) < 0 ? (
+                            <Chip size="small" label="Remboursement" color="warning" />
+                          ) : (
+                            <Button size="small" variant="outlined" onClick={() => setReceiptPaymentId(p.id)}>
+                              {p.receipt_number ?? 'Reçu'}
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -1042,6 +1029,7 @@ export const PaymentsDialog: React.FC<PaymentsDialogProps> = ({ invoice, tenantI
           </Button>
         )}
       </DialogActions>
+      <ReceiptDialog paymentId={receiptPaymentId} tenantId={tenantId} onClose={() => setReceiptPaymentId(null)} />
     </Dialog>
   );
 };

@@ -36,7 +36,7 @@ class StatisticsService {
       if (filters?.type) params.type = filters.type;
 
       const response = await client.get<ApiResponse<GlobalStatistics>>(
-        `${this.baseUrl}/statistics/global/${semesterId}`,
+        `${this.baseUrl}/statistics/semesters/${semesterId}/global`,
         { params }
       );
 
@@ -62,7 +62,7 @@ class StatisticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<ModuleStatistic[]>>(
-        `${this.baseUrl}/statistics/modules/${semesterId}`
+        `${this.baseUrl}/statistics/semesters/${semesterId}/modules`
       );
 
       return response.data.data;
@@ -78,7 +78,7 @@ class StatisticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<ProgramComparison[]>>(
-        `${this.baseUrl}/statistics/filieres/${semesterId}`
+        `${this.baseUrl}/statistics/semesters/${semesterId}/programmes`
       );
 
       return response.data.data;
@@ -94,7 +94,7 @@ class StatisticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<StatisticsDistribution>>(
-        `${this.baseUrl}/statistics/distribution/${semesterId}`
+        `${this.baseUrl}/statistics/semesters/${semesterId}/distribution`
       );
 
       return response.data.data;
@@ -124,7 +124,7 @@ class StatisticsService {
   ): Promise<Blob> {
     const client = createApiClient(tenantId);
     const response = await client.get(
-      `${this.baseUrl}/statistics/export/${semesterId}`,
+      `${this.baseUrl}/statistics/semesters/${semesterId}/export`,
       { responseType: 'blob' }
     );
 

@@ -1,19 +1,21 @@
 import { createApiClient } from '@/shared/lib/api-client';
-import type { Message, MessageInput, MessageRecipient } from '../types/messaging.types';
+import type { InboxResponse, Message, MessageInput, MessageRecipient } from '../types/messaging.types';
 
 export const messagingService = {
-  async inbox(): Promise<Message[]> {
-    const { data } = await createApiClient().get<{ data: Message[] }>(
-      '/admin/messages'
-    );
-    return data.data;
+  async inbox(): Promise<InboxResponse> {
+    const { data } = await createApiClient().get<InboxResponse>('/admin/messages');
+
+    
+return data;
   },
 
   async show(id: number): Promise<Message> {
     const { data } = await createApiClient().get<{ data: Message }>(
       `/admin/messages/${id}`
     );
-    return data.data;
+
+    
+return data.data;
   },
 
   async send(input: MessageInput): Promise<Message> {
@@ -21,7 +23,9 @@ export const messagingService = {
       '/admin/messages',
       input
     );
-    return data.data;
+
+    
+return data.data;
   },
 
   async recipients(q?: string): Promise<MessageRecipient[]> {
@@ -29,6 +33,8 @@ export const messagingService = {
       '/admin/messages/recipients',
       { params: q ? { q } : undefined }
     );
-    return data.data;
+
+    
+return data.data;
   },
 };

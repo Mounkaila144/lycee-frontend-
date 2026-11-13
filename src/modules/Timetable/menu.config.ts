@@ -2,6 +2,11 @@ import type { ModuleMenuConfig } from '@/shared/types/menu-config.types';
 
 /**
  * Timetable Module Menu Configuration
+ *
+ * Les écrans encore alimentés par des données de démonstration (héritage universitaire,
+ * endpoints back-end inexistants) sont masqués (`isVisible: false`) : Optimisation, Duplication,
+ * Modifications ponctuelles, EDT par groupe, Occupation/Utilisation/Statistiques salles,
+ * Notifications, Annulations, Remplacements, Rappels, Export PDF, Charges enseignants.
  */
 export const timetableMenuConfig: ModuleMenuConfig = {
   module: 'Timetable',
@@ -63,7 +68,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -78,7 +83,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -93,7 +98,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -108,7 +113,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -139,12 +144,12 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
           id: 'timetable-student-view',
-          label: 'EDT Étudiant',
+          label: 'EDT Élève',
           route: '/admin/timetable/student-view',
           icon: {
             type: 'emoji',
@@ -169,7 +174,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -184,7 +189,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -199,7 +204,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -214,7 +219,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -229,7 +234,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -244,7 +249,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -259,7 +264,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -274,7 +279,7 @@ export const timetableMenuConfig: ModuleMenuConfig = {
           module: 'Timetable',
           parentId: 'timetable',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
       ],

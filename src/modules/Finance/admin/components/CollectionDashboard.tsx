@@ -1,212 +1,301 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Grid from '@mui/material/Grid2';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Snackbar from '@mui/material/Snackbar';
+import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Alert from '@mui/material/Alert';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
 import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
-import type {
-  Reminder,
-  ReminderStatus,
-  ServiceBlock,
-  PaymentPlan,
-} from '../../types';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
+import { createApiClient } from '@/shared/lib/api-client';
+import { useTenant } from '@/shared/lib/tenant-context';
+import { useAuthUser } from '@/shared/hooks/useAuthUser';
+
+import type { BlockType, ReminderLevel } from '../services/collectionService';
 import {
-  REMINDER_STATUS_LABELS,
-  REMINDER_STATUS_COLORS,
-  REMINDER_TYPE_LABELS,
-  SERVICE_BLOCK_STATUS_LABELS,
-  SERVICE_BLOCK_STATUS_COLORS,
-  PAYMENT_PLAN_STATUS_LABELS,
-  PAYMENT_PLAN_STATUS_COLORS,
-} from '../../types';
+  useCollectionStatistics,
+  useCreatePaymentPlan,
+  useCreateServiceBlock,
+  useGenerateReminders,
+  useLiftServiceBlock,
+  useReminders,
+  useSendReminders,
+  useServiceBlocks,
+  useWriteOff,
+} from '../hooks/useCollection';
+import { formatXof } from './ReceiptDialog';
 
-// ──── Demo Data ────
-
-const DEMO_REMINDERS: Reminder[] = [
-  {
-    id: 1, invoice_id: 3, student_id: 3, type: 'email', status: 'sent',
-    message: 'Rappel de paiement - Facture FAC-2026-0003 en retard',
-    sent_at: '2026-03-10T08:00:00', acknowledged_at: null, escalation_level: 1,
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-10T08:00:00', updated_at: '2026-03-10T08:00:00',
-  },
-  {
-    id: 2, invoice_id: 3, student_id: 3, type: 'sms', status: 'sent',
-    message: 'Urgent: Votre facture FAC-2026-0003 est en retard. Veuillez régulariser.',
-    sent_at: '2026-03-15T09:00:00', acknowledged_at: null, escalation_level: 2,
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-15T09:00:00', updated_at: '2026-03-15T09:00:00',
-  },
-  {
-    id: 3, invoice_id: 2, student_id: 2, type: 'email', status: 'acknowledged',
-    message: 'Rappel aimable - Solde restant sur facture FAC-2026-0002',
-    sent_at: '2026-03-20T10:00:00', acknowledged_at: '2026-03-21T14:00:00', escalation_level: 1,
-    student: { id: 2, firstname: 'Fatima', lastname: 'Ousmane', matricule: 'ETU-2026-002' },
-    created_at: '2026-03-20T10:00:00', updated_at: '2026-03-21T14:00:00',
-  },
-  {
-    id: 4, invoice_id: 3, student_id: 3, type: 'letter', status: 'escalated',
-    message: 'Mise en demeure - Dernier avis avant blocage des services',
-    sent_at: '2026-03-22T08:00:00', acknowledged_at: null, escalation_level: 3,
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-22T08:00:00', updated_at: '2026-03-22T08:00:00',
-  },
-  {
-    id: 5, invoice_id: 4, student_id: 4, type: 'email', status: 'pending',
-    message: 'Rappel de paiement - Facture FAC-2026-0004',
-    sent_at: null, acknowledged_at: null, escalation_level: 1,
-    student: { id: 4, firstname: 'Aissatou', lastname: 'Boubacar', matricule: 'ETU-2026-004' },
-    created_at: '2026-03-25T11:00:00', updated_at: '2026-03-25T11:00:00',
-  },
-];
-
-const DEMO_SERVICE_BLOCKS: ServiceBlock[] = [
-  {
-    id: 1, student_id: 3, reason: 'Non-paiement des frais de scolarité - 3 mois de retard',
-    blocked_services: ['Accès bibliothèque', 'Inscription examens', 'Certificats'],
-    status: 'active', blocked_at: '2026-03-22T10:00:00', lifted_at: null, lifted_by: null,
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-22T10:00:00', updated_at: '2026-03-22T10:00:00',
-  },
-  {
-    id: 2, student_id: 6, reason: 'Frais de laboratoire impayés',
-    blocked_services: ['Accès laboratoire'],
-    status: 'lifted', blocked_at: '2026-02-15T08:00:00', lifted_at: '2026-03-01T09:00:00', lifted_by: 1,
-    student: { id: 6, firstname: 'Oumarou', lastname: 'Sidi', matricule: 'ETU-2026-006' },
-    created_at: '2026-02-15T08:00:00', updated_at: '2026-03-01T09:00:00',
-  },
-];
-
-const DEMO_PAYMENT_PLANS: PaymentPlan[] = [
-  {
-    id: 1, student_id: 3, invoice_id: 3, total_amount: 625000,
-    installments_count: 4, installment_amount: 156250,
-    start_date: '2026-04-01', status: 'active',
-    schedules: [
-      { id: 1, invoice_id: 3, installment_number: 1, amount: 156250, due_date: '2026-04-01', paid_date: null, is_paid: false, created_at: '', updated_at: '' },
-      { id: 2, invoice_id: 3, installment_number: 2, amount: 156250, due_date: '2026-05-01', paid_date: null, is_paid: false, created_at: '', updated_at: '' },
-      { id: 3, invoice_id: 3, installment_number: 3, amount: 156250, due_date: '2026-06-01', paid_date: null, is_paid: false, created_at: '', updated_at: '' },
-      { id: 4, invoice_id: 3, installment_number: 4, amount: 156250, due_date: '2026-07-01', paid_date: null, is_paid: false, created_at: '', updated_at: '' },
-    ],
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-25T14:00:00', updated_at: '2026-03-25T14:00:00',
-  },
-  {
-    id: 2, student_id: 7, invoice_id: 7, total_amount: 500000,
-    installments_count: 3, installment_amount: 166667,
-    start_date: '2026-02-01', status: 'completed',
-    schedules: [
-      { id: 5, invoice_id: 7, installment_number: 1, amount: 166667, due_date: '2026-02-01', paid_date: '2026-02-01', is_paid: true, created_at: '', updated_at: '' },
-      { id: 6, invoice_id: 7, installment_number: 2, amount: 166667, due_date: '2026-03-01', paid_date: '2026-02-28', is_paid: true, created_at: '', updated_at: '' },
-      { id: 7, invoice_id: 7, installment_number: 3, amount: 166666, due_date: '2026-04-01', paid_date: '2026-03-20', is_paid: true, created_at: '', updated_at: '' },
-    ],
-    student: { id: 7, firstname: 'Hawa', lastname: 'Garba', matricule: 'ETU-2026-007' },
-    created_at: '2026-01-25T10:00:00', updated_at: '2026-03-20T10:00:00',
-  },
-];
-
-const DEMO_COLLECTION_STATS = {
-  total_outstanding: 1425000,
-  total_reminders_sent: 12,
-  total_service_blocks: 3,
-  total_payment_plans: 5,
-  total_write_offs: 1,
-  recovery_rate: 68.5,
-  average_days_overdue: 32,
+const REMINDER_LEVEL_LABELS: Record<ReminderLevel, string> = {
+  first_reminder: '1re relance',
+  second_reminder: '2e relance',
+  final_notice: 'Mise en demeure',
+  service_block_warning: 'Avertissement blocage',
 };
 
-const getReminderStatusColor = (status: ReminderStatus): 'default' | 'primary' | 'success' | 'error' | 'warning' => {
-  switch (status) {
-    case 'pending': return 'warning';
-    case 'sent': return 'primary';
-    case 'acknowledged': return 'success';
-    case 'escalated': return 'error';
-    default: return 'default';
-  }
+const REMINDER_STATUS: Record<string, { label: string; color: 'default' | 'success' | 'error' | 'warning' }> = {
+  pending: { label: 'À envoyer', color: 'warning' },
+  sent: { label: 'Envoyée', color: 'success' },
+  failed: { label: 'Échec', color: 'error' },
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
+const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
+  enrollment: 'Inscription',
+  exam_access: 'Accès aux examens',
+  documents: 'Délivrance de documents',
+  reenrollment: 'Réinscription',
+  all: 'Tous les services',
 };
 
+interface OverdueInvoice {
+  id: number;
+  invoice_number: string;
+  student_id: number;
+  due_date: string;
+  total_amount: string | number;
+  paid_amount: string | number;
+  status: string;
+  student?: { id: number; firstname: string; lastname: string; matricule: string } | null;
+}
+
+type ActionKind = 'plan' | 'block' | 'writeoff';
+
+const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleDateString('fr-FR') : '—');
+
+const daysLate = (dueDate: string) => Math.max(0, Math.floor((Date.now() - new Date(dueDate).getTime()) / 86400000));
+
+/**
+ * Recouvrement & relances : factures en retard, relances, blocages de services.
+ *
+ * Données réelles (/admin/finance/collection/*, /admin/finance/invoices?overdue=1).
+ * Les actions sont réservées à Administrator / Comptable (le backend renvoie 403
+ * aux autres rôles) ; Manager et Caissier ont une vue en lecture seule.
+ */
 export const CollectionDashboard: React.FC = () => {
+  const { tenantId } = useTenant();
+  const tenant = tenantId || undefined;
+  const authUser = useAuthUser();
+  const canAct = (authUser?.roles ?? []).some(r => r === 'Administrator' || r === 'Comptable');
+
   const [tab, setTab] = useState(0);
-  const [reminderOpen, setReminderOpen] = useState(false);
-  const [blockOpen, setBlockOpen] = useState(false);
-  const [planOpen, setPlanOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [overduePage, setOverduePage] = useState(0);
+  const [reminderPage, setReminderPage] = useState(0);
+  const [reminderStatus, setReminderStatus] = useState('');
+  const [blockPage, setBlockPage] = useState(0);
+  const [activeBlocksOnly, setActiveBlocksOnly] = useState(true);
+  const perPage = 20;
+
+  const [action, setAction] = useState<{ kind: ActionKind; invoice: OverdueInvoice } | null>(null);
+  const [installments, setInstallments] = useState('3');
+  const [firstDueDate, setFirstDueDate] = useState('');
+  const [blockType, setBlockType] = useState<BlockType>('documents');
+  const [reason, setReason] = useState('');
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
+  const notify = (message: string, severity: 'success' | 'error' = 'success') => setSnackbar({ open: true, message, severity });
+
+  const errorMessage = (err: any, fallback: string) => {
+    const errors = err?.response?.data?.errors;
+    const firstError = errors ? (Object.values(errors)[0] as string[] | undefined)?.[0] : undefined;
+
+    return firstError || err?.response?.data?.message || fallback;
+  };
+
+  const { data: stats } = useCollectionStatistics(tenant);
+
+  const { data: overdueData, isLoading: overdueLoading } = useQuery({
+    queryKey: ['invoices', 'overdue', overduePage],
+    queryFn: async () => {
+      const res = await createApiClient(tenant).get<{ data: OverdueInvoice[]; meta: { total: number } }>(
+        '/admin/finance/invoices',
+        { params: { overdue: 1, page: overduePage + 1, per_page: perPage, sort_by: 'due_date', sort_order: 'asc' } },
+      );
+
+      return res.data;
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: remindersData, isLoading: remindersLoading } = useReminders(
+    { page: reminderPage + 1, per_page: perPage, ...(reminderStatus ? { status: reminderStatus } : {}) },
+    tenant,
+  );
+
+  const { data: blocksData, isLoading: blocksLoading } = useServiceBlocks(
+    { page: blockPage + 1, per_page: perPage, active_only: activeBlocksOnly },
+    tenant,
+  );
+
+  const generateMutation = useGenerateReminders(tenant);
+  const sendMutation = useSendReminders(tenant);
+  const blockMutation = useCreateServiceBlock(tenant);
+  const liftMutation = useLiftServiceBlock(tenant);
+  const planMutation = useCreatePaymentPlan(tenant);
+  const writeOffMutation = useWriteOff(tenant);
+
+  const handleGenerate = async () => {
+    try {
+      const res = await generateMutation.mutateAsync();
+
+      notify(res.message || 'Relances générées.');
+    } catch (err) {
+      notify(errorMessage(err, 'Erreur lors de la génération des relances.'), 'error');
+    }
+  };
+
+  const handleSend = async () => {
+    try {
+      const res = await sendMutation.mutateAsync();
+
+      notify(res.message || 'Relances envoyées.');
+    } catch (err) {
+      notify(errorMessage(err, "Erreur lors de l'envoi des relances."), 'error');
+    }
+  };
+
+  const handleLift = async (blockId: number) => {
+    try {
+      await liftMutation.mutateAsync(blockId);
+      notify('Services débloqués.');
+    } catch (err) {
+      notify(errorMessage(err, 'Erreur lors du déblocage.'), 'error');
+    }
+  };
+
+  const openAction = (kind: ActionKind, invoice: OverdueInvoice) => {
+    setAction({ kind, invoice });
+    setInstallments('3');
+    setFirstDueDate('');
+    setBlockType('documents');
+    setReason('');
+    setActionError(null);
+  };
+
+  const submitAction = async () => {
+    if (!action) return;
+    setActionError(null);
+
+    try {
+      if (action.kind === 'plan') {
+        await planMutation.mutateAsync({
+          invoice_id: action.invoice.id,
+          number_of_installments: Number(installments),
+          ...(firstDueDate ? { first_due_date: firstDueDate } : {}),
+        });
+        notify('Échéancier créé.');
+      } else if (action.kind === 'block') {
+        if (!reason.trim()) {
+          setActionError('Le motif est obligatoire.');
+
+          return;
+        }
+
+        await blockMutation.mutateAsync({
+          student_id: action.invoice.student_id,
+          block_type: blockType,
+          reason: reason.trim(),
+          related_invoice_ids: [action.invoice.id],
+        });
+        notify('Services bloqués.');
+      } else {
+        if (!reason.trim()) {
+          setActionError('Le motif est obligatoire.');
+
+          return;
+        }
+
+        await writeOffMutation.mutateAsync({ invoiceId: action.invoice.id, reason: reason.trim() });
+        notify('Créance passée en perte.');
+      }
+
+      setAction(null);
+    } catch (err) {
+      setActionError(errorMessage(err, "Erreur lors de l'opération."));
+    }
+  };
+
+  const actionPending = planMutation.isPending || blockMutation.isPending || writeOffMutation.isPending;
+
+  const studentLabel = (s?: { firstname: string; lastname: string; matricule: string } | null) =>
+    s ? `${s.firstname} ${s.lastname} (${s.matricule})` : '—';
+
+  const loader = (
+    <Box display='flex' justifyContent='center' p={4}>
+      <CircularProgress />
+    </Box>
+  );
 
   return (
     <Box sx={{ p: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">
-          Administration
-        </Link>
-        <Link underline="hover" color="inherit" href="#">
-          Comptabilit&eacute;
-        </Link>
-        <Typography color="text.primary">Recouvrement</Typography>
-      </Breadcrumbs>
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Recouvrement
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+        <Typography variant='h4' fontWeight='bold'>
+          Recouvrement &amp; relances
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" onClick={() => setBlockOpen(true)}>
-            Bloquer un service
-          </Button>
-          <Button variant="contained" onClick={() => setReminderOpen(true)}>
-            + Nouveau rappel
-          </Button>
-        </Box>
+        {canAct && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant='outlined' onClick={handleGenerate} disabled={generateMutation.isPending}>
+              {generateMutation.isPending ? 'Génération…' : 'Générer les relances'}
+            </Button>
+            <Button variant='contained' onClick={handleSend} disabled={sendMutation.isPending}>
+              {sendMutation.isPending ? 'Envoi…' : 'Envoyer les relances en attente'}
+            </Button>
+          </Box>
+        )}
       </Box>
 
-      {/* Stats Cards */}
+      {!canAct && (
+        <Alert severity='info' sx={{ mb: 2 }}>
+          Consultation seule : les relances, blocages et échéanciers sont gérés par l&apos;administration et la comptabilité.
+        </Alert>
+      )}
+
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Créances en cours', value: formatCurrency(DEMO_COLLECTION_STATS.total_outstanding), color: '#f44336' },
-          { label: 'Taux de recouvrement', value: `${DEMO_COLLECTION_STATS.recovery_rate}%`, color: '#4caf50' },
-          { label: 'Rappels envoyés', value: DEMO_COLLECTION_STATS.total_reminders_sent, color: '#1976d2' },
-          { label: 'Jours moy. retard', value: DEMO_COLLECTION_STATS.average_days_overdue, color: '#ff9800' },
-        ].map((stat, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
+          { label: 'Montant en retard', value: formatXof(stats?.total_overdue_amount ?? 0), color: '#f44336' },
+          { label: 'Factures en retard', value: stats?.total_overdue_count ?? 0, color: '#ff9800' },
+          { label: 'Relances envoyées', value: stats?.reminders_sent ?? 0, color: '#1976d2' },
+          { label: 'Blocages actifs', value: stats?.active_blocks ?? 0, color: '#9c27b0' },
+        ].map(stat => (
+          <Grid key={stat.label} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
+                <Typography variant='h5' fontWeight='bold' sx={{ color: stat.color }}>
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {stat.label}
                 </Typography>
               </CardContent>
@@ -215,384 +304,272 @@ export const CollectionDashboard: React.FC = () => {
         ))}
       </Grid>
 
+      {stats?.aging && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+          {Object.entries(stats.aging).map(([range, bucket]) => (
+            <Chip key={range} variant='outlined' label={`${range} j : ${bucket.count} — ${formatXof(bucket.amount)}`} />
+          ))}
+        </Box>
+      )}
+
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
-        <Tab label="Rappels" />
-        <Tab label="Blocages de services" />
-        <Tab label="Plans de paiement" />
-        <Tab label="Statistiques" />
+        <Tab label='Factures en retard' />
+        <Tab label='Relances' />
+        <Tab label='Blocages de services' />
       </Tabs>
 
-      {/* Tab 0: Reminders */}
       {tab === 0 && (
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Historique des Rappels</Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>&Eacute;tudiant</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Message</TableCell>
-                    <TableCell>Niveau</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell>Envoy&eacute; le</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {DEMO_REMINDERS.map(reminder => (
-                    <TableRow key={reminder.id} hover>
-                      <TableCell>
-                        <Typography fontWeight="medium">
-                          {reminder.student?.firstname} {reminder.student?.lastname}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {reminder.student?.matricule}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip size="small" label={REMINDER_TYPE_LABELS[reminder.type]} variant="outlined" />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {reminder.message}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={`Niveau ${reminder.escalation_level}`}
-                          color={reminder.escalation_level >= 3 ? 'error' : reminder.escalation_level >= 2 ? 'warning' : 'default'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={REMINDER_STATUS_LABELS[reminder.status]}
-                          color={getReminderStatusColor(reminder.status)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {reminder.sent_at ? new Date(reminder.sent_at).toLocaleDateString('fr-FR') : '-'}
-                      </TableCell>
-                      <TableCell align="center">
-                        {reminder.status === 'pending' && (
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() => setSnackbar({ open: true, message: 'Rappel envoyé', severity: 'success' })}
-                          >
-                            Envoyer
-                          </Button>
-                        )}
-                      </TableCell>
+            {overdueLoading ? loader : (
+              <TableContainer>
+                <Table size='small'>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Facture</TableCell>
+                      <TableCell>Élève</TableCell>
+                      <TableCell>Échéance</TableCell>
+                      <TableCell align='right'>Retard</TableCell>
+                      <TableCell align='right'>Reste dû</TableCell>
+                      {canAct && <TableCell align='center'>Actions</TableCell>}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {(overdueData?.data ?? []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={canAct ? 6 : 5} align='center'>
+                          <Typography color='text.secondary' sx={{ py: 3 }}>Aucune facture en retard.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      (overdueData?.data ?? []).map(invoice => (
+                        <TableRow key={invoice.id} hover>
+                          <TableCell>{invoice.invoice_number}</TableCell>
+                          <TableCell>{studentLabel(invoice.student)}</TableCell>
+                          <TableCell>{formatDate(invoice.due_date)}</TableCell>
+                          <TableCell align='right'>{daysLate(invoice.due_date)} j</TableCell>
+                          <TableCell align='right'>
+                            <Typography fontWeight='bold' color='error.main'>
+                              {formatXof(Number(invoice.total_amount) - Number(invoice.paid_amount))}
+                            </Typography>
+                          </TableCell>
+                          {canAct && (
+                            <TableCell align='center'>
+                              <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <Button size='small' variant='outlined' onClick={() => openAction('plan', invoice)}>Échéancier</Button>
+                                <Button size='small' variant='outlined' color='warning' onClick={() => openAction('block', invoice)}>Bloquer</Button>
+                                <Button size='small' variant='outlined' color='error' onClick={() => openAction('writeoff', invoice)}>Perte</Button>
+                              </Box>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <TablePagination
+              component='div'
+              count={overdueData?.meta?.total ?? 0}
+              page={overduePage}
+              rowsPerPage={perPage}
+              rowsPerPageOptions={[perPage]}
+              onPageChange={(_, p) => setOverduePage(p)}
+            />
           </CardContent>
         </Card>
       )}
 
-      {/* Tab 1: Service Blocks */}
       {tab === 1 && (
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Blocages de Services</Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>&Eacute;tudiant</TableCell>
-                    <TableCell>Raison</TableCell>
-                    <TableCell>Services bloqu&eacute;s</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell>Bloqu&eacute; le</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {DEMO_SERVICE_BLOCKS.map(block => (
-                    <TableRow key={block.id} hover>
-                      <TableCell>
-                        <Typography fontWeight="medium">
-                          {block.student?.firstname} {block.student?.lastname}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {block.student?.matricule}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{block.reason}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                          {block.blocked_services.map((service, idx) => (
-                            <Chip key={idx} size="small" label={service} variant="outlined" color="error" />
-                          ))}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={SERVICE_BLOCK_STATUS_LABELS[block.status]}
-                          sx={{ bgcolor: SERVICE_BLOCK_STATUS_COLORS[block.status], color: 'white' }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {new Date(block.blocked_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell align="center">
-                        {block.status === 'active' && (
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => setSnackbar({ open: true, message: 'Blocage levé', severity: 'success' })}
-                          >
-                            Lever le blocage
-                          </Button>
-                        )}
-                      </TableCell>
+            <FormControl size='small' sx={{ minWidth: 200, mb: 2 }}>
+              <InputLabel>Statut</InputLabel>
+              <Select label='Statut' value={reminderStatus} onChange={e => { setReminderStatus(e.target.value); setReminderPage(0); }}>
+                <MenuItem value=''>Tous</MenuItem>
+                {Object.entries(REMINDER_STATUS).map(([value, { label }]) => (
+                  <MenuItem key={value} value={value}>{label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {remindersLoading ? loader : (
+              <TableContainer>
+                <Table size='small'>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Date</TableCell>
+                      <TableCell>Niveau</TableCell>
+                      <TableCell>Élève</TableCell>
+                      <TableCell>Facture</TableCell>
+                      <TableCell>Canaux</TableCell>
+                      <TableCell>Statut</TableCell>
+                      <TableCell>Envoyée le</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {(remindersData?.data ?? []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} align='center'>
+                          <Typography color='text.secondary' sx={{ py: 3 }}>Aucune relance.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      (remindersData?.data ?? []).map(reminder => {
+                        const status = REMINDER_STATUS[reminder.status] ?? { label: reminder.status, color: 'default' as const };
+
+                        return (
+                          <TableRow key={reminder.id} hover>
+                            <TableCell>{formatDate(reminder.reminder_date)}</TableCell>
+                            <TableCell>{REMINDER_LEVEL_LABELS[reminder.reminder_type] ?? reminder.reminder_type}</TableCell>
+                            <TableCell>{studentLabel(reminder.student)}</TableCell>
+                            <TableCell>{reminder.invoice?.invoice_number ?? `#${reminder.invoice_id}`}</TableCell>
+                            <TableCell>{(reminder.send_methods ?? []).join(', ') || '—'}</TableCell>
+                            <TableCell><Chip size='small' label={status.label} color={status.color} /></TableCell>
+                            <TableCell>{formatDate(reminder.sent_at)}</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <TablePagination
+              component='div'
+              count={remindersData?.meta?.total ?? 0}
+              page={reminderPage}
+              rowsPerPage={perPage}
+              rowsPerPageOptions={[perPage]}
+              onPageChange={(_, p) => setReminderPage(p)}
+            />
           </CardContent>
         </Card>
       )}
 
-      {/* Tab 2: Payment Plans */}
       {tab === 2 && (
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Plans de Paiement</Typography>
-            {DEMO_PAYMENT_PLANS.map(plan => (
-              <Paper key={plan.id} variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Box>
-                    <Typography fontWeight="bold">
-                      {plan.student?.firstname} {plan.student?.lastname}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {plan.student?.matricule} - {formatCurrency(plan.total_amount)} en {plan.installments_count} mensualit&eacute;s
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Chip
-                      size="small"
-                      label={PAYMENT_PLAN_STATUS_LABELS[plan.status]}
-                      sx={{ bgcolor: PAYMENT_PLAN_STATUS_COLORS[plan.status], color: 'white' }}
-                    />
-                    {plan.status === 'active' && (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={() => setSnackbar({ open: true, message: 'Plan annulé', severity: 'success' })}
-                      >
-                        Annuler
-                      </Button>
-                    )}
-                  </Box>
-                </Box>
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
+            <FormControlLabel
+              sx={{ mb: 1 }}
+              control={<Checkbox checked={activeBlocksOnly} onChange={e => { setActiveBlocksOnly(e.target.checked); setBlockPage(0); }} />}
+              label='Blocages actifs uniquement'
+            />
+            {blocksLoading ? loader : (
+              <TableContainer>
+                <Table size='small'>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Élève</TableCell>
+                      <TableCell>Service bloqué</TableCell>
+                      <TableCell>Motif</TableCell>
+                      <TableCell>Bloqué le</TableCell>
+                      <TableCell>Statut</TableCell>
+                      {canAct && <TableCell align='center'>Actions</TableCell>}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(blocksData?.data ?? []).length === 0 ? (
                       <TableRow>
-                        <TableCell>Mensualit&eacute;</TableCell>
-                        <TableCell align="right">Montant</TableCell>
-                        <TableCell>&Eacute;ch&eacute;ance</TableCell>
-                        <TableCell>Statut</TableCell>
+                        <TableCell colSpan={canAct ? 6 : 5} align='center'>
+                          <Typography color='text.secondary' sx={{ py: 3 }}>Aucun blocage.</Typography>
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {plan.schedules.map(schedule => (
-                        <TableRow key={schedule.id}>
-                          <TableCell>Tranche {schedule.installment_number}</TableCell>
-                          <TableCell align="right">{formatCurrency(schedule.amount)}</TableCell>
-                          <TableCell>{new Date(schedule.due_date).toLocaleDateString('fr-FR')}</TableCell>
+                    ) : (
+                      (blocksData?.data ?? []).map(block => (
+                        <TableRow key={block.id} hover>
+                          <TableCell>{studentLabel(block.student)}</TableCell>
+                          <TableCell>{BLOCK_TYPE_LABELS[block.block_type] ?? block.block_type}</TableCell>
+                          <TableCell>{block.reason}</TableCell>
+                          <TableCell>{formatDate(block.blocked_at)}</TableCell>
                           <TableCell>
-                            <Chip
-                              size="small"
-                              label={schedule.is_paid ? 'Payé' : 'En attente'}
-                              color={schedule.is_paid ? 'success' : 'default'}
-                            />
+                            <Chip size='small' label={block.is_active ? 'Actif' : `Levé le ${formatDate(block.unblocked_at)}`} color={block.is_active ? 'error' : 'default'} />
                           </TableCell>
+                          {canAct && (
+                            <TableCell align='center'>
+                              {block.is_active && (
+                                <Button size='small' variant='outlined' onClick={() => handleLift(block.id)} disabled={liftMutation.isPending}>
+                                  Débloquer
+                                </Button>
+                              )}
+                            </TableCell>
+                          )}
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            ))}
-            <Button
-              variant="contained"
-              onClick={() => setPlanOpen(true)}
-              sx={{ mt: 1 }}
-            >
-              + Nouveau plan de paiement
-            </Button>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <TablePagination
+              component='div'
+              count={blocksData?.meta?.total ?? 0}
+              page={blockPage}
+              rowsPerPage={perPage}
+              rowsPerPageOptions={[perPage]}
+              onPageChange={(_, p) => setBlockPage(p)}
+            />
           </CardContent>
         </Card>
       )}
 
-      {/* Tab 3: Statistics */}
-      {tab === 3 && (
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>Indicateurs de Recouvrement</Typography>
-                {[
-                  { label: 'Créances totales en cours', value: formatCurrency(DEMO_COLLECTION_STATS.total_outstanding), color: '#f44336' },
-                  { label: 'Rappels envoyés', value: DEMO_COLLECTION_STATS.total_reminders_sent, color: '#1976d2' },
-                  { label: 'Services bloqués', value: DEMO_COLLECTION_STATS.total_service_blocks, color: '#ff9800' },
-                  { label: 'Plans de paiement actifs', value: DEMO_COLLECTION_STATS.total_payment_plans, color: '#9c27b0' },
-                  { label: 'Créances passées en pertes', value: DEMO_COLLECTION_STATS.total_write_offs, color: '#757575' },
-                ].map((item, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #eee' }}>
-                    <Typography variant="body2">{item.label}</Typography>
-                    <Typography fontWeight="bold" sx={{ color: item.color }}>{item.value}</Typography>
-                  </Box>
-                ))}
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>Taux de Recouvrement</Typography>
-                <Box sx={{ textAlign: 'center', py: 3 }}>
-                  <Typography variant="h2" fontWeight="bold" sx={{ color: DEMO_COLLECTION_STATS.recovery_rate >= 70 ? '#4caf50' : '#f44336' }}>
-                    {DEMO_COLLECTION_STATS.recovery_rate}%
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={DEMO_COLLECTION_STATS.recovery_rate}
-                    sx={{
-                      height: 16, borderRadius: 8, mt: 2, mx: 4,
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: DEMO_COLLECTION_STATS.recovery_rate >= 70 ? '#4caf50' : '#f44336',
-                        borderRadius: 8,
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Délai moyen de retard : {DEMO_COLLECTION_STATS.average_days_overdue} jours
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* Create Reminder Dialog */}
-      <Dialog open={reminderOpen} onClose={() => setReminderOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Nouveau Rappel</DialogTitle>
+      <Dialog open={action !== null} onClose={() => setAction(null)} maxWidth='sm' fullWidth>
+        <DialogTitle>
+          {action?.kind === 'plan' && 'Créer un échéancier'}
+          {action?.kind === 'block' && 'Bloquer des services'}
+          {action?.kind === 'writeoff' && 'Passer la créance en perte'}
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="R&eacute;f&eacute;rence facture" fullWidth placeholder="Ex: FAC-2026-0003" />
-            <FormControl fullWidth>
-              <InputLabel>Type de rappel</InputLabel>
-              <Select label="Type de rappel" defaultValue="email">
-                <MenuItem value="email">Email</MenuItem>
-                <MenuItem value="sms">SMS</MenuItem>
-                <MenuItem value="letter">Courrier</MenuItem>
-                <MenuItem value="phone">T&eacute;l&eacute;phone</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField label="Message" fullWidth multiline rows={4} placeholder="Contenu du rappel..." />
+            {actionError && <Alert severity='error'>{actionError}</Alert>}
+            {action && (
+              <Alert severity='info'>
+                Facture {action.invoice.invoice_number} — {studentLabel(action.invoice.student)} — reste dû{' '}
+                {formatXof(Number(action.invoice.total_amount) - Number(action.invoice.paid_amount))}
+              </Alert>
+            )}
+            {action?.kind === 'plan' && (
+              <>
+                <TextField
+                  label="Nombre d'échéances"
+                  type='number'
+                  value={installments}
+                  onChange={e => setInstallments(e.target.value)}
+                  slotProps={{ htmlInput: { min: 2, max: 12 } }}
+                />
+                <TextField
+                  label='Première échéance (optionnel)'
+                  type='date'
+                  value={firstDueDate}
+                  onChange={e => setFirstDueDate(e.target.value)}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </>
+            )}
+            {action?.kind === 'block' && (
+              <FormControl fullWidth>
+                <InputLabel>Service</InputLabel>
+                <Select label='Service' value={blockType} onChange={e => setBlockType(e.target.value as BlockType)}>
+                  {Object.entries(BLOCK_TYPE_LABELS).map(([value, label]) => (
+                    <MenuItem key={value} value={value}>{label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            {(action?.kind === 'block' || action?.kind === 'writeoff') && (
+              <TextField label='Motif' multiline rows={3} value={reason} onChange={e => setReason(e.target.value)} />
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setReminderOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setReminderOpen(false);
-              setSnackbar({ open: true, message: 'Rappel créé avec succès', severity: 'success' });
-            }}
-          >
-            Cr&eacute;er
+          <Button onClick={() => setAction(null)} disabled={actionPending}>Annuler</Button>
+          <Button variant='contained' color={action?.kind === 'writeoff' ? 'error' : 'primary'} onClick={submitAction} disabled={actionPending}>
+            {actionPending ? 'Traitement…' : 'Valider'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Create Service Block Dialog */}
-      <Dialog open={blockOpen} onClose={() => setBlockOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Bloquer un Service</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="Matricule &eacute;tudiant" fullWidth placeholder="Ex: ETU-2026-003" />
-            <TextField label="Raison" fullWidth multiline rows={2} placeholder="Raison du blocage..." />
-            <FormControl fullWidth>
-              <InputLabel>Services &agrave; bloquer</InputLabel>
-              <Select label="Services à bloquer" defaultValue="" multiple>
-                <MenuItem value="bibliotheque">Acc&egrave;s biblioth&egrave;que</MenuItem>
-                <MenuItem value="examens">Inscription examens</MenuItem>
-                <MenuItem value="certificats">Certificats</MenuItem>
-                <MenuItem value="laboratoire">Acc&egrave;s laboratoire</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBlockOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              setBlockOpen(false);
-              setSnackbar({ open: true, message: 'Service bloqué', severity: 'success' });
-            }}
-          >
-            Bloquer
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Create Payment Plan Dialog */}
-      <Dialog open={planOpen} onClose={() => setPlanOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Nouveau Plan de Paiement</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="Matricule &eacute;tudiant" fullWidth placeholder="Ex: ETU-2026-003" />
-            <TextField label="R&eacute;f&eacute;rence facture" fullWidth placeholder="Ex: FAC-2026-0003" />
-            <TextField label="Nombre de mensualit&eacute;s" type="number" fullWidth defaultValue={3} />
-            <TextField
-              label="Date de d&eacute;but"
-              type="date"
-              defaultValue="2026-04-01"
-              slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPlanOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setPlanOpen(false);
-              setSnackbar({ open: true, message: 'Plan de paiement créé', severity: 'success' });
-            }}
-          >
-            Cr&eacute;er
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-      >
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
         <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
           {snackbar.message}
         </Alert>

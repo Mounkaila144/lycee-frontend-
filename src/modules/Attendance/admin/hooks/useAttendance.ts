@@ -15,6 +15,14 @@ export const useAttendanceSessions = (filters?: SessionFilters, tenantId?: strin
   });
 };
 
+export const useAttendanceClasses = (tenantId?: string) => {
+  return useQuery({
+    queryKey: ['attendance-classes'],
+    queryFn: () => attendanceService.getClasses(tenantId),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useAttendanceSheet = (sessionId?: number, tenantId?: string) => {
   return useQuery({
     queryKey: ['attendance-sheet', sessionId],
@@ -41,7 +49,7 @@ export const useRecordAttendance = (tenantId?: string) => {
   return useMutation({
     mutationFn: (data: RecordAttendanceRequest) =>
       attendanceService.recordAttendance(data, tenantId),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance-sheet'] });
       qc.invalidateQueries({ queryKey: ['attendance-sessions'] });
     },

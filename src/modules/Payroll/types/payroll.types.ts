@@ -1,373 +1,374 @@
+// Types alignés sur le backend Laravel (Modules/Payroll).
+// Les montants `decimal` sont sérialisés en chaîne par Laravel : toujours passer par Number().
+
+export type Money = number | string;
+
 // ──── Enums / Constants ────
 
-export type ContractType = 'CDI' | 'CDD' | 'Interim' | 'Stage';
-export type ContractStatus = 'active' | 'suspended' | 'terminated' | 'expired';
-export type AmendmentStatus = 'pending' | 'approved' | 'rejected';
-export type ComponentType = 'bonus' | 'allowance' | 'overtime' | 'deduction';
-export type AdvanceStatus = 'requested' | 'approved' | 'disbursed' | 'rejected' | 'repaid';
-export type PayrollPeriodStatus = 'draft' | 'calculated' | 'validated' | 'paid';
-export type BankTransferStatus = 'pending' | 'processing' | 'completed' | 'failed';
-export type DeclarationType = 'CNSS' | 'income_tax' | 'AMO';
-export type DeclarationStatus = 'draft' | 'validated' | 'submitted' | 'paid';
+export type EmployeeStatus = 'active' | 'inactive' | 'suspended' | 'terminated';
+export type ContractType = 'permanent' | 'fixed_term' | 'temporary' | 'internship' | 'consultant' | 'part_time';
+export type ContractStatus = 'draft' | 'active' | 'expired' | 'terminated' | 'renewed';
+export type ComponentType = 'bonus' | 'allowance' | 'deduction' | 'overtime' | 'commission' | 'benefit' | 'reimbursement';
+export type CalculationType = 'fixed' | 'percentage' | 'hourly' | 'daily';
+export type SalaryScaleType = 'teaching' | 'administrative' | 'technical' | 'management' | 'other';
+export type AdvanceType = 'salary_advance' | 'loan' | 'emergency' | 'other';
+export type AdvanceStatus = 'pending' | 'approved' | 'rejected' | 'disbursed' | 'repaying' | 'repaid' | 'cancelled';
+export type DisbursementMethod = 'cash' | 'bank_transfer' | 'check';
+export type PayrollPeriodStatus = 'draft' | 'in_progress' | 'calculated' | 'validated' | 'paid' | 'closed';
+export type DeclarationType =
+  | 'cnss'
+  | 'amo'
+  | 'cimr'
+  | 'income_tax'
+  | 'professional_tax'
+  | 'training_tax'
+  | 'annual_tax_summary';
+export type DeclarationStatus = 'draft' | 'validated' | 'submitted' | 'accepted' | 'rejected' | 'paid';
+export type DeclarationPaymentMethod = 'bank_transfer' | 'check' | 'online' | 'other';
 
-export const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
-  CDI: 'CDI',
-  CDD: 'CDD',
-  Interim: 'Intérim',
-  Stage: 'Stage',
+export type ChipColor = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+
+export const EMPLOYEE_STATUS_LABELS: Record<EmployeeStatus, string> = {
+  active: 'Actif',
+  inactive: 'Inactif',
+  suspended: 'Suspendu',
+  terminated: 'Sorti',
 };
 
-export const CONTRACT_TYPE_COLORS: Record<ContractType, string> = {
-  CDI: '#4caf50',
-  CDD: '#1976d2',
-  Interim: '#ff9800',
-  Stage: '#9c27b0',
+export const EMPLOYEE_STATUS_COLORS: Record<EmployeeStatus, ChipColor> = {
+  active: 'success',
+  inactive: 'default',
+  suspended: 'warning',
+  terminated: 'error',
+};
+
+export const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
+  permanent: 'CDI',
+  fixed_term: 'CDD',
+  temporary: 'Temporaire',
+  internship: 'Stage',
+  consultant: 'Consultant',
+  part_time: 'Temps partiel',
 };
 
 export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
+  draft: 'Brouillon',
   active: 'Actif',
-  suspended: 'Suspendu',
-  terminated: 'Résilié',
   expired: 'Expiré',
+  terminated: 'Résilié',
+  renewed: 'Renouvelé',
 };
 
-export const CONTRACT_STATUS_COLORS: Record<ContractStatus, string> = {
-  active: '#4caf50',
-  suspended: '#ff9800',
-  terminated: '#f44336',
-  expired: '#9e9e9e',
-};
-
-export const AMENDMENT_STATUS_LABELS: Record<AmendmentStatus, string> = {
-  pending: 'En attente',
-  approved: 'Approuvé',
-  rejected: 'Rejeté',
+export const CONTRACT_STATUS_COLORS: Record<ContractStatus, ChipColor> = {
+  draft: 'default',
+  active: 'success',
+  expired: 'default',
+  terminated: 'error',
+  renewed: 'info',
 };
 
 export const COMPONENT_TYPE_LABELS: Record<ComponentType, string> = {
   bonus: 'Prime',
   allowance: 'Indemnité',
-  overtime: 'Heures supplémentaires',
   deduction: 'Retenue',
+  overtime: 'Heures supplémentaires',
+  commission: 'Commission',
+  benefit: 'Avantage',
+  reimbursement: 'Remboursement',
 };
 
-export const COMPONENT_TYPE_COLORS: Record<ComponentType, string> = {
-  bonus: '#4caf50',
-  allowance: '#1976d2',
-  overtime: '#ff9800',
-  deduction: '#f44336',
+export const CALCULATION_TYPE_LABELS: Record<CalculationType, string> = {
+  fixed: 'Montant fixe',
+  percentage: '% du salaire de base',
+  hourly: 'Taux horaire',
+  daily: 'Taux journalier',
+};
+
+export const SALARY_SCALE_TYPE_LABELS: Record<SalaryScaleType, string> = {
+  teaching: 'Enseignant',
+  administrative: 'Administratif',
+  technical: 'Technique',
+  management: 'Direction',
+  other: 'Autre',
+};
+
+export const ADVANCE_TYPE_LABELS: Record<AdvanceType, string> = {
+  salary_advance: 'Avance sur salaire',
+  loan: 'Prêt',
+  emergency: 'Urgence',
+  other: 'Autre',
 };
 
 export const ADVANCE_STATUS_LABELS: Record<AdvanceStatus, string> = {
-  requested: 'Demandé',
-  approved: 'Approuvé',
-  disbursed: 'Décaissé',
-  rejected: 'Rejeté',
-  repaid: 'Remboursé',
+  pending: 'En attente',
+  approved: 'Approuvée',
+  rejected: 'Rejetée',
+  disbursed: 'Décaissée',
+  repaying: 'En remboursement',
+  repaid: 'Remboursée',
+  cancelled: 'Annulée',
 };
 
-export const ADVANCE_STATUS_COLORS: Record<AdvanceStatus, string> = {
-  requested: '#ff9800',
-  approved: '#1976d2',
-  disbursed: '#4caf50',
-  rejected: '#f44336',
-  repaid: '#9e9e9e',
+export const ADVANCE_STATUS_COLORS: Record<AdvanceStatus, ChipColor> = {
+  pending: 'warning',
+  approved: 'info',
+  rejected: 'error',
+  disbursed: 'success',
+  repaying: 'primary',
+  repaid: 'default',
+  cancelled: 'default',
 };
 
 export const PAYROLL_PERIOD_STATUS_LABELS: Record<PayrollPeriodStatus, string> = {
   draft: 'Brouillon',
-  calculated: 'Calculé',
-  validated: 'Validé',
-  paid: 'Payé',
+  in_progress: 'En cours',
+  calculated: 'Calculée',
+  validated: 'Validée',
+  paid: 'Payée',
+  closed: 'Clôturée',
 };
 
-export const PAYROLL_PERIOD_STATUS_COLORS: Record<PayrollPeriodStatus, string> = {
-  draft: '#9e9e9e',
-  calculated: '#1976d2',
-  validated: '#ff9800',
-  paid: '#4caf50',
-};
-
-export const BANK_TRANSFER_STATUS_LABELS: Record<BankTransferStatus, string> = {
-  pending: 'En attente',
-  processing: 'En cours',
-  completed: 'Terminé',
-  failed: 'Échoué',
+export const PAYROLL_PERIOD_STATUS_COLORS: Record<PayrollPeriodStatus, ChipColor> = {
+  draft: 'default',
+  in_progress: 'info',
+  calculated: 'primary',
+  validated: 'warning',
+  paid: 'success',
+  closed: 'default',
 };
 
 export const DECLARATION_TYPE_LABELS: Record<DeclarationType, string> = {
-  CNSS: 'CNSS',
+  cnss: 'CNSS',
+  amo: 'AMO',
+  cimr: 'CIMR',
   income_tax: 'Impôt sur le revenu',
-  AMO: 'AMO',
-};
-
-export const DECLARATION_TYPE_COLORS: Record<DeclarationType, string> = {
-  CNSS: '#1976d2',
-  income_tax: '#ff9800',
-  AMO: '#9c27b0',
+  professional_tax: 'Taxe professionnelle',
+  training_tax: 'Taxe de formation',
+  annual_tax_summary: 'Récapitulatif annuel',
 };
 
 export const DECLARATION_STATUS_LABELS: Record<DeclarationStatus, string> = {
   draft: 'Brouillon',
-  validated: 'Validé',
-  submitted: 'Soumis',
-  paid: 'Payé',
+  validated: 'Validée',
+  submitted: 'Soumise',
+  accepted: 'Acceptée',
+  rejected: 'Rejetée',
+  paid: 'Payée',
 };
 
-export const DECLARATION_STATUS_COLORS: Record<DeclarationStatus, string> = {
-  draft: '#9e9e9e',
-  validated: '#1976d2',
-  submitted: '#ff9800',
-  paid: '#4caf50',
+export const DECLARATION_STATUS_COLORS: Record<DeclarationStatus, ChipColor> = {
+  draft: 'default',
+  validated: 'info',
+  submitted: 'warning',
+  accepted: 'primary',
+  rejected: 'error',
+  paid: 'success',
 };
 
-// ──── Summary Models ────
-
-export interface EmployeeSummary {
-  id: number;
-  firstname: string;
-  lastname: string;
-  matricule: string;
-  email?: string;
-  phone?: string;
-  photo?: string;
-}
-
-export interface DepartmentSummary {
-  id: number;
-  name: string;
-  code: string;
-}
+export const MONTH_LABELS = [
+  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+];
 
 // ──── Core Models ────
 
 export interface Employee {
   id: number;
-  firstname: string;
-  lastname: string;
-  matricule: string;
+  employee_code: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string | null;
+  cin: string | null;
+  cnss_number: string | null;
   date_of_birth: string | null;
   hire_date: string;
-  department_id: number | null;
+  termination_date: string | null;
+  department: string | null;
   position: string | null;
-  photo: string | null;
-  is_active: boolean;
-  department?: DepartmentSummary;
-  current_contract?: Contract;
+  bank_name: string | null;
+  bank_account_number: string | null;
+  status: EmployeeStatus;
+  contracts?: Contract[];
+  payroll_components?: PayrollComponent[];
+  advances?: Advance[];
   created_at: string;
   updated_at: string;
 }
+
+export type EmployeeSummary = Pick<Employee, 'id' | 'employee_code' | 'first_name' | 'last_name' | 'email'>;
 
 export interface Contract {
   id: number;
   employee_id: number;
-  type: ContractType;
+  contract_number: string;
+  contract_type: ContractType;
   start_date: string;
   end_date: string | null;
-  base_salary: number;
+  weekly_hours: number;
+  base_salary: Money;
   status: ContractStatus;
-  description: string | null;
-  employee?: EmployeeSummary;
-  amendments?: Amendment[];
+  signature_date: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface Amendment {
-  id: number;
-  contract_id: number;
-  field_changed: string;
-  old_value: string;
-  new_value: string;
-  effective_date: string;
-  reason: string | null;
-  status: AmendmentStatus;
-  approved_by: number | null;
-  contract?: Contract;
-  created_at: string;
-  updated_at: string;
+export interface SalaryScaleGrade {
+  grade: string;
+  min_salary: number;
+  max_salary: number;
 }
 
 export interface SalaryScale {
   id: number;
-  name: string;
   code: string;
-  grade: string;
-  echelon: number;
-  base_amount: number;
+  name: string;
   description: string | null;
+  type: SalaryScaleType;
+  grades: SalaryScaleGrade[];
+  effective_from: string;
+  effective_to: string | null;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface PayrollComponent {
   id: number;
-  name: string;
+  employee_id: number;
   code: string;
-  type: ComponentType;
-  is_taxable: boolean;
-  is_mandatory: boolean;
-  default_amount: number | null;
-  percentage: number | null;
-  description: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  name: string;
+  component_type: ComponentType;
+  calculation_type: CalculationType;
+  amount: Money | null;
+  percentage: Money | null;
+  rate: Money | null;
+  frequency: string;
+  is_recurring: boolean;
+  valid_from: string | null;
+  valid_to: string | null;
+  status: 'draft' | 'active' | 'inactive';
+  employee?: EmployeeSummary;
 }
 
 export interface Advance {
   id: number;
   employee_id: number;
-  amount: number;
-  reason: string | null;
-  requested_date: string;
-  approved_date: string | null;
-  disbursed_date: string | null;
-  repayment_months: number;
+  advance_number: string;
+  advance_type: AdvanceType;
+  amount: Money;
+  reason: string;
+  request_date: string;
   status: AdvanceStatus;
-  approved_by: number | null;
+  number_of_installments: number | null;
+  installment_amount: Money | null;
+  balance: Money | null;
+  total_repaid: Money | null;
   employee?: EmployeeSummary;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface PayrollPeriod {
+export interface PayrollRecord {
   id: number;
-  month: number;
-  year: number;
-  label: string;
-  start_date: string;
-  end_date: string;
-  status: PayrollPeriodStatus;
-  total_gross: number | null;
-  total_net: number | null;
-  total_deductions: number | null;
-  employee_count: number | null;
-  calculated_at: string | null;
-  validated_at: string | null;
-  paid_at: string | null;
-  calculated_by: number | null;
-  validated_by: number | null;
-  created_at: string;
-  updated_at: string;
+  payroll_period_id: number;
+  employee_id: number;
+  base_salary: Money;
+  total_earnings: Money;
+  gross_salary: Money;
+  cnss_employee: Money;
+  amo_employee: Money;
+  cimr_employee: Money;
+  income_tax: Money;
+  advance_deductions: Money;
+  total_deductions: Money;
+  net_salary: Money;
+  total_employer_charges: Money;
+  total_cost: Money;
+  status: string;
+  payment_status: string;
+  employee?: EmployeeSummary;
 }
 
 export interface Payslip {
   id: number;
-  payroll_period_id: number;
+  payroll_record_id: number;
   employee_id: number;
-  base_salary: number;
-  gross_salary: number;
-  net_salary: number;
-  total_bonuses: number;
-  total_deductions: number;
-  cnss_employee: number;
-  cnss_employer: number;
-  income_tax: number;
-  amo_employee: number;
-  amo_employer: number;
-  employee?: EmployeeSummary;
-  payroll_period?: PayrollPeriod;
-  components?: PayslipComponent[];
-  created_at: string;
-  updated_at: string;
+  payroll_period_id: number;
+  payslip_number: string;
+  issue_date: string;
+  status: 'draft' | 'generated' | 'sent' | 'delivered';
 }
 
-export interface PayslipComponent {
+export interface PayrollPeriod {
   id: number;
-  payslip_id: number;
-  component_id: number;
-  label: string;
-  type: ComponentType;
-  amount: number;
-  component?: PayrollComponent;
+  period_code: string;
+  name: string;
+  year: number;
+  month: number;
+  start_date: string;
+  end_date: string;
+  payment_date: string;
+  status: PayrollPeriodStatus;
+  total_employees: number | null;
+  total_gross_salary: Money | null;
+  total_deductions: Money | null;
+  total_net_salary: Money | null;
+  total_employer_charges: Money | null;
+  calculated_at: string | null;
+  validated_at: string | null;
+  payroll_records?: PayrollRecord[];
+  payslips?: Payslip[];
 }
 
 export interface BankTransfer {
-  id: number;
-  payroll_period_id: number;
-  employee_id: number;
-  bank_name: string;
-  account_number: string;
-  amount: number;
+  employee_code: string;
+  employee_name: string;
+  bank_account: string;
+  rib: string | null;
+  amount: Money;
   reference: string;
-  status: BankTransferStatus;
-  transferred_at: string | null;
-  employee?: EmployeeSummary;
-  payroll_period?: PayrollPeriod;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface SocialDeclaration {
   id: number;
-  type: DeclarationType;
-  period_month: number;
-  period_year: number;
-  label: string;
-  total_base: number;
-  total_employee_share: number;
-  total_employer_share: number;
-  total_amount: number;
-  employee_count: number;
-  status: DeclarationStatus;
-  due_date: string;
-  submitted_at: string | null;
-  paid_at: string | null;
-  reference: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface AnnualSummary {
+  payroll_period_id: number | null;
   year: number;
-  employee_id: number;
-  employee?: EmployeeSummary;
-  total_gross: number;
-  total_net: number;
-  total_cnss: number;
-  total_income_tax: number;
-  total_amo: number;
-  total_bonuses: number;
-  total_deductions: number;
-  months_worked: number;
+  month: number | null;
+  declaration_type: DeclarationType;
+  declaration_number: string;
+  declaration_date: string;
+  due_date: string | null;
+  total_employees: number | null;
+  total_gross_salary: Money | null;
+  total_amount_due: Money | null;
+  status: DeclarationStatus;
+  submission_reference: string | null;
+  payment_amount: Money | null;
+  payroll_period?: PayrollPeriod | null;
 }
 
-// ──── Request Types ────
+// ──── Requests ────
 
 export interface CreateEmployeeRequest {
-  firstname: string;
-  lastname: string;
-  matricule: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  phone?: string;
-  date_of_birth?: string;
   hire_date: string;
-  department_id?: number;
+  employee_code?: string;
+  phone?: string;
+  cin?: string;
+  cnss_number?: string;
+  department?: string;
   position?: string;
+  bank_name?: string;
+  bank_account_number?: string;
 }
 
-export interface UpdateEmployeeRequest extends Partial<CreateEmployeeRequest> {}
+export type UpdateEmployeeRequest = Partial<CreateEmployeeRequest> & { status?: EmployeeStatus };
 
 export interface CreateContractRequest {
-  employee_id: number;
-  type: ContractType;
+  contract_type: ContractType;
   start_date: string;
-  end_date?: string;
+  end_date?: string | null;
   base_salary: number;
-  description?: string;
-}
-
-export interface CreateAmendmentRequest {
-  contract_id: number;
-  field_changed: string;
-  old_value: string;
-  new_value: string;
-  effective_date: string;
-  reason?: string;
+  weekly_hours?: number;
 }
 
 export interface TerminateContractRequest {
@@ -376,63 +377,74 @@ export interface TerminateContractRequest {
 }
 
 export interface CreateSalaryScaleRequest {
-  name: string;
   code: string;
-  grade: string;
-  echelon: number;
-  base_amount: number;
-  description?: string;
+  name: string;
+  type: SalaryScaleType;
+  grades: SalaryScaleGrade[];
+  effective_from: string;
 }
 
 export interface CreatePayrollComponentRequest {
+  employee_id: number;
+  component_type: ComponentType;
   name: string;
-  code: string;
-  type: ComponentType;
-  is_taxable: boolean;
-  is_mandatory: boolean;
-  default_amount?: number;
-  percentage?: number;
-  description?: string;
+  calculation_type: CalculationType;
+  amount?: number | null;
+  percentage?: number | null;
+  rate?: number | null;
 }
 
 export interface CreateAdvanceRequest {
   employee_id: number;
   amount: number;
-  reason?: string;
-  repayment_months: number;
+  advance_type: AdvanceType;
+  reason: string;
+  number_of_installments?: number;
+}
+
+export interface DisburseAdvanceRequest {
+  method: DisbursementMethod;
+  reference?: string;
 }
 
 export interface CreatePayrollPeriodRequest {
-  month: number;
   year: number;
-  start_date: string;
-  end_date: string;
+  month: number;
+  payment_date: string;
 }
 
-export interface CreateSocialDeclarationRequest {
-  type: DeclarationType;
-  period_month: number;
-  period_year: number;
-  due_date: string;
+export interface SubmitDeclarationRequest {
+  reference: string;
+  response?: string;
 }
 
-// ──── Filter Types ────
+export interface DeclarationPaymentRequest {
+  amount: number;
+  method: DeclarationPaymentMethod;
+  reference: string;
+}
+
+// ──── Filters ────
 
 export interface EmployeeFilters {
-  department_id?: number;
-  is_active?: boolean;
+  status?: EmployeeStatus;
+  department?: string;
   search?: string;
+  page?: number;
+  per_page?: number;
 }
 
 export interface PayrollPeriodFilters {
   year?: number;
+  month?: number;
   status?: PayrollPeriodStatus;
 }
 
 export interface DeclarationFilters {
   type?: DeclarationType;
-  status?: DeclarationStatus;
   year?: number;
+  status?: DeclarationStatus;
+  overdue_only?: boolean;
 }
 
 export interface AdvanceFilters {
@@ -440,7 +452,13 @@ export interface AdvanceFilters {
   status?: AdvanceStatus;
 }
 
-// ──── Response Types ────
+export interface ComponentFilters {
+  employee_id?: number;
+  type?: ComponentType;
+  active_only?: boolean;
+}
+
+// ──── Responses ────
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -450,37 +468,89 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
-export interface PayrollDashboardStats {
-  total_employees: number;
-  active_contracts: number;
-  total_payroll_cost: number;
-  pending_advances: number;
-  current_period_status: PayrollPeriodStatus | null;
+export interface MessageResponse<T> {
+  message: string;
+  data: T;
 }
 
-export interface PayrollJournalEntry {
-  employee: EmployeeSummary;
-  base_salary: number;
-  gross_salary: number;
-  net_salary: number;
-  total_bonuses: number;
-  total_deductions: number;
+export interface PayrollDashboard {
+  current_period: PayrollPeriod | null;
+  statistics: SalaryStatistics | null;
+  recent_periods: PayrollPeriod[];
+}
+
+export interface PayrollJournalEmployee {
+  employee_code: string;
+  full_name: string;
+  department: string | null;
+  position: string | null;
+  base_salary: Money;
+  gross_salary: Money;
+  deductions: { total: Money; [key: string]: Money };
+  net_salary: Money;
+  employer_charges: { total: Money; [key: string]: Money };
+  total_cost: Money;
+}
+
+interface ChargeBlock {
+  employee_contributions: Money;
+  employer_contributions: Money;
+  total: Money;
+  employee_rate: number;
+  employer_rate: number;
 }
 
 export interface SocialChargesReport {
-  period_label: string;
-  cnss_total: number;
-  income_tax_total: number;
-  amo_total: number;
-  grand_total: number;
+  period: { code: string; name: string; year: number; month: number };
+  cnss: ChargeBlock;
+  amo: ChargeBlock;
+  cimr: ChargeBlock;
+  taxes: { income_tax: Money; professional_tax: Money; training_tax: Money; total: Money };
+  summary: {
+    total_employee_contributions: Money;
+    total_employer_contributions: Money;
+    total_taxes: Money;
+    grand_total: Money;
+  };
 }
 
+export interface PayrollJournal {
+  period: { code: string; name: string; start_date: string; end_date: string; payment_date: string; status: string };
+  summary: {
+    total_employees: number | null;
+    total_gross_salary: Money | null;
+    total_deductions: Money | null;
+    total_net_salary: Money | null;
+    total_employer_charges: Money | null;
+    total_cost: Money | null;
+  };
+  employees: PayrollJournalEmployee[];
+  [key: string]: unknown;
+}
+
+/** Le backend renvoie `{ message }` quand aucune paie n'existe pour la période. */
 export interface SalaryStatistics {
-  average_salary: number;
-  median_salary: number;
-  min_salary: number;
-  max_salary: number;
-  total_mass: number;
-  by_department: Array<{ department: string; average: number; count: number }>;
-  by_contract_type: Array<{ type: ContractType; average: number; count: number }>;
+  message?: string;
+  period?: string | number;
+  overview?: {
+    total_periods: number;
+    total_employees: number;
+    average_employees_per_period: number;
+    total_payroll_cost: Money;
+    average_monthly_cost: Money;
+  };
+  salary_distribution?: {
+    average_base_salary: Money;
+    median_base_salary: Money;
+    min_base_salary: Money;
+    max_base_salary: Money;
+    average_gross_salary: Money;
+    average_net_salary: Money;
+  };
+  deductions?: {
+    total_deductions: Money;
+    average_deductions: Money;
+    deduction_rate: Money;
+  };
+  [key: string]: unknown;
 }

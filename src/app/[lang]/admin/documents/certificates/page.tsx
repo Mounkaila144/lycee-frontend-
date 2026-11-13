@@ -1,5 +1,11 @@
-import { CertificateDashboard } from '@/modules/Documents/admin/components/CertificateDashboard';
+import { OfficialDocumentsDashboard } from '@/modules/Documents/admin/components/OfficialDocumentsDashboard';
 
 export default function DocumentCertificatesPage() {
-  return <CertificateDashboard />;
+  return (
+    <OfficialDocumentsDashboard
+      category='certificate'
+      title='Attestations et certificats'
+      allowCertificateGeneration
+    />
+  );
 }

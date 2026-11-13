@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import { useTenant } from '@/shared/lib/tenant-context'
-import type { Classe, ClasseFormData, ClasseQueryParams, ClasseStats } from '../../types/classe.types'
+import type {
+  Classe,
+  ClasseFormData,
+  ClasseQueryParams,
+  ClasseStats,
+  ClasseStudentsQueryParams
+} from '../../types/classe.types'
 import { classeService } from '../services/classeService'
 
 export const useClasses = () => {
@@ -12,7 +18,8 @@ export const useClasses = () => {
   const [stats, setStats] = useState<ClasseStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [params, setParams] = useState<ClasseQueryParams>({})
+  // L'API pagine (15 par défaut) : on charge toutes les classes de l'année en une page.
+  const [params, setParams] = useState<ClasseQueryParams>({ per_page: 100 })
 
   const fetchClasses = useCallback(async () => {
     try {
@@ -67,8 +74,23 @@ export const useClasses = () => {
     [tenantId, fetchClasses, fetchStats]
   )
 
+  const getAvailableHeadTeachers = useCallback(
+    async (queryParams?: { academic_year_id?: number; exclude_class_id?: number }) => {
+      return classeService.getAvailableHeadTeachers(queryParams, tenantId || undefined)
+    },
+    [tenantId]
+  )
+
+  const getClasseStudents = useCallback(
+    async (id: number, queryParams?: ClasseStudentsQueryParams) => {
+      return classeService.getClasseStudents(id, queryParams, tenantId || undefined)
+    },
+    [tenantId]
+  )
+
   const updateParams = useCallback((newParams: ClasseQueryParams) => {
-    setParams(prev => ({ ...prev, ...newParams }))
+    // Les filtres sont remplacés (et non fusionnés) pour que « Réinitialiser » les efface réellement.
+    setParams(prev => ({ per_page: prev.per_page, ...newParams }))
   }, [])
 
   useEffect(() => {
@@ -89,6 +111,8 @@ export const useClasses = () => {
     createClasse,
     updateClasse,
     deleteClasse,
+    getClasseStudents,
+    getAvailableHeadTeachers,
     updateParams
   }
 }

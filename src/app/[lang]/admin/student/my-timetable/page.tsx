@@ -2,13 +2,17 @@
 
 import { ScaffoldPage } from '@/shared/components/ScaffoldPage';
 import { studentPortalService } from '@/modules/PortailEtudiant/services/studentPortalService';
+import { WeeklyTimetableGrid } from '@/modules/Timetable/admin/components/WeeklyTimetableGrid';
+import { portalToSlots } from '@/modules/Timetable/admin/services/lyceeTimetableService';
+import type { PortalTimetableSlot } from '@/modules/Timetable/types/lycee.types';
 
 export default function MyTimetablePage() {
   return (
-    <ScaffoldPage
+    <ScaffoldPage<PortalTimetableSlot[]>
       title='Mon emploi du temps'
       subtitle='Story Étudiant 03'
       loader={() => studentPortalService.myTimetable()}
+      render={(slots) => <WeeklyTimetableGrid slots={portalToSlots(slots)} />}
       emptyMessage='Aucun créneau planifié.'
     />
   );

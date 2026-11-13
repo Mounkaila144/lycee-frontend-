@@ -62,12 +62,25 @@ class EnrollmentStatisticsService {
   ): Promise<ProgramStats[]> {
     try {
       const client = createApiClient(tenantId);
-      const response = await client.get<ApiResponse<ProgramStats[]>>(
+      const response = await client.get<ApiResponse<any[]>>(
         `${this.baseUrl}/by-program`,
         { params: filters }
       );
 
-      return response.data.data;
+      // Backend (EnrollmentProgramStatsResource) returns nested objects:
+      // { program, enrollments: { total, male, female }, demographics, by_level, comparison }
+      return (response.data.data ?? []).map((item: any): ProgramStats => ({
+        program: item.program,
+        total: item.enrollments?.total ?? item.total ?? 0,
+        male: item.enrollments?.male ?? item.male ?? 0,
+        female: item.enrollments?.female ?? item.female ?? 0,
+        gender_ratio: item.demographics?.gender_ratio ?? item.gender_ratio ?? 0,
+        average_age: item.demographics?.average_age ?? item.average_age ?? undefined,
+        by_level: item.by_level ?? {},
+        growth_rate: item.comparison?.growth_rate ?? item.growth_rate ?? 0,
+        capacity: item.capacity ?? 0,
+        fill_rate: item.fill_rate ?? 0,
+      }));
     } catch (error) {
       console.error('Error fetching program statistics:', error);
       throw error;
@@ -85,7 +98,7 @@ class EnrollmentStatisticsService {
     try {
       const client = createApiClient(tenantId);
       const params: Record<string, any> = { years };
-      if (programId) params.programme_id = programId;
+      if (programId) params.program_id = programId;
 
       const response = await client.get<ApiResponse<TrendDataPoint[]>>(
         `${this.baseUrl}/trends`,

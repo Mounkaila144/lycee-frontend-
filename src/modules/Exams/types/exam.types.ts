@@ -1,7 +1,9 @@
 // ──── Enums / Constants ────
 
-export type ExamType = 'written' | 'oral' | 'practical';
-export type ExamSessionStatus = 'draft' | 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
+/** Backend : normal | rattrapage | special (written/oral/practical : anciennes valeurs de démo). */
+export type ExamType = 'normal' | 'rattrapage' | 'special' | 'written' | 'oral' | 'practical';
+/** Backend : draft | planned | ongoing | completed | cancelled ('scheduled' : ancienne valeur de démo). */
+export type ExamSessionStatus = 'draft' | 'planned' | 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
 export type SupervisorRole = 'chief' | 'regular';
 export type ExamAttendanceStatus = 'present' | 'absent' | 'late';
 export type SubmissionStatus = 'pending' | 'submitted' | 'not_submitted';
@@ -10,12 +12,18 @@ export type IncidentSeverity = 'minor' | 'moderate' | 'major' | 'critical';
 export type IncidentStatus = 'reported' | 'investigating' | 'resolved' | 'escalated';
 
 export const EXAM_TYPE_LABELS: Record<ExamType, string> = {
+  normal: 'Session normale',
+  rattrapage: 'Rattrapage',
+  special: 'Session spéciale',
   written: 'Écrit',
   oral: 'Oral',
   practical: 'Pratique',
 };
 
 export const EXAM_TYPE_COLORS: Record<ExamType, string> = {
+  normal: '#1976d2',
+  rattrapage: '#ff9800',
+  special: '#9c27b0',
   written: '#1976d2',
   oral: '#9c27b0',
   practical: '#ff9800',
@@ -23,6 +31,7 @@ export const EXAM_TYPE_COLORS: Record<ExamType, string> = {
 
 export const EXAM_SESSION_STATUS_LABELS: Record<ExamSessionStatus, string> = {
   draft: 'Brouillon',
+  planned: 'Planifié',
   scheduled: 'Planifié',
   ongoing: 'En cours',
   completed: 'Terminé',
@@ -31,6 +40,7 @@ export const EXAM_SESSION_STATUS_LABELS: Record<ExamSessionStatus, string> = {
 
 export const EXAM_SESSION_STATUS_COLORS: Record<ExamSessionStatus, string> = {
   draft: '#9e9e9e',
+  planned: '#1976d2',
   scheduled: '#1976d2',
   ongoing: '#ff9800',
   completed: '#4caf50',
@@ -137,11 +147,11 @@ export interface ExamSession {
   total_capacity: number;
   status: ExamSessionStatus;
   instructions: string | null;
-  allowed_materials: string | null;
+  allowed_materials: string[] | string | null;
   is_published: boolean;
   published_at: string | null;
-  created_by: number;
-  module?: ModuleSummary;
+  created_by: number | null;
+  module?: ModuleSummary | null;
   creator?: TeacherSummary;
   room_assignments?: ExamRoomAssignment[];
   supervisors?: ExamSupervisor[];
@@ -216,32 +226,34 @@ export interface ExamIncident {
 
 export interface CreateExamSessionRequest {
   module_id: number;
-  evaluation_period_id: number;
+  evaluation_period_id?: number | null;
   academic_year_id: number;
   title: string;
   description?: string;
-  type: ExamType;
+  type: 'normal' | 'rattrapage' | 'special';
   exam_date: string;
   start_time: string;
   end_time: string;
-  duration_minutes: number;
-  total_capacity: number;
   instructions?: string;
-  allowed_materials?: string;
+  allowed_materials?: string[];
 }
 
 export interface UpdateExamSessionRequest extends Partial<CreateExamSessionRequest> {}
 
 export interface AssignRoomRequest {
-  room_id: number;
-  capacity: number;
-  seat_layout?: string;
+  rooms: Array<{
+    room_id: number;
+    capacity?: number;
+    seat_start_number?: number;
+    seat_end_number?: number;
+  }>;
 }
 
 export interface AssignSupervisorRequest {
+  /** id utilisateur (users) du professeur */
   teacher_id: number;
-  role: SupervisorRole;
-  room_id?: number;
+  room_assignment_id?: number | null;
+  role?: 'principal' | 'assistant' | 'reserve';
 }
 
 export interface AssignStudentsRequest {
@@ -249,32 +261,41 @@ export interface AssignStudentsRequest {
 }
 
 export interface MarkAttendanceRequest {
-  student_id: number;
-  attendance_status: ExamAttendanceStatus;
-  submission_status?: SubmissionStatus;
-  submission_time?: string;
+  status: 'present' | 'absent' | 'late' | 'excluded';
+  notes?: string;
 }
 
 export interface ReportIncidentRequest {
   student_id?: number;
-  type: IncidentType;
+  type: 'cheating' | 'disturbance' | 'technical' | 'medical' | 'other';
   title: string;
-  description?: string;
-  severity: IncidentSeverity;
+  description: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
   occurred_at_time: string;
-  witnesses?: string;
-  evidence?: File;
+  witnesses?: string[];
+}
+
+export interface ValidateScheduleRequest {
+  exam_date: string;
+  start_time: string;
+  end_time: string;
+  module_id?: number;
+  room_ids?: number[];
+  exclude_session_id?: number;
 }
 
 // ──── Filter Types ────
 
+/** Filtres supportés par GET /admin/exams/sessions (backend : status, module_id, page). */
 export interface ExamSessionFilters {
-  academic_year_id?: number;
-  evaluation_period_id?: number;
   module_id?: number;
   status?: ExamSessionStatus;
-  type?: ExamType;
-  exam_date?: string;
+  page?: number;
+}
+
+export interface ExamReportPeriodFilters {
+  start_date?: string;
+  end_date?: string;
 }
 
 export interface IncidentFilters {
@@ -294,64 +315,148 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+/** GET /admin/exams/reports/statistics */
 export interface ExamStatistics {
-  total_sessions: number;
-  total_students: number;
-  average_attendance_rate: number;
-  total_incidents: number;
-  by_type: Array<{ type: ExamType; count: number }>;
-  by_status: Array<{ status: ExamSessionStatus; count: number }>;
+  period: { start_date: string | null; end_date: string | null };
+  overview: {
+    total_sessions: number;
+    by_status: Record<string, number>;
+    by_type: Record<string, number>;
+    total_students_examined: number;
+  };
+  attendance_stats: {
+    total_attendance_records: number;
+    present: number;
+    absent: number;
+    late: number;
+  };
+  incident_stats: {
+    total_incidents: number;
+    by_type: Record<string, number>;
+    by_severity: Record<string, number>;
+  };
+  by_module: Array<{
+    module_id: number;
+    module_name: string | null;
+    total_sessions: number;
+    total_students: number;
+  }>;
 }
 
+/** GET /admin/exams/reports/sessions/{id}/attendance */
 export interface AttendanceReport {
-  exam_session_id: number;
-  exam_title: string;
+  session: { id: number; title: string; module: string | null; date: string; time: string };
+  summary: {
+    total_registered: number;
+    present: number;
+    absent: number;
+    late: number;
+    excluded: number;
+    submitted: number;
+  };
+  by_room: Array<{ room_name: string | null; total: number; present: number; absent: number }>;
+  students: Array<{
+    student_id: number;
+    student_name: string | null;
+    room: string | null;
+    seat: string | null;
+    status: string;
+    arrival_time: string | null;
+    submission_time: string | null;
+    has_submitted: boolean;
+  }>;
+}
+
+/** GET /admin/exams/reports/sessions/{id}/incidents */
+export interface IncidentReport {
+  session: { id: number; title: string; date: string };
+  summary: {
+    total_incidents: number;
+    by_type: Record<string, number>;
+    by_severity: Record<string, number>;
+    by_status: Record<string, number>;
+  };
+  incidents: Array<{
+    id: number;
+    type: string;
+    severity: string;
+    title: string;
+    description: string;
+    student: { id: number; name: string } | null;
+    occurred_at: string;
+    status: string;
+    reported_by: string | null;
+    action_taken: string | null;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+  }>;
+}
+
+/** GET /admin/exams/reports/supervisor-workload */
+export interface SupervisorWorkload {
+  teacher_id: number;
+  first_name: string;
+  last_name: string;
+  total_supervisions: number;
+  completed: number | string;
+  total_minutes: number | string;
+}
+
+/** GET /admin/exams/reports/room-utilization */
+export interface RoomUtilization {
+  room_id: number;
+  room_name: string;
+  room_capacity: number;
+  times_used: number;
+  avg_students: number | string;
+  total_students: number | string;
+}
+
+export interface ScheduleValidation {
+  valid: boolean;
+  conflicts: Array<{
+    type: 'room_conflict' | 'module_conflict';
+    conflicting_session: string;
+    date: string;
+    time: string;
+    room_id?: number;
+    room_name?: string;
+    module_id?: number;
+  }>;
+}
+
+export interface AttendanceStatistics {
   total_students: number;
   present: number;
   absent: number;
   late: number;
-  attendance_rate: number;
-  submission_rate: number;
+  submitted: number;
+  present_percentage: number;
+  submission_percentage: number;
 }
 
-export interface IncidentReport {
-  total_incidents: number;
-  by_type: Array<{ type: IncidentType; count: number }>;
-  by_severity: Array<{ severity: IncidentSeverity; count: number }>;
-  recent_incidents: ExamIncident[];
+export interface IncidentsSummary {
+  total: number;
+  by_type: Record<string, number>;
+  by_severity: Record<string, number>;
+  by_status: Record<string, number>;
+  pending: number;
+  resolved: number;
 }
 
-export interface SupervisorWorkload {
-  teacher: TeacherSummary;
-  total_sessions: number;
-  as_chief: number;
-  as_regular: number;
-  upcoming_sessions: number;
-}
-
-export interface RoomUtilization {
-  room: RoomSummary;
-  total_exams: number;
-  total_hours: number;
-  average_occupancy_rate: number;
-}
-
-export interface ScheduleValidation {
-  is_valid: boolean;
-  conflicts: Array<{
-    type: string;
-    message: string;
-    session_ids: number[];
-  }>;
-}
-
+/** GET /admin/exams/management/sessions/{id}/preparation-checklist */
 export interface PreparationChecklist {
-  exam_session_id: number;
-  items: Array<{
-    key: string;
-    label: string;
-    is_completed: boolean;
-    completed_at: string | null;
-  }>;
-  completion_rate: number;
+  session_details: {
+    title: string;
+    date: string;
+    start_time: string;
+    end_time: string;
+    duration: string;
+  };
+  rooms: Array<{ room: string; capacity: number; assigned: number; seats: string }>;
+  supervisors_needed: number;
+  students_count: number;
+  materials_needed: string[];
+  instructions: string | null;
+  checklist_items: Record<string, boolean>;
 }

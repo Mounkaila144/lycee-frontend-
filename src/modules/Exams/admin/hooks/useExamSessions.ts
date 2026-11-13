@@ -6,6 +6,7 @@ import type {
   UpdateExamSessionRequest,
   AssignRoomRequest,
   ExamSessionFilters,
+  ValidateScheduleRequest,
 } from '../../types';
 
 export const useExamSessions = (filters?: ExamSessionFilters, tenantId?: string) => {
@@ -76,8 +77,8 @@ export const useCancelExamSession = (tenantId?: string) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (sessionId: number) =>
-      examSessionService.cancelSession(sessionId, tenantId),
+    mutationFn: ({ sessionId, reason }: { sessionId: number; reason?: string }) =>
+      examSessionService.cancelSession(sessionId, reason, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['exam-sessions'] });
     },
@@ -96,19 +97,21 @@ export const useDuplicateExamSession = (tenantId?: string) => {
   });
 };
 
-export const useValidateSchedule = (sessionId?: number, tenantId?: string) => {
-  return useQuery({
-    queryKey: ['exam-schedule-validation', sessionId],
-    queryFn: () => examSessionService.validateSchedule(sessionId!, tenantId),
-    enabled: !!sessionId,
+export const useValidateSchedule = (tenantId?: string) => {
+  return useMutation({
+    mutationFn: (data: ValidateScheduleRequest) =>
+      examSessionService.validateSchedule(data, tenantId),
   });
 };
 
-export const useAvailableRooms = (sessionId?: number, tenantId?: string) => {
+export const useAvailableRooms = (
+  params?: { date: string; start_time: string; end_time: string },
+  tenantId?: string,
+) => {
   return useQuery({
-    queryKey: ['exam-available-rooms', sessionId],
-    queryFn: () => examSessionService.getAvailableRooms(sessionId!, tenantId),
-    enabled: !!sessionId,
+    queryKey: ['exam-available-rooms', params],
+    queryFn: () => examSessionService.getAvailableRooms(params!, tenantId),
+    enabled: !!params?.date && !!params?.start_time && !!params?.end_time,
   });
 };
 

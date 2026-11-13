@@ -1,191 +1,265 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
 
+import { useParams, useRouter } from 'next/navigation';
+
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Grid from '@mui/material/Grid2';
+import InputLabel from '@mui/material/InputLabel';
+import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Snackbar from '@mui/material/Snackbar';
+import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Alert from '@mui/material/Alert';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
 import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import LinearProgress from '@mui/material/LinearProgress';
-import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
-import type {
-  Payment,
-  PaymentMethod,
-  PaymentStatus,
-} from '../../types';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_METHOD_COLORS,
-  PAYMENT_STATUS_LABELS,
-  PAYMENT_STATUS_COLORS,
-} from '../../types';
+import { createApiClient } from '@/shared/lib/api-client';
+import { useTenant } from '@/shared/lib/tenant-context';
+import { useAuthUser } from '@/shared/hooks/useAuthUser';
 
-// ──── Demo Data ────
+import { FINANCE_PAYMENT_METHOD_LABELS, ReceiptDialog, formatXof } from './ReceiptDialog';
 
-const DEMO_PAYMENTS: Payment[] = [
-  {
-    id: 1, reference: 'PAY-2026-0001', invoice_id: 1, student_id: 1,
-    amount: 575000, method: 'bank_transfer', status: 'completed',
-    transaction_reference: 'VIR-2026-ABC123', payment_date: '2026-02-15',
-    notes: 'Paiement intégral', receipt_number: 'REC-0001', received_by: 1,
-    student: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'ETU-2026-001' },
-    created_at: '2026-02-15T10:00:00', updated_at: '2026-02-15T10:00:00',
-  },
-  {
-    id: 2, reference: 'PAY-2026-0002', invoice_id: 2, student_id: 2,
-    amount: 275000, method: 'mobile_money', status: 'completed',
-    transaction_reference: 'MM-2026-XYZ789', payment_date: '2026-03-01',
-    notes: 'Première tranche', receipt_number: 'REC-0002', received_by: 1,
-    student: { id: 2, firstname: 'Fatima', lastname: 'Ousmane', matricule: 'ETU-2026-002' },
-    created_at: '2026-03-01T14:00:00', updated_at: '2026-03-01T14:00:00',
-  },
-  {
-    id: 3, reference: 'PAY-2026-0003', invoice_id: 3, student_id: 3,
-    amount: 200000, method: 'cash', status: 'pending',
-    transaction_reference: null, payment_date: '2026-03-25',
-    notes: 'Paiement partiel en espèces', receipt_number: null, received_by: null,
-    student: { id: 3, firstname: 'Ibrahim', lastname: 'Mahamadou', matricule: 'ETU-2026-003' },
-    created_at: '2026-03-25T09:00:00', updated_at: '2026-03-25T09:00:00',
-  },
-  {
-    id: 4, reference: 'PAY-2026-0004', invoice_id: 1, student_id: 1,
-    amount: 50000, method: 'check', status: 'refunded',
-    transaction_reference: 'CHQ-2026-456', payment_date: '2026-02-10',
-    notes: 'Remboursement - double paiement', receipt_number: 'REC-0004', received_by: 2,
-    student: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'ETU-2026-001' },
-    created_at: '2026-02-10T11:00:00', updated_at: '2026-02-20T15:00:00',
-  },
-  {
-    id: 5, reference: 'PAY-2026-0005', invoice_id: 4, student_id: 4,
-    amount: 525000, method: 'bank_transfer', status: 'failed',
-    transaction_reference: 'VIR-2026-FAIL01', payment_date: '2026-03-20',
-    notes: 'Fonds insuffisants', receipt_number: null, received_by: null,
-    student: { id: 4, firstname: 'Aissatou', lastname: 'Boubacar', matricule: 'ETU-2026-004' },
-    created_at: '2026-03-20T16:00:00', updated_at: '2026-03-20T16:30:00',
-  },
-  {
-    id: 6, reference: 'PAY-2026-0006', invoice_id: 2, student_id: 2,
-    amount: 100000, method: 'mobile_money', status: 'completed',
-    transaction_reference: 'MM-2026-DEF456', payment_date: '2026-03-25',
-    notes: null, receipt_number: 'REC-0006', received_by: 1,
-    student: { id: 2, firstname: 'Fatima', lastname: 'Ousmane', matricule: 'ETU-2026-002' },
-    created_at: '2026-03-25T08:30:00', updated_at: '2026-03-25T08:30:00',
-  },
-];
+interface PaymentListRow {
+  id: number;
+  invoice_id: number;
+  amount: number | string;
+  payment_method: string;
+  payment_date: string | null;
+  reference_number?: string | null;
+  receipt_number?: string | null;
+  notes?: string | null;
+  invoice?: { id: number; invoice_number: string } | null;
+  student?: { id: number; firstname: string; lastname: string; matricule: string } | null;
+  recorded_by?: { id: number; firstname?: string; lastname?: string; username?: string } | number | null;
+}
 
-const DEMO_DAILY_SUMMARY = {
-  date: '2026-03-25',
-  total_payments: 3,
-  total_amount: 325000,
-  by_method: [
-    { method: 'cash' as PaymentMethod, count: 1, amount: 200000 },
-    { method: 'mobile_money' as PaymentMethod, count: 1, amount: 100000 },
-    { method: 'bank_transfer' as PaymentMethod, count: 1, amount: 25000 },
-  ],
+interface PaymentListResponse {
+  data: PaymentListRow[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number };
+}
+
+interface MethodSummary {
+  method: string;
+  count: number;
+  amount: number;
+}
+
+interface DailySummaryResponse {
+  data: {
+    date: string;
+    total_amount: number;
+    total_count: number;
+    by_method: Record<string, MethodSummary> | MethodSummary[];
+  };
+}
+
+const todayIso = () => new Date().toISOString().slice(0, 10);
+
+const recorderName = (recordedBy: PaymentListRow['recorded_by']): string => {
+  if (!recordedBy || typeof recordedBy !== 'object') return '—';
+  const name = `${recordedBy.firstname ?? ''} ${recordedBy.lastname ?? ''}`.trim();
+
+  return name || recordedBy.username || '—';
 };
 
-const getStatusChipColor = (status: PaymentStatus): 'default' | 'success' | 'warning' | 'error' => {
-  switch (status) {
-    case 'pending': return 'warning';
-    case 'completed': return 'success';
-    case 'failed': return 'error';
-    case 'refunded': return 'default';
-    default: return 'default';
-  }
-};
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
-};
-
+/**
+ * Paiements & reçus (Caissier / Comptable / Admin).
+ *
+ * Liste paginée des encaissements réels (GET /admin/finance/payments),
+ * résumé journalier (GET /payments/summary/daily), reçu imprimable et
+ * remboursement (réservé Administrator / Comptable côté backend).
+ * L'encaissement d'une facture se fait depuis l'écran Facturation.
+ */
 export const PaymentDashboard: React.FC = () => {
+  const { tenantId } = useTenant();
+  const router = useRouter();
+  const { lang } = useParams<{ lang: string }>();
+  const authUser = useAuthUser();
+  const queryClient = useQueryClient();
+
+  const roles = authUser?.roles ?? [];
+  const canRefund = roles.includes('Administrator') || roles.includes('Comptable');
+  const canCloseCash = roles.some(r => ['Administrator', 'Comptable', 'Caissier'].includes(r));
+
   const [tab, setTab] = useState(0);
-  const [paymentOpen, setPaymentOpen] = useState(false);
-  const [refundOpen, setRefundOpen] = useState(false);
-  const [receiptOpen, setReceiptOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [page, setPage] = useState(0);
+  const [perPage, setPerPage] = useState(20);
+  const [search, setSearch] = useState('');
+  const [method, setMethod] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [mineOnly, setMineOnly] = useState(false);
+  const [summaryDate, setSummaryDate] = useState(todayIso());
 
-  const payments = DEMO_PAYMENTS;
+  const [receiptPaymentId, setReceiptPaymentId] = useState<number | null>(null);
+  const [refundPayment, setRefundPayment] = useState<PaymentListRow | null>(null);
+  const [refundAmount, setRefundAmount] = useState('');
+  const [refundReason, setRefundReason] = useState('');
+  const [refundError, setRefundError] = useState<string | null>(null);
 
-  const handleViewReceipt = useCallback((payment: Payment) => {
-    setSelectedPayment(payment);
-    setReceiptOpen(true);
-  }, []);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
-  const totalReceived = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-  const totalPending = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
-  const totalRefunded = payments.filter(p => p.status === 'refunded').reduce((sum, p) => sum + p.amount, 0);
-  const completedCount = payments.filter(p => p.status === 'completed').length;
+  const listParams = useMemo(() => {
+    const params: Record<string, string | number> = { page: page + 1, per_page: perPage };
+
+    if (search.trim()) params.search = search.trim();
+    if (method) params.payment_method = method;
+
+    if (startDate) {
+      params.start_date = startDate;
+      params.end_date = `${endDate || startDate} 23:59:59`;
+    }
+
+    if (mineOnly) params.mine = 1;
+
+    return params;
+  }, [page, perPage, search, method, startDate, endDate, mineOnly]);
+
+  const { data: listData, isLoading, isFetching, error } = useQuery({
+    queryKey: ['payments', 'list', listParams],
+    queryFn: async () => {
+      const res = await createApiClient(tenantId || undefined).get<PaymentListResponse>('/admin/finance/payments', {
+        params: listParams,
+      });
+
+      return res.data;
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: summaryData, isLoading: summaryLoading } = useQuery({
+    queryKey: ['payments', 'daily-summary', summaryDate],
+    queryFn: async () => {
+      const res = await createApiClient(tenantId || undefined).get<DailySummaryResponse>(
+        '/admin/finance/payments/summary/daily',
+        { params: { date: summaryDate } },
+      );
+
+      return res.data.data;
+    },
+  });
+
+  const summaryByMethod = useMemo(() => {
+    const raw = summaryData?.by_method ?? [];
+
+    return (Array.isArray(raw) ? raw : Object.values(raw)).map(entry => ({
+      ...entry,
+      amount: Number(entry.amount),
+    }));
+  }, [summaryData]);
+
+  const refundMutation = useMutation({
+    mutationFn: async (payload: { id: number; amount: number; reason: string }) => {
+      const res = await createApiClient(tenantId || undefined).post(`/admin/finance/payments/${payload.id}/refund`, {
+        amount: payload.amount,
+        reason: payload.reason,
+      });
+
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
+
+  const payments = listData?.data ?? [];
+  const total = listData?.meta?.total ?? 0;
+
+  const openRefund = (payment: PaymentListRow) => {
+    setRefundPayment(payment);
+    setRefundAmount(String(Number(payment.amount)));
+    setRefundReason('');
+    setRefundError(null);
+  };
+
+  const submitRefund = async () => {
+    if (!refundPayment) return;
+    const amount = Number(refundAmount);
+
+    if (!Number.isFinite(amount) || amount <= 0 || amount > Number(refundPayment.amount)) {
+      setRefundError('Montant invalide (doit être positif et ne pas dépasser le paiement).');
+
+      return;
+    }
+
+    if (!refundReason.trim()) {
+      setRefundError('La raison du remboursement est obligatoire.');
+
+      return;
+    }
+
+    try {
+      await refundMutation.mutateAsync({ id: refundPayment.id, amount, reason: refundReason.trim() });
+      setRefundPayment(null);
+      setSnackbar({ open: true, message: 'Remboursement enregistré.', severity: 'success' });
+    } catch (err: any) {
+      setRefundError(err?.response?.data?.message || 'Erreur lors du remboursement.');
+    }
+  };
+
+  const resetPage = () => setPage(0);
 
   return (
     <Box sx={{ p: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">
-          Administration
-        </Link>
-        <Link underline="hover" color="inherit" href="#">
-          Comptabilit&eacute;
-        </Link>
-        <Typography color="text.primary">Paiements</Typography>
-      </Breadcrumbs>
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Paiements
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+        <Typography variant='h4' fontWeight='bold'>
+          Paiements &amp; reçus
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" onClick={() => setRefundOpen(true)}>
-            Remboursement
-          </Button>
-          <Button variant="contained" onClick={() => setPaymentOpen(true)}>
-            + Enregistrer un paiement
+          {canCloseCash && (
+            <Button variant='outlined' onClick={() => router.push(`/${lang}/admin/finance/cashier-close`)}>
+              Clôture de caisse
+            </Button>
+          )}
+          <Button variant='contained' onClick={() => router.push(`/${lang}/admin/finance/invoices`)}>
+            Encaisser une facture
           </Button>
         </Box>
       </Box>
 
-      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Total encaissé', value: formatCurrency(totalReceived), color: '#4caf50' },
-          { label: 'En attente', value: formatCurrency(totalPending), color: '#ff9800' },
-          { label: 'Remboursé', value: formatCurrency(totalRefunded), color: '#9c27b0' },
-          { label: 'Paiements complétés', value: completedCount, color: '#1976d2' },
-        ].map((stat, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
+          { label: `Encaissé le ${summaryData?.date ?? '…'}`, value: formatXof(summaryData?.total_amount ?? 0), color: '#4caf50' },
+          { label: 'Paiements du jour', value: summaryData?.total_count ?? 0, color: '#1976d2' },
+          { label: 'Paiements (filtre courant)', value: total, color: '#9c27b0' },
+        ].map(stat => (
+          <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
+                <Typography variant='h5' fontWeight='bold' sx={{ color: stat.color }}>
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {stat.label}
                 </Typography>
               </CardContent>
@@ -195,296 +269,252 @@ export const PaymentDashboard: React.FC = () => {
       </Grid>
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
-        <Tab label="Liste des paiements" />
-        <Tab label="Résumé du jour" />
+        <Tab label='Liste des paiements' />
+        <Tab label='Résumé journalier' />
       </Tabs>
 
-      {/* Tab 0: Payments List */}
       {tab === 0 && (
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Historique des Paiements</Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>R&eacute;f&eacute;rence</TableCell>
-                    <TableCell>&Eacute;tudiant</TableCell>
-                    <TableCell align="right">Montant</TableCell>
-                    <TableCell>M&eacute;thode</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell>R&eacute;f. Transaction</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {payments.map(payment => (
-                    <TableRow key={payment.id} hover>
-                      <TableCell>
-                        <Typography fontWeight="medium">{payment.reference}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight="medium">
-                          {payment.student?.firstname} {payment.student?.lastname}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {payment.student?.matricule}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography fontWeight="bold">{formatCurrency(payment.amount)}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={PAYMENT_METHOD_LABELS[payment.method]}
-                          sx={{ bgcolor: PAYMENT_METHOD_COLORS[payment.method], color: 'white' }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {new Date(payment.payment_date).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={PAYMENT_STATUS_LABELS[payment.status]}
-                          color={getStatusChipColor(payment.status)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {payment.transaction_reference || '-'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                          {payment.receipt_number && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => handleViewReceipt(payment)}
-                            >
-                              Re&ccedil;u
-                            </Button>
-                          )}
-                          {payment.status === 'completed' && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="secondary"
-                              onClick={() => {
-                                setSelectedPayment(payment);
-                                setRefundOpen(true);
-                              }}
-                            >
-                              Rembourser
-                            </Button>
-                          )}
-                        </Box>
-                      </TableCell>
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  label='Rechercher (matricule, nom, n° reçu, référence)'
+                  size='small'
+                  fullWidth
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); resetPage(); }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+                <FormControl size='small' fullWidth>
+                  <InputLabel>Mode</InputLabel>
+                  <Select label='Mode' value={method} onChange={e => { setMethod(e.target.value); resetPage(); }}>
+                    <MenuItem value=''>Tous</MenuItem>
+                    {Object.entries(FINANCE_PAYMENT_METHOD_LABELS).map(([value, label]) => (
+                      <MenuItem key={value} value={value}>{label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                <TextField
+                  label='Du'
+                  type='date'
+                  size='small'
+                  fullWidth
+                  value={startDate}
+                  onChange={e => { setStartDate(e.target.value); resetPage(); }}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                <TextField
+                  label='Au'
+                  type='date'
+                  size='small'
+                  fullWidth
+                  value={endDate}
+                  onChange={e => { setEndDate(e.target.value); resetPage(); }}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 2 }}>
+                <FormControlLabel
+                  control={<Checkbox checked={mineOnly} onChange={e => { setMineOnly(e.target.checked); resetPage(); }} />}
+                  label='Mes encaissements'
+                />
+              </Grid>
+            </Grid>
+
+            {error instanceof Error && <Alert severity='error' sx={{ mb: 2 }}>Erreur lors du chargement des paiements.</Alert>}
+            {isFetching && !isLoading && <LinearProgress sx={{ mb: 1 }} />}
+
+            {isLoading ? (
+              <Box display='flex' justifyContent='center' p={4}><CircularProgress /></Box>
+            ) : (
+              <TableContainer>
+                <Table size='small'>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>N° reçu</TableCell>
+                      <TableCell>Élève</TableCell>
+                      <TableCell>Facture</TableCell>
+                      <TableCell align='right'>Montant</TableCell>
+                      <TableCell>Mode</TableCell>
+                      <TableCell>Date</TableCell>
+                      <TableCell>Référence</TableCell>
+                      <TableCell>Encaissé par</TableCell>
+                      <TableCell align='center'>Actions</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {payments.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={9} align='center'>
+                          <Typography color='text.secondary' sx={{ py: 3 }}>Aucun paiement trouvé.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      payments.map(payment => {
+                        const amount = Number(payment.amount);
+                        const isRefund = amount < 0;
+
+                        return (
+                          <TableRow key={payment.id} hover>
+                            <TableCell>{payment.receipt_number ?? '—'}</TableCell>
+                            <TableCell>
+                              <Typography fontWeight='medium'>
+                                {payment.student?.firstname} {payment.student?.lastname}
+                              </Typography>
+                              <Typography variant='caption' color='text.secondary'>{payment.student?.matricule}</Typography>
+                            </TableCell>
+                            <TableCell>{payment.invoice?.invoice_number ?? `#${payment.invoice_id}`}</TableCell>
+                            <TableCell align='right'>
+                              <Typography fontWeight='bold' color={isRefund ? 'warning.main' : 'inherit'}>
+                                {formatXof(amount)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip size='small' label={FINANCE_PAYMENT_METHOD_LABELS[payment.payment_method] ?? payment.payment_method} />
+                              {isRefund && <Chip size='small' color='warning' label='Remboursement' sx={{ ml: 0.5 }} />}
+                            </TableCell>
+                            <TableCell>{payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('fr-FR') : '—'}</TableCell>
+                            <TableCell>{payment.reference_number || '—'}</TableCell>
+                            <TableCell>{recorderName(payment.recorded_by)}</TableCell>
+                            <TableCell align='center'>
+                              <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                <Button size='small' variant='outlined' onClick={() => setReceiptPaymentId(payment.id)}>
+                                  Reçu
+                                </Button>
+                                {canRefund && !isRefund && (
+                                  <Button size='small' variant='outlined' color='secondary' onClick={() => openRefund(payment)}>
+                                    Rembourser
+                                  </Button>
+                                )}
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <TablePagination
+              component='div'
+              count={total}
+              page={page}
+              rowsPerPage={perPage}
+              rowsPerPageOptions={[10, 20, 50, 100]}
+              onPageChange={(_, p) => setPage(p)}
+              onRowsPerPageChange={e => { setPerPage(Number(e.target.value)); setPage(0); }}
+              labelRowsPerPage='Lignes par page'
+            />
           </CardContent>
         </Card>
       )}
 
-      {/* Tab 1: Daily Summary */}
       {tab === 1 && (
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  R&eacute;sum&eacute; du {new Date(DEMO_DAILY_SUMMARY.date).toLocaleDateString('fr-FR')}
-                </Typography>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: '#1976d2', my: 2 }}>
-                  {formatCurrency(DEMO_DAILY_SUMMARY.total_amount)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {DEMO_DAILY_SUMMARY.total_payments} paiement(s) enregistr&eacute;(s)
-                </Typography>
+                <TextField
+                  label='Date'
+                  type='date'
+                  size='small'
+                  value={summaryDate}
+                  onChange={e => setSummaryDate(e.target.value || todayIso())}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                {summaryLoading ? (
+                  <Box display='flex' justifyContent='center' p={3}><CircularProgress /></Box>
+                ) : (
+                  <>
+                    <Typography variant='h3' fontWeight='bold' sx={{ color: '#1976d2', my: 2 }}>
+                      {formatXof(summaryData?.total_amount ?? 0)}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      {summaryData?.total_count ?? 0} paiement(s) le {summaryData?.date}
+                    </Typography>
+                  </>
+                )}
               </CardContent>
             </Card>
           </Grid>
           <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>R&eacute;partition par m&eacute;thode</Typography>
-                {DEMO_DAILY_SUMMARY.by_method.map(entry => (
-                  <Box key={entry.method} sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Chip
-                        size="small"
-                        label={PAYMENT_METHOD_LABELS[entry.method]}
-                        sx={{ bgcolor: PAYMENT_METHOD_COLORS[entry.method], color: 'white' }}
-                      />
-                      <Typography variant="body2" fontWeight="bold">
-                        {formatCurrency(entry.amount)} ({entry.count} paiement{entry.count > 1 ? 's' : ''})
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={(entry.amount / DEMO_DAILY_SUMMARY.total_amount) * 100}
-                      sx={{
-                        height: 10, borderRadius: 5,
-                        '& .MuiLinearProgress-bar': { bgcolor: PAYMENT_METHOD_COLORS[entry.method], borderRadius: 5 },
-                      }}
-                    />
-                  </Box>
-                ))}
+                <Typography variant='h6' sx={{ mb: 2 }}>Répartition par mode de paiement</Typography>
+                {summaryByMethod.length === 0 ? (
+                  <Typography color='text.secondary'>Aucun paiement ce jour.</Typography>
+                ) : (
+                  summaryByMethod.map(entry => {
+                    const share = summaryData?.total_amount ? (entry.amount / Number(summaryData.total_amount)) * 100 : 0;
+
+                    return (
+                      <Box key={entry.method} sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Chip size='small' label={FINANCE_PAYMENT_METHOD_LABELS[entry.method] ?? entry.method} />
+                          <Typography variant='body2' fontWeight='bold'>
+                            {formatXof(entry.amount)} ({entry.count} paiement{entry.count > 1 ? 's' : ''})
+                          </Typography>
+                        </Box>
+                        <LinearProgress
+                          variant='determinate'
+                          value={Math.max(0, Math.min(100, share))}
+                          sx={{ height: 10, borderRadius: 5 }}
+                        />
+                      </Box>
+                    );
+                  })
+                )}
               </CardContent>
             </Card>
           </Grid>
         </Grid>
       )}
 
-      {/* Record Payment Dialog */}
-      <Dialog open={paymentOpen} onClose={() => setPaymentOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Enregistrer un Paiement</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="R&eacute;f&eacute;rence facture" fullWidth placeholder="Ex: FAC-2026-0001" />
-            <TextField label="Montant" type="number" fullWidth defaultValue={275000} />
-            <FormControl fullWidth>
-              <InputLabel>M&eacute;thode de paiement</InputLabel>
-              <Select label="Méthode de paiement" defaultValue="cash">
-                <MenuItem value="cash">Esp&egrave;ces</MenuItem>
-                <MenuItem value="bank_transfer">Virement bancaire</MenuItem>
-                <MenuItem value="check">Ch&egrave;que</MenuItem>
-                <MenuItem value="mobile_money">Mobile Money</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField label="R&eacute;f&eacute;rence transaction" fullWidth placeholder="Ex: VIR-2026-XXX" />
-            <TextField
-              label="Date du paiement"
-              type="date"
-              defaultValue="2026-03-26"
-              slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
-            />
-            <TextField label="Notes" fullWidth multiline rows={2} />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPaymentOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setPaymentOpen(false);
-              setSnackbar({ open: true, message: 'Paiement enregistré avec succès', severity: 'success' });
-            }}
-          >
-            Enregistrer
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ReceiptDialog paymentId={receiptPaymentId} tenantId={tenantId} onClose={() => setReceiptPaymentId(null)} />
 
-      {/* Refund Dialog */}
-      <Dialog open={refundOpen} onClose={() => setRefundOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Demande de Remboursement</DialogTitle>
+      <Dialog open={refundPayment !== null} onClose={() => setRefundPayment(null)} maxWidth='sm' fullWidth>
+        <DialogTitle>Remboursement</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            {selectedPayment && (
-              <Alert severity="info">
-                Paiement {selectedPayment.reference} - {formatCurrency(selectedPayment.amount)}
+            {refundError && <Alert severity='error'>{refundError}</Alert>}
+            {refundPayment && (
+              <Alert severity='info'>
+                Reçu {refundPayment.receipt_number ?? `#${refundPayment.id}`} — {formatXof(refundPayment.amount)}
               </Alert>
             )}
-            <TextField label="Montant &agrave; rembourser" type="number" fullWidth defaultValue={selectedPayment?.amount || 0} />
-            <TextField label="Raison du remboursement" fullWidth multiline rows={3} placeholder="Ex: Double paiement, erreur de montant..." />
+            <TextField
+              label='Montant à rembourser'
+              type='number'
+              fullWidth
+              value={refundAmount}
+              onChange={e => setRefundAmount(e.target.value)}
+            />
+            <TextField
+              label='Raison du remboursement'
+              fullWidth
+              multiline
+              rows={3}
+              value={refundReason}
+              onChange={e => setRefundReason(e.target.value)}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setRefundOpen(false); setSelectedPayment(null); }}>Annuler</Button>
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={() => {
-              setRefundOpen(false);
-              setSelectedPayment(null);
-              setSnackbar({ open: true, message: 'Demande de remboursement soumise', severity: 'success' });
-            }}
-          >
-            Soumettre
+          <Button onClick={() => setRefundPayment(null)} disabled={refundMutation.isPending}>Annuler</Button>
+          <Button variant='contained' color='warning' onClick={submitRefund} disabled={refundMutation.isPending}>
+            {refundMutation.isPending ? 'Traitement…' : 'Rembourser'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Receipt Dialog */}
-      <Dialog open={receiptOpen} onClose={() => setReceiptOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Re&ccedil;u de Paiement</DialogTitle>
-        <DialogContent>
-          {selectedPayment && (
-            <Box sx={{ mt: 1 }}>
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" align="center" sx={{ mb: 2 }}>RE&Ccedil;U DE PAIEMENT</Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Grid container spacing={1}>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">N&deg; Re&ccedil;u</Typography>
-                    <Typography fontWeight="bold">{selectedPayment.receipt_number}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Date</Typography>
-                    <Typography>{new Date(selectedPayment.payment_date).toLocaleDateString('fr-FR')}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">&Eacute;tudiant</Typography>
-                    <Typography fontWeight="bold">
-                      {selectedPayment.student?.firstname} {selectedPayment.student?.lastname}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Matricule</Typography>
-                    <Typography>{selectedPayment.student?.matricule}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Montant</Typography>
-                    <Typography variant="h5" fontWeight="bold" color="success.main">
-                      {formatCurrency(selectedPayment.amount)}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" color="text.secondary">M&eacute;thode</Typography>
-                    <Typography>{PAYMENT_METHOD_LABELS[selectedPayment.method]}</Typography>
-                  </Grid>
-                  {selectedPayment.transaction_reference && (
-                    <Grid size={{ xs: 12 }}>
-                      <Typography variant="caption" color="text.secondary">R&eacute;f. Transaction</Typography>
-                      <Typography>{selectedPayment.transaction_reference}</Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              </Paper>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setReceiptOpen(false); setSelectedPayment(null); }}>Fermer</Button>
-          <Button
-            variant="contained"
-            onClick={() => setSnackbar({ open: true, message: 'Reçu téléchargé', severity: 'success' })}
-          >
-            T&eacute;l&eacute;charger PDF
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-      >
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
         <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
           {snackbar.message}
         </Alert>

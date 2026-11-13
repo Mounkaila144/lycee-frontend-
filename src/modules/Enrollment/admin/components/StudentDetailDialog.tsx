@@ -265,12 +265,10 @@ export const StudentDetailDialog = ({
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                     <Box className="space-y-3">
-                      <InfoRow label="Email" value={student.email} />
-                      <InfoRow label="Mobile" value={student.mobile} />
                       <InfoRow label="Téléphone" value={student.phone || '-'} />
                       <InfoRow label="Adresse" value={student.address || '-'} />
                       <InfoRow label="Ville" value={student.city || '-'} />
-                      <InfoRow label="Pays" value={student.country} />
+                      <InfoRow label="Quartier" value={student.quarter || '-'} />
                     </Box>
                   </Grid>
 
@@ -293,7 +291,7 @@ export const StudentDetailDialog = ({
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                     <Box className="space-y-3">
-                      <InfoRow label="Matricule" value={student.matricule} />
+                      <InfoRow label="Matricule" value={student.matricule ?? '-'} />
                       <InfoRow label="Statut" value={student.status} />
                       <InfoRow
                         label="Créé le"

@@ -1,390 +1,443 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Grid from '@mui/material/Grid2';
+import MenuItem from '@mui/material/MenuItem';
+import Snackbar from '@mui/material/Snackbar';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Alert from '@mui/material/Alert';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
-import LinearProgress from '@mui/material/LinearProgress';
-
-import type {
-  PayrollPeriod,
-  PayrollPeriodStatus,
-  Payslip,
-} from '../../types';
+import Typography from '@mui/material/Typography';
 
 import {
-  PAYROLL_PERIOD_STATUS_LABELS,
-  PAYROLL_PERIOD_STATUS_COLORS,
-} from '../../types';
+  useBankTransfers,
+  useCalculatePayroll,
+  useCreatePayrollPeriod,
+  useDeletePayrollPeriod,
+  useGeneratePayslips,
+  useMarkAsPaid,
+  usePayrollPeriod,
+  usePayrollPeriods,
+  useValidatePayroll,
+} from '../hooks';
+import { formatCurrency, formatDate, getPayrollErrorMessage } from '../utils/payrollFormatters';
+import { MONTH_LABELS, PAYROLL_PERIOD_STATUS_COLORS, PAYROLL_PERIOD_STATUS_LABELS } from '../../types';
+import type { CreatePayrollPeriodRequest, PayrollPeriod } from '../../types';
 
-// ──── Demo Data ────
+type SnackbarState = { open: boolean; message: string; severity: 'success' | 'error' };
 
-const DEMO_PERIODS: PayrollPeriod[] = [
-  {
-    id: 1, month: 3, year: 2026, label: 'Mars 2026',
-    start_date: '2026-03-01', end_date: '2026-03-31',
-    status: 'draft', total_gross: null, total_net: null, total_deductions: null,
-    employee_count: null, calculated_at: null, validated_at: null, paid_at: null,
-    calculated_by: null, validated_by: null,
-    created_at: '2026-03-01T00:00:00', updated_at: '2026-03-01T00:00:00',
-  },
-  {
-    id: 2, month: 2, year: 2026, label: 'Février 2026',
-    start_date: '2026-02-01', end_date: '2026-02-28',
-    status: 'paid', total_gross: 4850000, total_net: 3880000, total_deductions: 970000,
-    employee_count: 12, calculated_at: '2026-02-25T10:00:00', validated_at: '2026-02-26T14:00:00', paid_at: '2026-02-28T09:00:00',
-    calculated_by: 1, validated_by: 2,
-    created_at: '2026-02-01T00:00:00', updated_at: '2026-02-28T09:00:00',
-  },
-  {
-    id: 3, month: 1, year: 2026, label: 'Janvier 2026',
-    start_date: '2026-01-01', end_date: '2026-01-31',
-    status: 'paid', total_gross: 4750000, total_net: 3800000, total_deductions: 950000,
-    employee_count: 12, calculated_at: '2026-01-25T10:00:00', validated_at: '2026-01-26T14:00:00', paid_at: '2026-01-31T09:00:00',
-    calculated_by: 1, validated_by: 2,
-    created_at: '2026-01-01T00:00:00', updated_at: '2026-01-31T09:00:00',
-  },
-  {
-    id: 4, month: 12, year: 2025, label: 'Décembre 2025',
-    start_date: '2025-12-01', end_date: '2025-12-31',
-    status: 'paid', total_gross: 5200000, total_net: 4160000, total_deductions: 1040000,
-    employee_count: 14, calculated_at: '2025-12-25T10:00:00', validated_at: '2025-12-26T14:00:00', paid_at: '2025-12-31T09:00:00',
-    calculated_by: 1, validated_by: 2,
-    created_at: '2025-12-01T00:00:00', updated_at: '2025-12-31T09:00:00',
-  },
-];
+const lastDayOfMonth = (year: number, month: number) => {
+  const date = new Date(Date.UTC(year, month, 0));
 
-const DEMO_PAYSLIPS: Payslip[] = [
-  { id: 1, payroll_period_id: 2, employee_id: 1, base_salary: 450000, gross_salary: 525000, net_salary: 420000, total_bonuses: 75000, total_deductions: 105000, cnss_employee: 26250, cnss_employer: 42000, income_tax: 52500, amo_employee: 13125, amo_employer: 13125, employee: { id: 1, firstname: 'Amadou', lastname: 'Diallo', matricule: 'EMP-001' }, created_at: '2026-02-25T00:00:00', updated_at: '2026-02-25T00:00:00' },
-  { id: 2, payroll_period_id: 2, employee_id: 2, base_salary: 300000, gross_salary: 350000, net_salary: 280000, total_bonuses: 50000, total_deductions: 70000, cnss_employee: 17500, cnss_employer: 28000, income_tax: 35000, amo_employee: 8750, amo_employer: 8750, employee: { id: 2, firstname: 'Fatima', lastname: 'Moussa', matricule: 'EMP-002' }, created_at: '2026-02-25T00:00:00', updated_at: '2026-02-25T00:00:00' },
-  { id: 3, payroll_period_id: 2, employee_id: 3, base_salary: 350000, gross_salary: 400000, net_salary: 320000, total_bonuses: 50000, total_deductions: 80000, cnss_employee: 20000, cnss_employer: 32000, income_tax: 40000, amo_employee: 10000, amo_employer: 10000, employee: { id: 3, firstname: 'Ibrahim', lastname: 'Souleymane', matricule: 'EMP-003' }, created_at: '2026-02-25T00:00:00', updated_at: '2026-02-25T00:00:00' },
-];
-
-const getStatusChipColor = (status: PayrollPeriodStatus): 'default' | 'primary' | 'warning' | 'success' => {
-  switch (status) {
-    case 'draft': return 'default';
-    case 'calculated': return 'primary';
-    case 'validated': return 'warning';
-    case 'paid': return 'success';
-    default: return 'default';
-  }
+  return date.toISOString().slice(0, 10);
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
-};
+const defaultPeriodForm = (): CreatePayrollPeriodRequest => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
 
-const MONTH_NAMES = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  return { year, month, payment_date: lastDayOfMonth(year, month) };
+};
 
 export const PayrollProcessingDashboard: React.FC = () => {
+  const [selectedId, setSelectedId] = useState<number | undefined>();
   const [createOpen, setCreateOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<PayrollPeriod | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [periodForm, setPeriodForm] = useState<CreatePayrollPeriodRequest>(defaultPeriodForm);
+  const [showTransfers, setShowTransfers] = useState(false);
+  const [paymentDate, setPaymentDate] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<SnackbarState>({ open: false, message: '', severity: 'success' });
 
-  const periods = DEMO_PERIODS;
-  const payslips = DEMO_PAYSLIPS;
+  const { data: periods = [], isLoading, isError, error } = usePayrollPeriods();
+  const { data: period, isLoading: isLoadingPeriod } = usePayrollPeriod(selectedId);
+  const { data: transfers = [], isLoading: isLoadingTransfers } = useBankTransfers(selectedId, showTransfers);
 
-  const handleViewDetail = useCallback((period: PayrollPeriod) => {
-    setSelectedPeriod(period);
-    setDetailOpen(true);
-  }, []);
+  const createPeriod = useCreatePayrollPeriod();
+  const deletePeriod = useDeletePayrollPeriod();
+  const calculate = useCalculatePayroll();
+  const validate = useValidatePayroll();
+  const generatePayslips = useGeneratePayslips();
+  const markAsPaid = useMarkAsPaid();
 
-  const handleCalculate = useCallback((period: PayrollPeriod) => {
-    setSnackbar({ open: true, message: `Paie de ${period.label} calculée avec succès`, severity: 'success' });
-  }, []);
+  const isBusy =
+    calculate.isPending || validate.isPending || generatePayslips.isPending || markAsPaid.isPending || deletePeriod.isPending;
 
-  const handleValidate = useCallback((period: PayrollPeriod) => {
-    setSnackbar({ open: true, message: `Paie de ${period.label} validée`, severity: 'success' });
-  }, []);
+  const notify = (message: string, severity: SnackbarState['severity'] = 'success') =>
+    setSnackbar({ open: true, message, severity });
 
-  const handleGeneratePayslips = useCallback((period: PayrollPeriod) => {
-    setSnackbar({ open: true, message: `Bulletins de paie générés pour ${period.label}`, severity: 'success' });
-  }, []);
+  const onError = (err: unknown) => notify(getPayrollErrorMessage(err), 'error');
 
-  const handleBankTransfers = useCallback((period: PayrollPeriod) => {
-    setSnackbar({ open: true, message: `Ordres de virement générés pour ${period.label}`, severity: 'success' });
-  }, []);
+  const handleCreate = () => {
+    createPeriod.mutate(periodForm, {
+      onSuccess: created => {
+        setCreateOpen(false);
+        setSelectedId(created.id);
+        notify('Période de paie créée');
+      },
+      onError,
+    });
+  };
 
-  const handleMarkAsPaid = useCallback((period: PayrollPeriod) => {
-    setSnackbar({ open: true, message: `${period.label} marqué comme payé`, severity: 'success' });
-  }, []);
+  const handleDelete = (target: PayrollPeriod) => {
+    if (!window.confirm(`Supprimer la période ${target.name} ?`)) return;
 
-  const draftCount = periods.filter(p => p.status === 'draft').length;
-  const paidCount = periods.filter(p => p.status === 'paid').length;
-  const totalPaid = periods.filter(p => p.total_net).reduce((sum, p) => sum + (p.total_net || 0), 0);
-  const totalEmployees = periods.find(p => p.status === 'paid')?.employee_count || 0;
+    deletePeriod.mutate(target.id, {
+      onSuccess: () => {
+        setSelectedId(undefined);
+        notify('Période supprimée');
+      },
+      onError,
+    });
+  };
+
+  const handleMarkAsPaid = () => {
+    if (!selectedId || !paymentDate) return;
+
+    markAsPaid.mutate(
+      { periodId: selectedId, paymentDate },
+      {
+        onSuccess: () => {
+          setPaymentDate(null);
+          notify('Paie marquée comme payée');
+        },
+        onError,
+      },
+    );
+  };
+
+  const records = period?.payroll_records ?? [];
 
   return (
     <Box sx={{ p: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="#">Administration</Link>
-        <Link underline="hover" color="inherit" href="#">Paie & RH</Link>
-        <Typography color="text.primary">Traitement Paie</Typography>
-      </Breadcrumbs>
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h4" fontWeight="bold">
           Traitement de la Paie
         </Typography>
-        <Button variant="contained" onClick={() => setCreateOpen(true)}>
-          + Nouvelle Période
+        <Button
+          variant="contained"
+          onClick={() => {
+            setPeriodForm(defaultPeriodForm());
+            setCreateOpen(true);
+          }}
+        >
+          + Nouvelle période
         </Button>
       </Box>
 
-      {/* Stats Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[
-          { label: 'Périodes en brouillon', value: draftCount, color: '#9e9e9e' },
-          { label: 'Périodes payées', value: paidCount, color: '#4caf50' },
-          { label: 'Total net versé', value: formatCurrency(totalPaid), color: '#1976d2' },
-          { label: 'Employés concernés', value: totalEmployees, color: '#ff9800' },
-        ].map((stat, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, fontSize: typeof stat.value === 'string' ? '1.5rem' : undefined }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Cycle : créer la période → calculer (employés actifs ayant un contrat actif) → valider → générer les bulletins →
+        marquer comme payée.
+      </Alert>
+
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Périodes de paie
+              </Typography>
+              {isError && <Alert severity="error">{getPayrollErrorMessage(error, 'Impossible de charger les périodes')}</Alert>}
+              {isLoading && <CircularProgress size={24} />}
+              {!isLoading && periods.length === 0 && (
+                <Typography color="text.secondary">Aucune période. Créez la première période de paie.</Typography>
+              )}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {periods.map(item => (
+                  <Button
+                    key={item.id}
+                    variant={item.id === selectedId ? 'contained' : 'outlined'}
+                    onClick={() => {
+                      setSelectedId(item.id);
+                      setShowTransfers(false);
+                    }}
+                    sx={{ justifyContent: 'space-between', textTransform: 'none' }}
+                  >
+                    <span>{item.name || item.period_code}</span>
+                    <Chip
+                      size="small"
+                      label={PAYROLL_PERIOD_STATUS_LABELS[item.status]}
+                      color={PAYROLL_PERIOD_STATUS_COLORS[item.status]}
+                    />
+                  </Button>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Card>
+            <CardContent>
+              {!selectedId && <Typography color="text.secondary">Sélectionnez une période.</Typography>}
+              {selectedId && (isLoadingPeriod || !period) && <CircularProgress />}
+              {period && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                    <Box>
+                      <Typography variant="h6">
+                        {period.name} ({period.period_code})
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Du {formatDate(period.start_date)} au {formatDate(period.end_date)} — paiement le{' '}
+                        {formatDate(period.payment_date)}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={PAYROLL_PERIOD_STATUS_LABELS[period.status]}
+                      color={PAYROLL_PERIOD_STATUS_COLORS[period.status]}
+                    />
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    {[
+                      { label: 'Employés', value: String(period.total_employees ?? 0) },
+                      { label: 'Masse brute', value: formatCurrency(period.total_gross_salary) },
+                      { label: 'Retenues', value: formatCurrency(period.total_deductions) },
+                      { label: 'Net à payer', value: formatCurrency(period.total_net_salary) },
+                      { label: 'Charges patronales', value: formatCurrency(period.total_employer_charges) },
+                      { label: 'Bulletins', value: String(period.payslips?.length ?? 0) },
+                    ].map(stat => (
+                      <Grid key={stat.label} size={{ xs: 6, sm: 4 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {stat.label}
+                        </Typography>
+                        <Typography fontWeight="bold">{stat.value}</Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {['draft', 'in_progress'].includes(period.status) && (
+                      <>
+                        <Button
+                          variant="contained"
+                          disabled={isBusy}
+                          onClick={() =>
+                            calculate.mutate(period.id, { onSuccess: () => notify('Paie calculée'), onError })
+                          }
+                        >
+                          Calculer la paie
+                        </Button>
+                        <Button color="error" disabled={isBusy} onClick={() => handleDelete(period)}>
+                          Supprimer
+                        </Button>
+                      </>
+                    )}
+                    {period.status === 'calculated' && (
+                      <Button
+                        variant="contained"
+                        color="warning"
+                        disabled={isBusy}
+                        onClick={() => validate.mutate(period.id, { onSuccess: () => notify('Paie validée'), onError })}
+                      >
+                        Valider la paie
+                      </Button>
+                    )}
+                    {['validated', 'paid', 'closed'].includes(period.status) && (
+                      <>
+                        <Button
+                          variant="contained"
+                          disabled={isBusy}
+                          onClick={() =>
+                            generatePayslips.mutate(period.id, {
+                              onSuccess: result => notify(`${result.count} bulletin(s) généré(s)`),
+                              onError,
+                            })
+                          }
+                        >
+                          Générer les bulletins
+                        </Button>
+                        <Button variant="outlined" onClick={() => setShowTransfers(value => !value)}>
+                          {showTransfers ? 'Masquer les virements' : 'Ordres de virement'}
+                        </Button>
+                      </>
+                    )}
+                    {period.status === 'validated' && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        disabled={isBusy}
+                        onClick={() => setPaymentDate(period.payment_date?.slice(0, 10) ?? '')}
+                      >
+                        Marquer comme payée
+                      </Button>
+                    )}
+                  </Box>
+
+                  {showTransfers && (
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                        Ordres de virement (employés avec compte bancaire)
+                      </Typography>
+                      {isLoadingTransfers ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Matricule</TableCell>
+                              <TableCell>Employé</TableCell>
+                              <TableCell>Compte</TableCell>
+                              <TableCell align="right">Montant</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {transfers.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={4} align="center">
+                                  Aucun employé avec compte bancaire.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                            {transfers.map(transfer => (
+                              <TableRow key={transfer.employee_code}>
+                                <TableCell>{transfer.employee_code}</TableCell>
+                                <TableCell>{transfer.employee_name}</TableCell>
+                                <TableCell>{transfer.bank_account}</TableCell>
+                                <TableCell align="right">{formatCurrency(transfer.amount)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </Box>
+                  )}
+
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Employé</TableCell>
+                          <TableCell align="right">Base</TableCell>
+                          <TableCell align="right">Brut</TableCell>
+                          <TableCell align="right">Retenues</TableCell>
+                          <TableCell align="right">Net</TableCell>
+                          <TableCell align="right">Coût employeur</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {records.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} align="center">
+                              Aucune fiche de paie calculée pour cette période.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        {records.map(record => (
+                          <TableRow key={record.id}>
+                            <TableCell>
+                              {record.employee
+                                ? `${record.employee.first_name} ${record.employee.last_name}`
+                                : `#${record.employee_id}`}
+                            </TableCell>
+                            <TableCell align="right">{formatCurrency(record.base_salary)}</TableCell>
+                            <TableCell align="right">{formatCurrency(record.gross_salary)}</TableCell>
+                            <TableCell align="right">{formatCurrency(record.total_deductions)}</TableCell>
+                            <TableCell align="right">
+                              <strong>{formatCurrency(record.net_salary)}</strong>
+                            </TableCell>
+                            <TableCell align="right">{formatCurrency(record.total_cost)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
-      {/* Periods Table */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>Périodes de Paie</Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Période</TableCell>
-                  <TableCell>Employés</TableCell>
-                  <TableCell>Brut total</TableCell>
-                  <TableCell>Net total</TableCell>
-                  <TableCell>Retenues</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {periods.map(period => (
-                  <TableRow key={period.id} hover>
-                    <TableCell>
-                      <Typography fontWeight="medium">{period.label}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(period.start_date).toLocaleDateString('fr-FR')} - {new Date(period.end_date).toLocaleDateString('fr-FR')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{period.employee_count || '-'}</TableCell>
-                    <TableCell>{period.total_gross ? formatCurrency(period.total_gross) : '-'}</TableCell>
-                    <TableCell><Typography fontWeight="bold">{period.total_net ? formatCurrency(period.total_net) : '-'}</Typography></TableCell>
-                    <TableCell>{period.total_deductions ? formatCurrency(period.total_deductions) : '-'}</TableCell>
-                    <TableCell>
-                      <Chip size="small" label={PAYROLL_PERIOD_STATUS_LABELS[period.status]} color={getStatusChipColor(period.status)} />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <Button size="small" variant="outlined" onClick={() => handleViewDetail(period)}>
-                          Détails
-                        </Button>
-                        {period.status === 'draft' && (
-                          <Button size="small" variant="contained" color="primary" onClick={() => handleCalculate(period)}>
-                            Calculer
-                          </Button>
-                        )}
-                        {period.status === 'calculated' && (
-                          <Button size="small" variant="contained" color="warning" onClick={() => handleValidate(period)}>
-                            Valider
-                          </Button>
-                        )}
-                        {period.status === 'validated' && (
-                          <>
-                            <Button size="small" variant="outlined" color="secondary" onClick={() => handleGeneratePayslips(period)}>
-                              Bulletins
-                            </Button>
-                            <Button size="small" variant="outlined" color="info" onClick={() => handleBankTransfers(period)}>
-                              Virements
-                            </Button>
-                            <Button size="small" variant="contained" color="success" onClick={() => handleMarkAsPaid(period)}>
-                              Payer
-                            </Button>
-                          </>
-                        )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-
-      {/* Detail Dialog */}
-      <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} maxWidth="lg" fullWidth>
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box>
-              <Typography variant="h6">Période : {selectedPeriod?.label}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {selectedPeriod && `${new Date(selectedPeriod.start_date).toLocaleDateString('fr-FR')} - ${new Date(selectedPeriod.end_date).toLocaleDateString('fr-FR')}`}
-              </Typography>
-            </Box>
-            {selectedPeriod && (
-              <Chip label={PAYROLL_PERIOD_STATUS_LABELS[selectedPeriod.status]} color={getStatusChipColor(selectedPeriod.status)} />
-            )}
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {selectedPeriod?.total_gross && (
-            <Grid container spacing={2} sx={{ mt: 1, mb: 3 }}>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="subtitle2" color="text.secondary">Brut total</Typography>
-                  <Typography variant="h5" fontWeight="bold" color="primary">{formatCurrency(selectedPeriod.total_gross)}</Typography>
-                </Paper>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="subtitle2" color="text.secondary">Net total</Typography>
-                  <Typography variant="h5" fontWeight="bold" color="success.main">{formatCurrency(selectedPeriod.total_net!)}</Typography>
-                </Paper>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="subtitle2" color="text.secondary">Retenues</Typography>
-                  <Typography variant="h5" fontWeight="bold" color="error">{formatCurrency(selectedPeriod.total_deductions!)}</Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          )}
-
-          {selectedPeriod?.status === 'paid' && (
-            <>
-              <Typography variant="h6" sx={{ mb: 2 }}>Bulletins de Paie</Typography>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Employé</TableCell>
-                      <TableCell>Salaire de base</TableCell>
-                      <TableCell>Primes</TableCell>
-                      <TableCell>Brut</TableCell>
-                      <TableCell>CNSS</TableCell>
-                      <TableCell>IR</TableCell>
-                      <TableCell>AMO</TableCell>
-                      <TableCell>Net</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {payslips.map(payslip => (
-                      <TableRow key={payslip.id}>
-                        <TableCell>
-                          <Typography fontWeight="medium">{payslip.employee?.firstname} {payslip.employee?.lastname}</Typography>
-                        </TableCell>
-                        <TableCell>{formatCurrency(payslip.base_salary)}</TableCell>
-                        <TableCell>{formatCurrency(payslip.total_bonuses)}</TableCell>
-                        <TableCell>{formatCurrency(payslip.gross_salary)}</TableCell>
-                        <TableCell>{formatCurrency(payslip.cnss_employee)}</TableCell>
-                        <TableCell>{formatCurrency(payslip.income_tax)}</TableCell>
-                        <TableCell>{formatCurrency(payslip.amo_employee)}</TableCell>
-                        <TableCell><Typography fontWeight="bold" color="success.main">{formatCurrency(payslip.net_salary)}</Typography></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
-
-          {selectedPeriod?.status === 'draft' && (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              Cette période est en brouillon. Cliquez sur &quot;Calculer&quot; pour lancer le calcul de la paie.
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailOpen(false)}>Fermer</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Create Period Dialog */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Nouvelle Période de Paie</DialogTitle>
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Nouvelle période de paie</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel>Mois</InputLabel>
-              <Select label="Mois" defaultValue={4}>
-                {MONTH_NAMES.slice(1).map((name, idx) => (
-                  <MenuItem key={idx + 1} value={idx + 1}>{name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField label="Année" type="number" fullWidth defaultValue={2026} />
             <TextField
-              label="Date de début"
-              type="date"
-              defaultValue="2026-04-01"
-              slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
+              select
+              label="Mois"
+              value={periodForm.month}
+              onChange={event => {
+                const month = Number(event.target.value);
+
+                setPeriodForm(prev => ({ ...prev, month, payment_date: lastDayOfMonth(prev.year, month) }));
+              }}
+            >
+              {MONTH_LABELS.map((label, index) => (
+                <MenuItem key={label} value={index + 1}>
+                  {label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Année"
+              type="number"
+              value={periodForm.year}
+              onChange={event => {
+                const year = Number(event.target.value);
+
+                setPeriodForm(prev => ({ ...prev, year, payment_date: lastDayOfMonth(year, prev.month) }));
+              }}
             />
             <TextField
-              label="Date de fin"
+              label="Date de paiement"
               type="date"
-              defaultValue="2026-04-30"
+              value={periodForm.payment_date}
+              onChange={event => setPeriodForm(prev => ({ ...prev, payment_date: event.target.value }))}
               slotProps={{ inputLabel: { shrink: true } }}
-              fullWidth
             />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateOpen(false)}>Annuler</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setCreateOpen(false);
-              setSnackbar({ open: true, message: 'Période de paie créée', severity: 'success' });
-            }}
-          >
+          <Button variant="contained" onClick={handleCreate} disabled={createPeriod.isPending}>
             Créer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+      <Dialog open={paymentDate !== null} onClose={() => setPaymentDate(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Confirmer le paiement des salaires</DialogTitle>
+        <DialogContent>
+          <TextField
+            sx={{ mt: 1 }}
+            fullWidth
+            label="Date de paiement"
+            type="date"
+            value={paymentDate ?? ''}
+            onChange={event => setPaymentDate(event.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPaymentDate(null)}>Annuler</Button>
+          <Button variant="contained" color="success" onClick={handleMarkAsPaid} disabled={!paymentDate || markAsPaid.isPending}>
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
         <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
           {snackbar.message}
         </Alert>

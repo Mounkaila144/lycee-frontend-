@@ -1,16 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { examReportService } from '../services';
+import type { ExamReportPeriodFilters } from '../../types';
 
 export const useExamStatistics = (
-  academicYearId?: number,
-  evaluationPeriodId?: number,
+  filters?: ExamReportPeriodFilters & { module_id?: number },
   tenantId?: string,
 ) => {
   return useQuery({
-    queryKey: ['exam-statistics', academicYearId, evaluationPeriodId],
-    queryFn: () => examReportService.getStatistics(academicYearId!, evaluationPeriodId, tenantId),
-    enabled: !!academicYearId,
+    queryKey: ['exam-statistics', filters],
+    queryFn: () => examReportService.getStatistics(filters, tenantId),
   });
 };
 
@@ -22,26 +21,24 @@ export const useExamAttendanceReport = (sessionId?: number, tenantId?: string) =
   });
 };
 
-export const useExamIncidentReport = (academicYearId?: number, tenantId?: string) => {
+export const useExamIncidentReport = (sessionId?: number, tenantId?: string) => {
   return useQuery({
-    queryKey: ['exam-incident-report', academicYearId],
-    queryFn: () => examReportService.getIncidentReport(academicYearId!, tenantId),
-    enabled: !!academicYearId,
+    queryKey: ['exam-incident-report', sessionId],
+    queryFn: () => examReportService.getIncidentReport(sessionId!, tenantId),
+    enabled: !!sessionId,
   });
 };
 
-export const useSupervisorWorkload = (academicYearId?: number, tenantId?: string) => {
+export const useSupervisorWorkload = (filters?: ExamReportPeriodFilters, tenantId?: string) => {
   return useQuery({
-    queryKey: ['supervisor-workload', academicYearId],
-    queryFn: () => examReportService.getSupervisorWorkload(academicYearId!, tenantId),
-    enabled: !!academicYearId,
+    queryKey: ['supervisor-workload', filters],
+    queryFn: () => examReportService.getSupervisorWorkload(filters, tenantId),
   });
 };
 
-export const useRoomUtilization = (academicYearId?: number, tenantId?: string) => {
+export const useRoomUtilization = (filters?: ExamReportPeriodFilters, tenantId?: string) => {
   return useQuery({
-    queryKey: ['room-utilization', academicYearId],
-    queryFn: () => examReportService.getRoomUtilization(academicYearId!, tenantId),
-    enabled: !!academicYearId,
+    queryKey: ['room-utilization', filters],
+    queryFn: () => examReportService.getRoomUtilization(filters, tenantId),
   });
 };

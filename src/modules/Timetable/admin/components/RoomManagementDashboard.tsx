@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+
 import { useRouter, useParams } from 'next/navigation';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -35,19 +37,34 @@ import DialogActions from '@mui/material/DialogActions';
 import { RoomFormDialog } from './RoomFormDialog';
 import type { Room, RoomType } from '../../types';
 import { ROOM_TYPES } from '../../types';
+import { roomService } from '../services/roomService';
 
-// ──── Demo Data ────
+/** Libellés front ↔ valeurs acceptées par l'API (Room::VALID_TYPES). */
+const ROOM_TYPE_TO_API: Record<RoomType, string> = {
+  'Amphithéâtre': 'Amphi',
+  'Salle TD': 'Salle',
+  'Salle TP': 'Labo',
+  'Laboratoire Informatique': 'Salle_Info',
+  'Laboratoire Sciences': 'Labo',
+};
 
-const DEMO_ROOMS: Room[] = [
-  { id: 1, code: 'AMP-A', name: 'Amphithéâtre A', type: 'Amphithéâtre', capacity: 200, building: 'Bâtiment A', floor: 'RDC', equipment: ['Projecteur', 'Microphone'], is_available: true, occupation_rate: 65, created_at: '', updated_at: '' },
-  { id: 2, code: 'AMP-B', name: 'Amphithéâtre B', type: 'Amphithéâtre', capacity: 150, building: 'Bâtiment A', floor: 'RDC', equipment: ['Projecteur', 'Microphone', 'Caméra'], is_available: true, occupation_rate: 45, created_at: '', updated_at: '' },
-  { id: 3, code: 'TD-101', name: 'Salle TD-101', type: 'Salle TD', capacity: 40, building: 'Bâtiment B', floor: '1er', equipment: ['Projecteur', 'Tableau interactif'], is_available: true, occupation_rate: 80, created_at: '', updated_at: '' },
-  { id: 4, code: 'TD-102', name: 'Salle TD-102', type: 'Salle TD', capacity: 45, building: 'Bâtiment B', floor: '1er', equipment: ['Projecteur'], is_available: true, occupation_rate: 55, created_at: '', updated_at: '' },
-  { id: 5, code: 'TD-201', name: 'Salle TD-201', type: 'Salle TD', capacity: 35, building: 'Bâtiment B', floor: '2ème', equipment: ['Projecteur', 'Climatisation'], is_available: false, unavailable_reason: 'Rénovation', unavailable_from: '2025-01-15', unavailable_to: '2025-02-15', occupation_rate: 0, created_at: '', updated_at: '' },
-  { id: 6, code: 'LAB-I1', name: 'Labo Info-1', type: 'Laboratoire Informatique', capacity: 30, building: 'Bâtiment C', floor: 'RDC', equipment: ['Ordinateurs', 'Projecteur', 'Climatisation'], is_available: true, occupation_rate: 90, created_at: '', updated_at: '' },
-  { id: 7, code: 'LAB-I2', name: 'Labo Info-2', type: 'Laboratoire Informatique', capacity: 25, building: 'Bâtiment C', floor: 'RDC', equipment: ['Ordinateurs', 'Projecteur'], is_available: true, occupation_rate: 70, created_at: '', updated_at: '' },
-  { id: 8, code: 'LAB-S1', name: 'Labo Sciences-1', type: 'Laboratoire Sciences', capacity: 20, building: 'Bâtiment D', floor: 'RDC', equipment: ['Projecteur'], is_available: true, occupation_rate: 30, created_at: '', updated_at: '' },
-];
+const API_TO_ROOM_TYPE: Record<string, RoomType> = {
+  Amphi: 'Amphithéâtre',
+  Salle: 'Salle TD',
+  Labo: 'Laboratoire Sciences',
+  Salle_Info: 'Laboratoire Informatique',
+  Autre: 'Salle TD',
+};
+
+type ApiRoom = Omit<Room, 'type' | 'is_available'> & { type: string; is_active?: boolean; equipment?: string[] | null };
+
+const fromApiRoom = (room: ApiRoom): Room => ({
+  ...room,
+  type: API_TO_ROOM_TYPE[room.type] ?? 'Salle TD',
+  equipment: room.equipment ?? [],
+  is_available: room.is_active ?? true,
+  occupation_rate: room.occupation_rate ?? 0,
+});
 
 // ──── Summary Card ────
 
@@ -67,7 +84,35 @@ export const RoomManagementDashboard: React.FC = () => {
   const params = useParams();
   const lang = (params?.lang as string) || 'fr';
 
-  const [rooms, setRooms] = useState<Room[]>(DEMO_ROOMS);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const loadRooms = useCallback(async () => {
+    try {
+      const response = await roomService.getAll(undefined, 1, 200);
+
+      setRooms((response.data as unknown as ApiRoom[]).map(fromApiRoom));
+      setApiError(null);
+    } catch (error) {
+      setApiError((error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Impossible de charger les salles.');
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRooms();
+  }, [loadRooms]);
+
+  const runAction = async (action: () => Promise<unknown>) => {
+    try {
+      await action();
+      await loadRooms();
+    } catch (error) {
+      const data = (error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } })?.response?.data;
+
+      setApiError([data?.message ?? 'Action impossible.', ...Object.values(data?.errors ?? {}).flat()].join(' '));
+    }
+  };
+
   const [filterType, setFilterType] = useState<string>('');
   const [filterCapacity, setFilterCapacity] = useState<string>('');
   const [filterBuilding, setFilterBuilding] = useState<string>('');
@@ -93,14 +138,22 @@ export const RoomManagementDashboard: React.FC = () => {
   const totalRooms = rooms.length;
   const availableRooms = rooms.filter((r) => r.is_available).length;
   const maintenanceRooms = rooms.filter((r) => !r.is_available).length;
-  const avgOccupation = Math.round(rooms.filter((r) => r.is_available).reduce((acc, r) => acc + (r.occupation_rate || 0), 0) / availableRooms);
+  const avgOccupation = availableRooms > 0 ? Math.round(rooms.filter((r) => r.is_available).reduce((acc, r) => acc + (r.occupation_rate || 0), 0) / availableRooms) : 0;
 
   const handleSaveRoom = (data: Partial<Room>) => {
-    if (editRoom) {
-      setRooms((prev) => prev.map((r) => (r.id === editRoom.id ? { ...r, ...data } : r)));
-    } else {
-      setRooms((prev) => [...prev, { ...data, id: Date.now(), is_available: true, occupation_rate: 0, equipment: data.equipment || [], created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as Room]);
-    }
+    const payload = {
+      code: data.code ?? '',
+      name: data.name ?? '',
+      type: ROOM_TYPE_TO_API[(data.type ?? 'Salle TD') as RoomType] as unknown as RoomType,
+      capacity: data.capacity ?? 1,
+      building: data.building,
+      floor: data.floor,
+      equipment: data.equipment ?? [],
+    };
+
+    const target = editRoom;
+
+    runAction(() => (target ? roomService.update(target.id, payload) : roomService.create(payload)));
 
     setFormOpen(false);
     setEditRoom(undefined);
@@ -115,20 +168,20 @@ export const RoomManagementDashboard: React.FC = () => {
   };
 
   const confirmBlock = () => {
-    setRooms((prev) => prev.map((r) =>
-      r.id === blockRoomId ? { ...r, is_available: false, unavailable_reason: blockReason, unavailable_from: blockFrom, unavailable_to: blockTo, occupation_rate: 0 } : r,
-    ));
+    runAction(() => roomService.block(blockRoomId, { reason: blockReason, from: blockFrom, to: blockTo }));
     setBlockDialogOpen(false);
   };
 
   const handleUnblock = (id: number) => {
-    setRooms((prev) => prev.map((r) =>
-      r.id === id ? { ...r, is_available: true, unavailable_reason: undefined, unavailable_from: undefined, unavailable_to: undefined } : r,
-    ));
+    runAction(() => roomService.unblock(id));
   };
 
   const handleDelete = (id: number) => {
-    setRooms((prev) => prev.filter((r) => r.id !== id));
+    if (!window.confirm('Supprimer cette salle ?')) {
+      return;
+    }
+
+    runAction(() => roomService.delete(id));
   };
 
   const occupationColor = (rate: number) => {
@@ -140,6 +193,12 @@ export const RoomManagementDashboard: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      {apiError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setApiError(null)}>
+          {apiError}
+        </Alert>
+      )}
+
       <Breadcrumbs sx={{ mb: 2 }}>
         <Link underline="hover" color="inherit" href="#">Accueil</Link>
         <Link underline="hover" color="inherit" href="#">Emplois du Temps</Link>

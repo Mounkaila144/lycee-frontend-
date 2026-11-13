@@ -39,7 +39,10 @@ class JustificationService {
   ): Promise<AbsenceJustification> {
     const client = createApiClient(tenantId);
     const formData = new FormData();
-    formData.append('student_id', String(data.student_id));
+    if (data.student_id) {
+      formData.append('student_id', String(data.student_id));
+    }
+
     formData.append('absence_date_from', data.absence_date_from);
     formData.append('absence_date_to', data.absence_date_to);
     formData.append('type', data.type);
@@ -84,6 +87,14 @@ class JustificationService {
 
   getDownloadUrl(justificationId: number): string {
     return `${this.baseUrl}/${justificationId}/download`;
+  }
+
+  /** Téléchargement authentifié (Bearer) du document joint. */
+  async downloadDocument(justificationId: number, tenantId?: string): Promise<Blob> {
+    const client = createApiClient(tenantId);
+    const response = await client.get<Blob>(this.getDownloadUrl(justificationId), { responseType: 'blob' });
+
+    return response.data;
   }
 }
 

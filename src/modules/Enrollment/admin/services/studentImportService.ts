@@ -232,15 +232,7 @@ class StudentImportService {
     isValid: boolean;
     missingRequired: string[];
   } {
-    const requiredFields = [
-      'firstname',
-      'lastname',
-      'birthdate',
-      'sex',
-      'email',
-      'mobile',
-      'programme_code',
-    ];
+    const requiredFields = ['firstname', 'lastname', 'birthdate', 'sex'];
 
     // Guard: if mapping is undefined or empty, all required fields are missing
     if (!mapping || !Array.isArray(mapping) || mapping.length === 0) {
@@ -279,12 +271,12 @@ class StudentImportService {
       'genre': 'sex',
       'email': 'email',
       'courriel': 'email',
-      'mobile': 'mobile',
+      'mobile': 'phone',
       'telephone': 'phone',
       'téléphone': 'phone',
       'adresse': 'address',
       'ville': 'city',
-      'pays': 'country',
+      'quartier': 'quarter',
       'nationalite': 'nationality',
       'nationalité': 'nationality',
       'lieu_naissance': 'birthplace',
@@ -307,7 +299,7 @@ class StudentImportService {
       'phone': 'phone',
       'address': 'address',
       'city': 'city',
-      'country': 'country',
+      'quarter': 'quarter',
       'nationality': 'nationality',
       'birthplace': 'birthplace',
       'birth_place': 'birthplace',
@@ -317,7 +309,7 @@ class StudentImportService {
       'emergency_contact_phone': 'emergency_contact_phone',
     };
 
-    const requiredFields = ['firstname', 'lastname', 'birthdate', 'sex', 'email', 'mobile', 'programme_code'];
+    const requiredFields = ['firstname', 'lastname', 'birthdate', 'sex'];
 
     return headers.map((header) => {
       const normalizedHeader = header.toLowerCase().trim().replace(/\s+/g, '_');

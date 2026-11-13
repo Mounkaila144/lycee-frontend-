@@ -16,3 +16,4 @@ export { PdfExportDashboard } from './PdfExportDashboard';
 export { OccupancyStatsDashboard } from './OccupancyStatsDashboard';
 export { TeacherWorkloadDashboard } from './TeacherWorkloadDashboard';
 export { RoomUtilizationDashboard } from './RoomUtilizationDashboard';
+export { WeeklyTimetableGrid } from './WeeklyTimetableGrid';

@@ -1,6 +1,6 @@
 // ──── Enums / Constants ────
 
-export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'overdue' | 'cancelled';
+export type InvoiceStatus = 'draft' | 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'check' | 'mobile_money';
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 export type RefundStatus = 'pending' | 'approved' | 'processed' | 'rejected';
@@ -14,6 +14,7 @@ export type WriteOffStatus = 'pending' | 'approved' | 'rejected';
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   draft: 'Brouillon',
   pending: 'En attente',
+  partial: 'Partiellement payée',
   paid: 'Payée',
   overdue: 'En retard',
   cancelled: 'Annulée',
@@ -24,6 +25,7 @@ export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
   pending: '#1976d2',
   paid: '#4caf50',
   overdue: '#f44336',
+  partial: '#ff9800',
   cancelled: '#757575',
 };
 
@@ -388,6 +390,7 @@ export interface InvoiceFilters {
   status?: InvoiceStatus;
   due_date_from?: string;
   due_date_to?: string;
+  search?: string;
   page?: number;
   per_page?: number;
 }
@@ -464,54 +467,121 @@ export interface CollectionStatistics {
   average_days_overdue: number;
 }
 
-export interface AgingBalance {
-  range: string;
+// ──── Finance reports (GET /admin/finance/reports/*) ────
+// Montants : les décimaux Laravel sont sérialisés en chaîne ("72500.00").
+
+export type ReportAmount = number | string;
+
+export interface AgingBucket {
   count: number;
-  amount: number;
-  percentage: number;
+  amount: ReportAmount;
+  invoices: Array<{ invoice_number: string; student: string; amount: ReportAmount; days_overdue: number }>;
+}
+
+export type AgingBucketKey = 'current' | '0-30' | '31-60' | '61-90' | '91-120' | '120+';
+
+export interface AgingBalance {
+  aging: Record<AgingBucketKey, AgingBucket>;
+  total_outstanding: ReportAmount;
+  generated_at: string;
+}
+
+export interface CashFlowForecastMonth {
+  month: string;
+  expected_collections: ReportAmount;
+  scheduled_payments: ReportAmount;
+  historical_average: ReportAmount;
+  confidence: 'high' | 'medium' | 'low';
 }
 
 export interface CashFlowForecast {
-  month: string;
-  expected_income: number;
-  actual_income: number;
-  expected_expenses: number;
-  net_flow: number;
+  forecast: CashFlowForecastMonth[];
+  total_expected: ReportAmount;
 }
 
 export interface UnpaidStatement {
-  student: StudentSummary;
-  total_invoiced: number;
-  total_paid: number;
-  total_remaining: number;
-  overdue_invoices: number;
+  student: { id: number; matricule: string; firstname: string; lastname: string; email?: string | null };
+  total_debt: ReportAmount;
+  invoices_count: number;
   oldest_due_date: string;
+  invoices: Array<{
+    invoice_number: string;
+    invoice_date: string;
+    due_date: string;
+    total_amount: ReportAmount;
+    paid_amount: ReportAmount;
+    balance: ReportAmount;
+    status: string;
+    days_overdue: number;
+  }>;
+}
+
+export interface UnpaidStatementsReport {
+  statements: UnpaidStatement[];
+  summary: { total_students: number; total_invoices: number; total_amount: ReportAmount };
 }
 
 export interface FinanceDashboardData {
-  total_revenue: number;
-  total_outstanding: number;
-  collection_rate: number;
-  monthly_revenue: Array<{ month: string; amount: number }>;
-  recent_payments: Payment[];
-  overdue_invoices: Invoice[];
+  summary: {
+    total_invoiced: ReportAmount;
+    total_paid: ReportAmount;
+    total_outstanding: ReportAmount;
+    total_overdue: ReportAmount;
+    collection_rate: number;
+  };
+  current_month: {
+    invoiced: ReportAmount;
+    collected: ReportAmount;
+    by_method: Record<string, ReportAmount> | [];
+  };
+  trends: Array<{ month: string; collected: ReportAmount }>;
 }
 
 export interface PaymentJournalEntry {
   id: number;
-  date: string;
-  reference: string;
-  student_name: string;
-  description: string;
-  debit: number;
-  credit: number;
-  balance: number;
-  method: PaymentMethod;
+  invoice_id: number;
+  student_id: number;
+  payment_date: string;
+  amount: ReportAmount;
+  payment_method: string;
+  reference_number?: string | null;
+  receipt_number?: string | null;
+  notes?: string | null;
+  recorded_by?: { id: number; username: string; firstname?: string | null; lastname?: string | null } | null;
+  invoice?: {
+    id: number;
+    invoice_number: string;
+    student?: { id: number; matricule: string; firstname: string; lastname: string } | null;
+  } | null;
+}
+
+export interface PaymentJournal {
+  payments: PaymentJournalEntry[];
+  summary: {
+    total_count: number;
+    total_amount: ReportAmount;
+    daily_totals: Record<string, { count: number; amount: ReportAmount }> | [];
+  };
+  period: { start_date: string; end_date: string };
+}
+
+export interface AccountingExportParams {
+  start_date: string;
+  end_date: string;
+  format?: 'sage' | 'ciel' | 'custom';
 }
 
 export interface AccountingExport {
-  format: 'csv' | 'excel' | 'pdf';
-  period_from: string;
-  period_to: string;
-  type: 'journal' | 'ledger' | 'trial_balance';
+  format: string;
+  period: { start_date: string; end_date: string };
+  entries: Array<{
+    date: string;
+    reference: string;
+    account_debit: string;
+    account_credit: string;
+    amount: ReportAmount;
+    description: string;
+    student_matricule?: string | null;
+  }>;
+  summary: { total_entries: number; total_amount: ReportAmount };
 }

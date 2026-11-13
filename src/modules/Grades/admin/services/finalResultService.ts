@@ -75,12 +75,12 @@ class FinalResultService {
 
   /**
    * Get final statistics for a semester
-   * GET /api/admin/semesters/{semester}/final-statistics
+   * GET /api/admin/semesters/{semester}/final-results/statistics
    */
   async getStatistics(semesterId: number, tenantId?: string): Promise<FinalStatistics> {
     const client = createApiClient(tenantId);
     const response = await client.get<ApiResponse<FinalStatistics>>(
-      `/admin/semesters/${semesterId}/final-statistics`
+      `/admin/semesters/${semesterId}/final-results/statistics`
     );
 
     return response.data.data;

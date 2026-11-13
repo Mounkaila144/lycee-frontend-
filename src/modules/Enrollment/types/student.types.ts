@@ -76,6 +76,7 @@ export type Sex = 'M' | 'F' | 'O';
  */
 export interface Student {
   id: number;
+  /** Peut être null à l'exécution (matricule nullable côté BD) : toujours protéger les accès */
   matricule: string;
   firstname: string;
   lastname: string;
@@ -85,12 +86,18 @@ export interface Student {
   birthdate: string;
   birthplace: string;
   sex: Sex;
-  email: string;
+  /** @deprecated retiré du schéma secondaire (non renvoyé par l'API) */
+  email?: string | null;
   phone?: string | null;
-  mobile: string;
+  /** @deprecated retiré du schéma secondaire (non renvoyé par l'API) */
+  mobile?: string | null;
   address?: string | null;
   city?: string | null;
-  country: string;
+  quarter?: string | null;
+  /** @deprecated retiré du schéma secondaire (non renvoyé par l'API) */
+  country?: string | null;
+  blood_group?: string | null;
+  health_notes?: string | null;
   nationality: string;
   photo?: string | null;
   status: StudentStatus;
@@ -113,17 +120,23 @@ export interface StudentFormData {
   birthdate: string;
   birthplace: string;
   sex: Sex;
-  email: string;
+  /** @deprecated ignoré par l'API (schéma secondaire) */
+  email?: string;
   phone?: string;
-  mobile: string;
+  /** @deprecated ignoré par l'API (schéma secondaire) */
+  mobile?: string;
   address?: string;
   city?: string;
-  country: string;
+  quarter?: string;
+  /** @deprecated ignoré par l'API (schéma secondaire) */
+  country?: string;
   nationality: string;
   photo?: File | string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   programme_id: number;
+  /** Force la création malgré un doublon (nom, prénom, date de naissance) */
+  force?: boolean;
 }
 
 /**

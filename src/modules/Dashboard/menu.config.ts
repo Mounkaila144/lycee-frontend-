@@ -23,5 +23,20 @@ export const dashboardMenuConfig: ModuleMenuConfig = {
       isVisible: true,
       isActive: true,
     },
+    {
+      id: 'teacher-home',
+      label: 'Accueil',
+      route: '/admin/teacher/home',
+      icon: {
+        type: 'emoji',
+        value: '🏠',
+      },
+      order: 5,
+      module: 'Dashboard',
+      roles: ['admin'],
+      requiredRoles: ['Professeur'],
+      isVisible: true,
+      isActive: true,
+    },
   ],
 };

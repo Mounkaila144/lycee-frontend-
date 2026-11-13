@@ -163,6 +163,10 @@ export const ExamSupervisionDashboard: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      <Alert severity="warning" sx={{ mb: 2 }}>
+        Écran en cours d&apos;intégration : les données affichées ci-dessous sont des exemples de
+        démonstration et ne proviennent pas de la base de l&apos;établissement. Aucune action n&apos;est enregistrée.
+      </Alert>
       <Breadcrumbs sx={{ mb: 2 }}>
         <Link underline="hover" color="inherit" href="#">Administration</Link>
         <Link underline="hover" color="inherit" href="#">Examens</Link>

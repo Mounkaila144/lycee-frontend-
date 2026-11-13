@@ -66,7 +66,7 @@ export const StudentDeleteDialog = ({ open, onClose, onSuccess, student }: Stude
         <Typography variant="body2">
           Nom complet: {student.firstname} {student.lastname}
         </Typography>
-        <Typography variant="body2">Email: {student.email}</Typography>
+        <Typography variant="body2">Téléphone: {student.phone || '-'}</Typography>
         <Alert severity="warning" sx={{ mt: 2 }}>
           Cette action est réversible. L'étudiant sera marqué comme supprimé mais pourra être
           restauré par un administrateur.

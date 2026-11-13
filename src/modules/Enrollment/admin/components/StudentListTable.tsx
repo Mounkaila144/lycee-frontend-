@@ -276,16 +276,21 @@ const StudentListTable = () => {
       columnHelper.accessor('matricule', {
         id: 'matricule',
         header: 'Matricule',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-3'>
-            <CustomAvatar skin='light' size={34} color='primary'>
-              {row.original.matricule.substring(0, 2).toUpperCase()}
-            </CustomAvatar>
-            <Typography color='text.primary' className='font-medium'>
-              {row.original.matricule}
-            </Typography>
-          </div>
-        )
+        cell: ({ row }) => {
+          const matricule = row.original.matricule ?? ''
+          const initials = matricule ? matricule.substring(0, 2).toUpperCase() : '?'
+
+          return (
+            <div className='flex items-center gap-3'>
+              <CustomAvatar skin='light' size={34} color='primary'>
+                {initials}
+              </CustomAvatar>
+              <Typography color='text.primary' className='font-medium'>
+                {matricule || '-'}
+              </Typography>
+            </div>
+          )
+        }
       }),
       columnHelper.accessor('firstname', {
         id: 'firstname',
@@ -299,15 +304,15 @@ const StudentListTable = () => {
           <Typography className='font-medium'>{row.original.lastname || '-'}</Typography>
         )
       }),
-      columnHelper.accessor('email', {
-        id: 'email',
-        header: 'Email',
-        cell: ({ row }) => <Typography>{row.original.email || '-'}</Typography>
+      columnHelper.accessor('phone', {
+        id: 'phone',
+        header: 'Téléphone',
+        cell: ({ row }) => <Typography>{row.original.phone || '-'}</Typography>
       }),
-      columnHelper.accessor('mobile', {
-        id: 'mobile',
-        header: 'Mobile',
-        cell: ({ row }) => <Typography>{row.original.mobile || '-'}</Typography>
+      columnHelper.accessor('city', {
+        id: 'city',
+        header: 'Ville',
+        cell: ({ row }) => <Typography>{row.original.city || '-'}</Typography>
       }),
       columnHelper.accessor('status', {
         id: 'status',
@@ -459,25 +464,20 @@ const StudentListTable = () => {
           <StandardMobileCard
             avatar={
               <CustomAvatar skin='light' size={50} color='primary'>
-                {student.matricule.substring(0, 2).toUpperCase()}
+                {student.matricule ? student.matricule.substring(0, 2).toUpperCase() : '?'}
               </CustomAvatar>
             }
             title={`${student.firstname} ${student.lastname}`}
-            subtitle={student.matricule}
+            subtitle={student.matricule ?? '-'}
             status={{
               label: student.status,
               color: statusColorMap[student.status]
             }}
             fields={[
               {
-                icon: 'ri-mail-line',
-                label: 'Email',
-                value: student.email
-              },
-              {
                 icon: 'ri-phone-line',
-                label: 'Mobile',
-                value: student.mobile
+                label: 'Téléphone',
+                value: student.phone || '-'
               },
               {
                 icon: 'ri-user-line',
@@ -581,7 +581,7 @@ const StudentListTable = () => {
           semesterId={1}
           academicYearId={1}
           studentInfo={{
-            matricule: enrollmentStudent.matricule,
+            matricule: enrollmentStudent.matricule ?? '',
             firstname: enrollmentStudent.firstname,
             lastname: enrollmentStudent.lastname
           }}

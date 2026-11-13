@@ -1,3 +1,9 @@
+export interface MessageParticipant {
+  id: number;
+  username: string | null;
+  full_name: string;
+}
+
 export interface Message {
   id: number;
   sender_id: number;
@@ -9,6 +15,14 @@ export interface Message {
   read_at: string | null;
   created_at: string;
   updated_at: string;
+  direction: 'sent' | 'received';
+  sender: MessageParticipant | null;
+  recipient: MessageParticipant | null;
+}
+
+export interface InboxResponse {
+  data: Message[];
+  meta: { unread_count: number };
 }
 
 export interface MessageInput {

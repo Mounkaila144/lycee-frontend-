@@ -25,7 +25,7 @@ class RankingService {
   ): Promise<{ message: string }> {
     const client = createApiClient(tenantId);
     const response = await client.post<ApiResponse<{ message: string }>>(
-      `${this.baseUrl}/semesters/${semesterId}/calculate-ranking`
+      `${this.baseUrl}/semesters/${semesterId}/ranking/calculate`
     );
 
     return response.data.data || { message: response.data.message || 'Ranking calculated' };
@@ -62,7 +62,7 @@ class RankingService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<MentionDistribution[]>>(
-        `${this.baseUrl}/semesters/${semesterId}/mention-distribution`
+        `${this.baseUrl}/semesters/${semesterId}/ranking/mention-distribution`
       );
 
       return response.data.data;

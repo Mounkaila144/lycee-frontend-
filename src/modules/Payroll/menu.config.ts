@@ -2,6 +2,9 @@ import type { ModuleMenuConfig } from '@/shared/types/menu-config.types';
 
 /**
  * Payroll Module Menu Configuration
+ *
+ * `requiredRoles` reflète le middleware backend `role:Administrator|Manager|Comptable`
+ * (Modules/Payroll/Routes/admin.php).
  */
 export const payrollMenuConfig: ModuleMenuConfig = {
   module: 'Payroll',
@@ -17,6 +20,7 @@ export const payrollMenuConfig: ModuleMenuConfig = {
       order: 50,
       module: 'Payroll',
       roles: ['admin', 'superadmin'],
+      requiredRoles: ['Administrator', 'Manager', 'Comptable'],
       isVisible: true,
       isActive: true,
       children: [
@@ -32,6 +36,7 @@ export const payrollMenuConfig: ModuleMenuConfig = {
           module: 'Payroll',
           parentId: 'payroll',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable'],
           isVisible: true,
           isActive: true,
         },
@@ -47,6 +52,7 @@ export const payrollMenuConfig: ModuleMenuConfig = {
           module: 'Payroll',
           parentId: 'payroll',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable'],
           isVisible: true,
           isActive: true,
         },
@@ -62,6 +68,7 @@ export const payrollMenuConfig: ModuleMenuConfig = {
           module: 'Payroll',
           parentId: 'payroll',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable'],
           isVisible: true,
           isActive: true,
         },
@@ -77,6 +84,7 @@ export const payrollMenuConfig: ModuleMenuConfig = {
           module: 'Payroll',
           parentId: 'payroll',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable'],
           isVisible: true,
           isActive: true,
         },
@@ -92,6 +100,7 @@ export const payrollMenuConfig: ModuleMenuConfig = {
           module: 'Payroll',
           parentId: 'payroll',
           roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable'],
           isVisible: true,
           isActive: true,
         },

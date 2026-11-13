@@ -1,163 +1,88 @@
 import { createApiClient } from '@/shared/lib/api-client';
 
 import type {
-  PayrollPeriod,
-  Payslip,
   BankTransfer,
   CreatePayrollPeriodRequest,
+  MessageResponse,
+  PayrollPeriod,
   PayrollPeriodFilters,
-  PaginatedResponse,
+  Payslip,
 } from '../../types';
 
+/**
+ * Traitement de la paie (Epic 3) : périodes, calcul, validation, bulletins, virements, paiement.
+ */
 class PayrollService {
   private baseUrl = '/admin/payroll/payroll-periods';
 
-  async getPeriods(
-    filters?: PayrollPeriodFilters,
-    tenantId?: string,
-  ): Promise<PaginatedResponse<PayrollPeriod>> {
+  async getPeriods(filters?: PayrollPeriodFilters, tenantId?: string): Promise<PayrollPeriod[]> {
     const client = createApiClient(tenantId);
-    const response = await client.get<PaginatedResponse<PayrollPeriod>>(
-      this.baseUrl,
-      { params: filters },
-    );
+    const response = await client.get<PayrollPeriod[]>(this.baseUrl, { params: filters });
 
     return response.data;
   }
 
-  async getPeriod(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<PayrollPeriod> {
+  /** Inclut `payroll_records.employee` et `payslips`. */
+  async getPeriod(periodId: number, tenantId?: string): Promise<PayrollPeriod> {
     const client = createApiClient(tenantId);
-    const response = await client.get<PayrollPeriod>(
-      `${this.baseUrl}/${periodId}`,
-    );
+    const response = await client.get<{ data: PayrollPeriod }>(`${this.baseUrl}/${periodId}`);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async createPeriod(
-    data: CreatePayrollPeriodRequest,
-    tenantId?: string,
-  ): Promise<PayrollPeriod> {
+  async createPeriod(data: CreatePayrollPeriodRequest, tenantId?: string): Promise<PayrollPeriod> {
     const client = createApiClient(tenantId);
-    const response = await client.post<PayrollPeriod>(
-      this.baseUrl,
-      data,
-    );
+    const response = await client.post<MessageResponse<PayrollPeriod>>(this.baseUrl, data);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async updatePeriod(
-    periodId: number,
-    data: Partial<CreatePayrollPeriodRequest>,
-    tenantId?: string,
-  ): Promise<PayrollPeriod> {
+  /** Seules les périodes en brouillon peuvent être supprimées. */
+  async deletePeriod(periodId: number, tenantId?: string): Promise<void> {
     const client = createApiClient(tenantId);
-    const response = await client.put<PayrollPeriod>(
-      `${this.baseUrl}/${periodId}`,
-      data,
-    );
 
-    return response.data;
+    await client.delete(`${this.baseUrl}/${periodId}`);
   }
 
-  async deletePeriod(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<{ message: string }> {
+  async calculatePeriod(periodId: number, tenantId?: string): Promise<PayrollPeriod> {
     const client = createApiClient(tenantId);
-    const response = await client.delete<{ message: string }>(
-      `${this.baseUrl}/${periodId}`,
-    );
+    const response = await client.post<MessageResponse<PayrollPeriod>>(`${this.baseUrl}/${periodId}/calculate`);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async calculatePeriod(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<{ message: string; period: PayrollPeriod }> {
+  async validatePeriod(periodId: number, tenantId?: string): Promise<PayrollPeriod> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; period: PayrollPeriod }>(
-      `${this.baseUrl}/${periodId}/calculate`,
-    );
+    const response = await client.post<MessageResponse<PayrollPeriod>>(`${this.baseUrl}/${periodId}/validate`);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async validatePeriod(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<{ message: string; period: PayrollPeriod }> {
+  async generatePayslips(periodId: number, tenantId?: string): Promise<{ data: Payslip[]; count: number }> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; period: PayrollPeriod }>(
-      `${this.baseUrl}/${periodId}/validate`,
-    );
 
-    return response.data;
-  }
-
-  async generatePayslips(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<{ message: string; count: number }> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; count: number }>(
+    const response = await client.post<MessageResponse<Payslip[]> & { count: number }>(
       `${this.baseUrl}/${periodId}/generate-payslips`,
     );
 
-    return response.data;
+    return { data: response.data.data, count: response.data.count };
   }
 
-  async getPayslips(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<Payslip[]> {
+  async getBankTransfers(periodId: number, tenantId?: string): Promise<BankTransfer[]> {
     const client = createApiClient(tenantId);
-    const response = await client.get<Payslip[]>(
-      `${this.baseUrl}/${periodId}/payslips`,
-    );
+    const response = await client.get<MessageResponse<BankTransfer[]>>(`${this.baseUrl}/${periodId}/bank-transfers`);
 
-    return response.data;
+    return response.data.data;
   }
 
-  async generateBankTransfers(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<{ message: string; transfers: BankTransfer[] }> {
+  async markAsPaid(periodId: number, paymentDate: string, tenantId?: string): Promise<PayrollPeriod> {
     const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; transfers: BankTransfer[] }>(
-      `${this.baseUrl}/${periodId}/bank-transfers`,
-    );
 
-    return response.data;
-  }
+    const response = await client.post<MessageResponse<PayrollPeriod>>(`${this.baseUrl}/${periodId}/mark-as-paid`, {
+      payment_date: paymentDate,
+    });
 
-  async getBankTransfers(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<BankTransfer[]> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<BankTransfer[]>(
-      `${this.baseUrl}/${periodId}/bank-transfers`,
-    );
-
-    return response.data;
-  }
-
-  async markAsPaid(
-    periodId: number,
-    tenantId?: string,
-  ): Promise<{ message: string; period: PayrollPeriod }> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string; period: PayrollPeriod }>(
-      `${this.baseUrl}/${periodId}/mark-as-paid`,
-    );
-
-    return response.data;
+    return response.data.data;
   }
 }
 

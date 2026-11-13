@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+
 import { Controller, useForm } from 'react-hook-form';
 import { valibotResolver } from '@hookform/resolvers/valibot';
 import { object, string, pipe, minLength, number, optional, minValue } from 'valibot';
@@ -35,6 +36,8 @@ interface Props {
   onSent?: () => void;
   defaultRecipientId?: number;
   defaultStudentContextId?: number;
+  defaultRecipient?: MessageRecipient;
+  defaultSubject?: string;
 }
 
 export function SendMessageDialog({
@@ -43,6 +46,8 @@ export function SendMessageDialog({
   onSent,
   defaultRecipientId,
   defaultStudentContextId,
+  defaultRecipient,
+  defaultSubject,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,15 +74,15 @@ export function SendMessageDialog({
   useEffect(() => {
     if (open) {
       reset({
-        recipient_id: defaultRecipientId ?? 0,
-        subject: '',
+        recipient_id: defaultRecipient?.id ?? defaultRecipientId ?? 0,
+        subject: defaultSubject ?? '',
         body: '',
         student_context_id: defaultStudentContextId,
       });
       setError(null);
       setSearch('');
     }
-  }, [open, defaultRecipientId, defaultStudentContextId, reset]);
+  }, [open, defaultRecipientId, defaultRecipient, defaultSubject, defaultStudentContextId, reset]);
 
   useEffect(() => {
     if (!open) {
@@ -87,6 +92,7 @@ export function SendMessageDialog({
     let cancelled = false;
 
     setLoadingRecipients(true);
+
     const handle = setTimeout(() => {
       messagingService
         .recipients(search.trim() || undefined)
@@ -115,9 +121,17 @@ export function SendMessageDialog({
 
   const recipientsById = useMemo(() => {
     const map = new Map<number, MessageRecipient>();
+
+    if (defaultRecipient) {
+      map.set(defaultRecipient.id, defaultRecipient);
+    }
+
     recipients.forEach((r) => map.set(r.id, r));
-    return map;
-  }, [recipients]);
+    
+return map;
+  }, [recipients, defaultRecipient]);
+
+  const recipientOptions = useMemo(() => Array.from(recipientsById.values()), [recipientsById]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -153,7 +167,7 @@ export function SendMessageDialog({
 
                 return (
                   <Autocomplete<MessageRecipient, false, false, false>
-                    options={recipients}
+                    options={recipientOptions}
                     value={selected}
                     loading={loadingRecipients}
                     onInputChange={(_event, newValue, reason) => {

@@ -2,14 +2,22 @@ import { useQuery } from '@tanstack/react-query';
 
 import { reportService } from '../services';
 
+export const useSemesters = (tenantId?: string) => {
+  return useQuery({
+    queryKey: ['attendance-semesters'],
+    queryFn: () => reportService.getSemesters(tenantId),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useAttendanceRates = (
   semesterId?: number,
-  groupId?: number,
+  classeId?: number,
   tenantId?: string,
 ) => {
   return useQuery({
-    queryKey: ['attendance-rates', semesterId, groupId],
-    queryFn: () => reportService.getAttendanceRates(semesterId!, groupId, tenantId),
+    queryKey: ['attendance-rates', semesterId, classeId],
+    queryFn: () => reportService.getAttendanceRates(semesterId!, classeId, tenantId),
     enabled: !!semesterId,
   });
 };

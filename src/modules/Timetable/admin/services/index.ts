@@ -13,3 +13,4 @@ export { pdfExportService } from './pdfExportService';
 export { occupancyStatsService } from './occupancyStatsService';
 export { teacherWorkloadService } from './teacherWorkloadService';
 export { roomUtilizationService } from './roomUtilizationService';
+export { lyceeTimetableService, flattenGrid, portalToSlots } from './lyceeTimetableService';

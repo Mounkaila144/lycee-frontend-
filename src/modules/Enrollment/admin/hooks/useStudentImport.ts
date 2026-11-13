@@ -360,7 +360,7 @@ export const useStudentImport = () => {
 
     // Transform preview rows to backend expected format
     // Backend expects: { rows: [...], programme_id?: number }
-    // Each row should have: row_number, nom, prenom, email, date_naissance, sexe, is_valid, etc.
+    // Each row should have: row_number, nom, prenom, date_naissance, sexe, is_valid, etc.
     const rows = preview.preview.map(row => {
       // Map frontend field names to backend expected French field names using columnMapping
       const mappedData: Record<string, any> = {
@@ -383,6 +383,7 @@ export const useStudentImport = () => {
             'mobile': 'mobile',
             'address': 'adresse',
             'city': 'ville',
+            'quarter': 'quartier',
             'country': 'pays',
             'nationality': 'nationalite',
             'birthplace': 'lieu_naissance',

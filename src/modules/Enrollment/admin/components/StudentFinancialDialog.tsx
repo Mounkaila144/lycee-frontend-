@@ -29,6 +29,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
 
 import { useTenant } from '@/shared/lib/tenant-context';
+import { useAuthUser } from '@/shared/hooks/useAuthUser';
 import { createApiClient } from '@/shared/lib/api-client';
 import type { Student } from '../../types/student.types';
 import { PaymentsDialog } from '@/modules/Finance/admin/components/InvoiceDashboard';
@@ -78,6 +79,8 @@ const STATUS_LABEL: Record<string, { label: string; color: 'default' | 'primary'
 
 export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ student, open, onClose }) => {
   const { tenantId } = useTenant();
+  const authUser = useAuthUser();
+  const canCreateInvoice = (authUser?.roles ?? []).some(role => ['Administrator', 'Comptable'].includes(role));
   const queryClient = useQueryClient();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -207,13 +210,15 @@ export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ 
                 }
               />
             )}
-            <Button
-              variant="contained"
-              onClick={() => setCreateOpen(true)}
-              startIcon={<i className="ri-add-line" />}
-            >
-              Nouvelle facture
-            </Button>
+            {canCreateInvoice && (
+              <Button
+                variant="contained"
+                onClick={() => setCreateOpen(true)}
+                startIcon={<i className="ri-add-line" />}
+              >
+                Nouvelle facture
+              </Button>
+            )}
           </Box>
         </Box>
       </DialogTitle>

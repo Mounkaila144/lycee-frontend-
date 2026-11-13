@@ -29,7 +29,7 @@ class AnalyticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<AnalyticsKPIs>>(
-        `${this.baseUrl}/analytics/kpis/${semesterId}`
+        `${this.baseUrl}/analytics/semesters/${semesterId}/kpis`
       );
 
       return response.data.data;
@@ -54,7 +54,7 @@ class AnalyticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<WeakModule[]>>(
-        `${this.baseUrl}/analytics/weak-modules/${semesterId}`
+        `${this.baseUrl}/analytics/semesters/${semesterId}/weak-modules`
       );
 
       return response.data.data;
@@ -70,7 +70,7 @@ class AnalyticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<CohortAnalysis>>(
-        `${this.baseUrl}/analytics/cohort-analysis/${semesterId}`
+        `${this.baseUrl}/analytics/semesters/${semesterId}/cohort-analysis`
       );
 
       return response.data.data;
@@ -87,7 +87,7 @@ class AnalyticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<AtRiskStudent[]>>(
-        `${this.baseUrl}/analytics/at-risk-students/${semesterId}`,
+        `${this.baseUrl}/analytics/semesters/${semesterId}/at-risk-students`,
         { params: { threshold } }
       );
 
@@ -104,7 +104,7 @@ class AnalyticsService {
     try {
       const client = createApiClient(tenantId);
       const response = await client.get<ApiResponse<CorrelationEntry[]>>(
-        `${this.baseUrl}/analytics/correlation-matrix/${semesterId}`
+        `${this.baseUrl}/analytics/semesters/${semesterId}/correlation-matrix`
       );
 
       return response.data.data;

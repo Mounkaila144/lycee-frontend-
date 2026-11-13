@@ -69,6 +69,7 @@ const fieldLabels: Record<keyof StudentFormData | 'programme_code', string> = {
   mobile: 'Mobile',
   address: 'Adresse',
   city: 'Ville',
+  quarter: 'Quartier',
   country: 'Pays',
   nationality: 'Nationalité',
   photo: 'Photo',
@@ -76,6 +77,7 @@ const fieldLabels: Record<keyof StudentFormData | 'programme_code', string> = {
   emergency_contact_phone: 'Contact urgence (tél)',
   programme_id: 'ID Programme',
   programme_code: 'Code Programme',
+  force: 'Forcer',
 };
 
 export const StudentImportWizard = ({
@@ -376,7 +378,7 @@ export const StudentImportWizard = ({
                   <FormControlLabel
                     value="update"
                     control={<Radio />}
-                    label="Mode mise à jour - Mettre à jour si l'étudiant existe (par email)"
+                    label="Mode mise à jour - Mettre à jour si l'élève existe (nom, prénom, date de naissance)"
                   />
                 </RadioGroup>
               </FormControl>
@@ -466,7 +468,7 @@ export const StudentImportWizard = ({
                     <TableCell>Ligne</TableCell>
                     <TableCell>Statut</TableCell>
                     <TableCell>Nom</TableCell>
-                    <TableCell>Email</TableCell>
+                    <TableCell>Téléphone</TableCell>
                     <TableCell>Détails</TableCell>
                   </TableRow>
                 </TableHead>
@@ -515,7 +517,7 @@ export const StudentImportWizard = ({
                       <TableCell>
                         {row.data['firstname'] || row.data['prenom']} {row.data['lastname'] || row.data['nom']}
                       </TableCell>
-                      <TableCell>{row.data['email']}</TableCell>
+                      <TableCell>{row.data['telephone'] || row.data['phone'] || '-'}</TableCell>
                       <TableCell>
                         {row.errors.length > 0 && (
                           <Tooltip

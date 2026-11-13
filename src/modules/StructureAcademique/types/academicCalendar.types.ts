@@ -1,7 +1,7 @@
 // Types de périodes académiques (valeurs backend en français)
 export type AcademicPeriodType = 'Jour férié' | 'Vacances' | 'Session examens' | 'Inscription pédagogique' | 'Rattrapage' | 'Autre'
 
-export type AcademicYearStatus = 'Active' | 'Terminée' | 'Archivée'
+export type AcademicYearStatus = 'Active' | 'Terminée' | 'À venir' | 'Archivée'
 
 export interface AcademicYear {
   id: number
@@ -32,7 +32,9 @@ export interface Semester {
   courses_end_date: string | null
   exams_start_date: string | null
   exams_end_date: string | null
+  is_active: boolean
   is_closed: boolean
+  closed_at?: string | null
   created_at: string
   updated_at: string
   // Relations
@@ -97,21 +99,21 @@ export interface EvaluationPeriodFormInput {
 }
 
 export interface CloseSemesterResponse {
-  success: boolean
   message: string
-  semester: Semester
+  data: Semester
 }
 
 // Helper functions
 export const getAcademicYearStatusColor = (
   status: AcademicYearStatus
-): 'success' | 'default' | 'warning' => {
-  const colors: Record<AcademicYearStatus, 'success' | 'default' | 'warning'> = {
+): 'success' | 'default' | 'warning' | 'info' => {
+  const colors: Record<AcademicYearStatus, 'success' | 'default' | 'warning' | 'info'> = {
     Active: 'success',
     Terminée: 'default',
+    'À venir': 'info',
     Archivée: 'warning'
   }
-  return colors[status]
+  return colors[status] ?? 'default'
 }
 
 export const getAcademicPeriodTypeLabel = (type: AcademicPeriodType): string => {

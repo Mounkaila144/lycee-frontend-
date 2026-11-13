@@ -9,10 +9,10 @@ import type { Permission } from '../../types/permission.types';
  * Custom hook for fetching all available permissions
  * Provides state management and data fetching for permissions list
  */
-export const usePermissionsList = () => {
+export const usePermissionsList = ({ enabled = true }: { enabled?: boolean } = {}) => {
   const { tenantId } = useTenant();
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(enabled);
   const [error, setError] = useState<Error | null>(null);
 
   /**
@@ -39,10 +39,16 @@ export const usePermissionsList = () => {
     fetchPermissions();
   }, [fetchPermissions]);
 
-  // Fetch permissions on mount
+  // Fetch permissions on mount (skipped when disabled, e.g. non-Administrator: GET /admin/permissions is Admin-only)
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+
+      return;
+    }
+
     fetchPermissions();
-  }, [fetchPermissions]);
+  }, [fetchPermissions, enabled]);
 
   return {
     permissions,

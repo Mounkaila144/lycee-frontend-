@@ -1,133 +1,150 @@
 import { createApiClient } from '@/shared/lib/api-client';
 
-import type {
-  Reminder,
-  CreateReminderRequest,
-  ServiceBlock,
-  CreateServiceBlockRequest,
-  PaymentPlan,
-  CreatePaymentPlanRequest,
-  WriteOff,
-  CreateWriteOffRequest,
-  ReminderFilters,
-  PaginatedResponse,
-  CollectionStatistics,
-} from '../../types';
+/**
+ * Recouvrement & relances — endpoints réels sous /admin/finance/collection
+ * (cf. Modules/Finance/Routes/admin.php côté Laravel).
+ *
+ * Lecture : Administrator, Manager, Comptable, Caissier.
+ * Actions (générer/envoyer, bloquer/débloquer, échéancier, passage en perte) :
+ * Administrator et Comptable uniquement.
+ */
+
+export type ReminderLevel = 'first_reminder' | 'second_reminder' | 'final_notice' | 'service_block_warning';
+export type BlockType = 'enrollment' | 'exam_access' | 'documents' | 'reenrollment' | 'all';
+
+interface StudentRef {
+  id: number;
+  firstname: string;
+  lastname: string;
+  matricule: string;
+}
+
+interface UserRef {
+  id: number;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+}
+
+export interface CollectionReminder {
+  id: number;
+  invoice_id: number;
+  student_id: number;
+  reminder_date: string;
+  reminder_type: ReminderLevel;
+  status: 'pending' | 'sent' | 'failed';
+  sent_at: string | null;
+  send_methods: string[] | null;
+  notes: string | null;
+  invoice?: { id: number; invoice_number: string; total_amount: string; paid_amount: string; due_date: string } | null;
+  student?: StudentRef | null;
+}
+
+export interface CollectionServiceBlock {
+  id: number;
+  student_id: number;
+  block_type: BlockType;
+  reason: string;
+  blocked_at: string;
+  unblocked_at: string | null;
+  is_active: boolean;
+  student?: StudentRef | null;
+  blocked_by?: UserRef | null;
+  unblocked_by?: UserRef | null;
+}
+
+export interface CollectionStats {
+  total_overdue_amount: number;
+  total_overdue_count: number;
+  reminders_sent: number;
+  active_blocks: number;
+  aging: Record<string, { count: number; amount: number }>;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number };
+}
+
+export interface ReminderListFilters {
+  status?: string;
+  reminder_type?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface BlockListFilters {
+  student_id?: number;
+  active_only?: boolean;
+  page?: number;
+  per_page?: number;
+}
+
+const BASE_URL = '/admin/finance/collection';
 
 class CollectionService {
-  private baseUrl = '/admin/finance';
+  async getStatistics(tenantId?: string): Promise<CollectionStats> {
+    const response = await createApiClient(tenantId).get<{ data: CollectionStats }>(`${BASE_URL}/statistics`);
 
-  // ──── Reminders ────
+    return response.data.data;
+  }
 
-  async getReminders(filters?: ReminderFilters, tenantId?: string): Promise<PaginatedResponse<Reminder>> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<PaginatedResponse<Reminder>>(
-      `${this.baseUrl}/reminders`,
-      { params: filters },
+  async getReminders(filters?: ReminderListFilters, tenantId?: string): Promise<Paginated<CollectionReminder>> {
+    const response = await createApiClient(tenantId).get<Paginated<CollectionReminder>>(`${BASE_URL}/reminders`, {
+      params: filters,
+    });
+
+    return response.data;
+  }
+
+  async generateReminders(tenantId?: string): Promise<{ message: string; data: { reminders_count: number } }> {
+    const response = await createApiClient(tenantId).post(`${BASE_URL}/reminders/generate`);
+
+    return response.data;
+  }
+
+  async sendReminders(tenantId?: string): Promise<{ message: string; data: { sent: number; failed: number; total: number } }> {
+    const response = await createApiClient(tenantId).post(`${BASE_URL}/reminders/send`);
+
+    return response.data;
+  }
+
+  async getServiceBlocks(filters?: BlockListFilters, tenantId?: string): Promise<Paginated<CollectionServiceBlock>> {
+    const response = await createApiClient(tenantId).get<Paginated<CollectionServiceBlock>>(`${BASE_URL}/blocks`, {
+      params: { ...filters, active_only: filters?.active_only ? 1 : undefined },
+    });
+
+    return response.data;
+  }
+
+  async createServiceBlock(
+    data: { student_id: number; block_type: BlockType; reason: string; related_invoice_ids?: number[] },
+    tenantId?: string,
+  ): Promise<CollectionServiceBlock> {
+    const response = await createApiClient(tenantId).post<{ data: CollectionServiceBlock }>(`${BASE_URL}/blocks`, data);
+
+    return response.data.data;
+  }
+
+  async liftServiceBlock(blockId: number, tenantId?: string): Promise<CollectionServiceBlock> {
+    const response = await createApiClient(tenantId).post<{ data: CollectionServiceBlock }>(
+      `${BASE_URL}/blocks/${blockId}/unblock`,
     );
 
-    return response.data;
+    return response.data.data;
   }
 
-  async createReminder(data: CreateReminderRequest, tenantId?: string): Promise<Reminder> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<Reminder>(`${this.baseUrl}/reminders`, data);
-
-    return response.data;
-  }
-
-  async sendReminder(reminderId: number, tenantId?: string): Promise<{ message: string }> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string }>(
-      `${this.baseUrl}/reminders/${reminderId}/send`,
-    );
+  async createPaymentPlan(
+    data: { invoice_id: number; number_of_installments: number; first_due_date?: string },
+    tenantId?: string,
+  ): Promise<unknown> {
+    const response = await createApiClient(tenantId).post(`${BASE_URL}/payment-plans`, data);
 
     return response.data;
   }
 
-  // ──── Service Blocking ────
-
-  async getServiceBlocks(tenantId?: string): Promise<ServiceBlock[]> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<ServiceBlock[]>(`${this.baseUrl}/service-blocks`);
-
-    return response.data;
-  }
-
-  async createServiceBlock(data: CreateServiceBlockRequest, tenantId?: string): Promise<ServiceBlock> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<ServiceBlock>(`${this.baseUrl}/service-blocks`, data);
-
-    return response.data;
-  }
-
-  async liftServiceBlock(blockId: number, tenantId?: string): Promise<{ message: string }> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string }>(
-      `${this.baseUrl}/service-blocks/${blockId}/lift`,
-    );
-
-    return response.data;
-  }
-
-  // ──── Payment Plans ────
-
-  async getPaymentPlans(tenantId?: string): Promise<PaymentPlan[]> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<PaymentPlan[]>(`${this.baseUrl}/payment-plans`);
-
-    return response.data;
-  }
-
-  async createPaymentPlan(data: CreatePaymentPlanRequest, tenantId?: string): Promise<PaymentPlan> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<PaymentPlan>(`${this.baseUrl}/payment-plans`, data);
-
-    return response.data;
-  }
-
-  async cancelPaymentPlan(planId: number, tenantId?: string): Promise<{ message: string }> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string }>(
-      `${this.baseUrl}/payment-plans/${planId}/cancel`,
-    );
-
-    return response.data;
-  }
-
-  // ──── Write-Offs ────
-
-  async getWriteOffs(tenantId?: string): Promise<WriteOff[]> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<WriteOff[]>(`${this.baseUrl}/write-offs`);
-
-    return response.data;
-  }
-
-  async createWriteOff(data: CreateWriteOffRequest, tenantId?: string): Promise<WriteOff> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<WriteOff>(`${this.baseUrl}/write-offs`, data);
-
-    return response.data;
-  }
-
-  async approveWriteOff(writeOffId: number, tenantId?: string): Promise<{ message: string }> {
-    const client = createApiClient(tenantId);
-    const response = await client.post<{ message: string }>(
-      `${this.baseUrl}/write-offs/${writeOffId}/approve`,
-    );
-
-    return response.data;
-  }
-
-  // ──── Statistics ────
-
-  async getCollectionStatistics(academicYearId?: number, tenantId?: string): Promise<CollectionStatistics> {
-    const client = createApiClient(tenantId);
-    const response = await client.get<CollectionStatistics>(
-      `${this.baseUrl}/collection/statistics`,
-      { params: { academic_year_id: academicYearId } },
-    );
+  async writeOff(invoiceId: number, reason: string, tenantId?: string): Promise<unknown> {
+    const response = await createApiClient(tenantId).post(`${BASE_URL}/write-off/${invoiceId}`, { reason });
 
     return response.data;
   }

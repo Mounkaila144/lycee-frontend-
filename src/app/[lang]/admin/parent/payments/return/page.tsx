@@ -38,14 +38,17 @@ export default function PaymentReturnPage() {
     }
 
     let cancelled = false;
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const MAX_TRIES = 20; // 20 × 3s = 60s
 
     const poll = async () => {
       try {
         const res = await parentService.paymentStatus(paymentId);
         if (cancelled) return;
+        attempts += 1;
         setStatus(res.status);
-        setTries((t) => t + 1);
+        setTries(attempts);
         if (['success', 'failed', 'refused', 'cancelled'].includes(res.status)) {
           return; // final
         }
@@ -54,14 +57,17 @@ export default function PaymentReturnPage() {
         setError(err?.response?.data?.message ?? 'Impossible de vérifier le statut.');
         return;
       }
-      if (tries < MAX_TRIES) {
-        setTimeout(poll, 3000);
+      // Compteur local (et non l'état `tries`, figé dans la closure) pour
+      // stopper réellement le polling après MAX_TRIES tentatives.
+      if (attempts < MAX_TRIES) {
+        timer = setTimeout(poll, 3000);
       }
     };
 
     poll();
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentId]);

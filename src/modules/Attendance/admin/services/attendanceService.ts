@@ -3,6 +3,8 @@ import { createApiClient } from '@/shared/lib/api-client';
 import type {
   AttendanceSession,
   AttendanceRecord,
+  AttendanceSheet,
+  ClasseSummary,
   CreateSessionRequest,
   RecordAttendanceRequest,
   ModifyRecordRequest,
@@ -10,11 +12,6 @@ import type {
   SessionFilters,
   PaginatedResponse,
 } from '../../types';
-
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-}
 
 class AttendanceService {
   private baseUrl = '/admin/attendance';
@@ -45,12 +42,20 @@ class AttendanceService {
     return response.data;
   }
 
+  /** Classes pour lesquelles l'utilisateur peut faire l'appel (toutes pour l'admin). */
+  async getClasses(tenantId?: string): Promise<ClasseSummary[]> {
+    const client = createApiClient(tenantId);
+    const response = await client.get<{ data: ClasseSummary[] }>(`${this.baseUrl}/classes`);
+
+    return response.data.data;
+  }
+
   async getAttendanceSheet(
     sessionId: number,
     tenantId?: string,
-  ): Promise<AttendanceRecord[]> {
+  ): Promise<AttendanceSheet> {
     const client = createApiClient(tenantId);
-    const response = await client.get<AttendanceRecord[]>(
+    const response = await client.get<AttendanceSheet>(
       `${this.baseUrl}/sessions/${sessionId}/sheet`,
     );
 
