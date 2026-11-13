@@ -3,7 +3,6 @@ import type {
   Announcement,
   ChildAttendanceRecord,
   ChildDocument,
-  ChildGrade,
   ChildInvoice,
   ChildSummary,
   ChildTimetableSlot,
@@ -11,6 +10,7 @@ import type {
   OnlinePaymentStatus,
   ParentProfile,
 } from '../types/portail-parent.types';
+import type { StudentResultsResponse } from '@/modules/Grades/lycee/types';
 
 /**
  * Portail Parent — appels API back-end.
@@ -39,11 +39,13 @@ export const parentService = {
     return data.data;
   },
 
-  async childGrades(studentId: number): Promise<ChildGrade[]> {
-    const { data } = await createApiClient().get<{ data: ChildGrade[] }>(
-      `/admin/parent/children/${studentId}/grades`
+  /** Relevé lycée de l'enfant (évaluations publiées) — même forme que /lycee-grades/results/students/{id}. */
+  async childGrades(studentId: number, semesterId?: number): Promise<StudentResultsResponse> {
+    const { data } = await createApiClient().get<StudentResultsResponse>(
+      `/admin/parent/children/${studentId}/grades`,
+      { params: semesterId ? { semester_id: semesterId } : undefined }
     );
-    return data.data;
+    return data;
   },
 
   async childAttendance(studentId: number): Promise<ChildAttendanceRecord[]> {

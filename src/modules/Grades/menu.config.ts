@@ -4,13 +4,15 @@ import { ModuleMenuConfig } from '@/shared/types/menu-config.types';
  * Grades Module Menu Configuration
  *
  * This file defines all menu items for the Grades module.
+ * Les entrées universitaires (ECTS, délibérations, rattrapages…) sont masquées
+ * (isVisible: false) au profit du modèle lycée (src/modules/Grades/lycee).
  */
 export const gradesMenuConfig: ModuleMenuConfig = {
   module: 'Grades',
   menus: [
     {
       id: 'grades',
-      label: 'Notes & Évaluations',
+      label: 'Notes',
       route: '/admin/grades',
       icon: {
         type: 'emoji',
@@ -23,6 +25,72 @@ export const gradesMenuConfig: ModuleMenuConfig = {
       isVisible: true,
       isActive: true,
       children: [
+        /* ---- Notes lycée (modèle classe × matière × semestre) ---- */
+        {
+          id: 'lycee-grades-teacher-entry',
+          label: 'Saisie des notes',
+          route: '/admin/teacher/grades',
+          icon: {
+            type: 'emoji',
+            value: '✏️',
+          },
+          order: 0.1,
+          module: 'Grades',
+          parentId: 'grades',
+          roles: ['admin'],
+          requiredRoles: ['Professeur'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'lycee-grades-assignments',
+          label: 'Affectations',
+          route: '/admin/grades/assignments',
+          icon: {
+            type: 'emoji',
+            value: '👩‍🏫',
+          },
+          order: 0.2,
+          module: 'Grades',
+          parentId: 'grades',
+          roles: ['admin'],
+          requiredRoles: ['Administrator', 'Manager'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'lycee-grades-evaluations',
+          label: 'Évaluations',
+          route: '/admin/grades/evaluations',
+          icon: {
+            type: 'emoji',
+            value: '🗂️',
+          },
+          order: 0.3,
+          module: 'Grades',
+          parentId: 'grades',
+          roles: ['admin'],
+          requiredRoles: ['Administrator', 'Manager'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'lycee-grades-class-results',
+          label: 'Résultats & bulletins',
+          route: '/admin/grades/class-results',
+          icon: {
+            type: 'emoji',
+            value: '📊',
+          },
+          order: 0.4,
+          module: 'Grades',
+          parentId: 'grades',
+          roles: ['admin'],
+          requiredRoles: ['Administrator', 'Manager', 'Professeur'],
+          isVisible: true,
+          isActive: true,
+        },
+        /* ---- Ancien modèle universitaire : masqué ---- */
         {
           id: 'grades-entry',
           label: 'Grade Entry',
@@ -36,7 +104,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           parentId: 'grades',
           roles: ['admin', 'superadmin', 'teacher', 'enseignant'],
           requiredRoles: ['Administrator', 'Manager', 'Professeur'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -51,7 +119,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin', 'responsable_pedagogique'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -66,7 +134,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -81,7 +149,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -96,7 +164,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -111,7 +179,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -127,7 +195,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           parentId: 'grades',
           roles: ['admin', 'superadmin', 'teacher', 'enseignant'],
           requiredRoles: ['Administrator', 'Manager', 'Professeur'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -142,7 +210,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -157,7 +225,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -187,7 +255,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -202,7 +270,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -232,7 +300,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {
@@ -247,7 +315,7 @@ export const gradesMenuConfig: ModuleMenuConfig = {
           module: 'Grades',
           parentId: 'grades',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
       ],

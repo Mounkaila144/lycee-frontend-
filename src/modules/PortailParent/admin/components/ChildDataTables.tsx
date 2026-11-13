@@ -12,7 +12,6 @@ import Typography from '@mui/material/Typography';
 
 import type {
   ChildAttendanceRecord,
-  ChildGrade,
   ChildInvoice,
   ChildSummary,
 } from '../../types/portail-parent.types';
@@ -69,20 +68,6 @@ export function ChildProfileDetails({ child }: { child: ChildSummary }) {
         </Stack>
       ))}
     </Stack>
-  );
-}
-
-export function ChildGradesTable({ grades }: { grades: ChildGrade[] }) {
-  return (
-    <SimpleTable
-      headers={['Matière', 'Évaluation', 'Note', 'Date']}
-      rows={grades.map((grade) => [
-        grade.subject ?? '—',
-        grade.evaluation ?? '—',
-        grade.is_absent ? 'Absent' : grade.score === null ? '—' : `${grade.score} / ${grade.max_score}`,
-        formatDate(grade.evaluation_date),
-      ])}
-    />
   );
 }
 

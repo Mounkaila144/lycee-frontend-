@@ -1,7 +1,12 @@
 'use client';
 
+import { useCallback } from 'react';
+
 import { useParams } from 'next/navigation';
 
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
 import Grid from '@mui/material/Grid2';
 
 import { ScaffoldPage } from '@/shared/components/ScaffoldPage';
@@ -9,16 +14,17 @@ import { parentService } from '@/modules/PortailParent/services/parentService';
 import { StudentDocumentsCard } from '@/modules/Documents/components/StudentDocumentsCard';
 import {
   ChildAttendanceTable,
-  ChildGradesTable,
   ChildInvoicesTable,
   ChildProfileDetails,
 } from '@/modules/PortailParent/admin/components/ChildDataTables';
+import { StudentGradesReport } from '@/modules/Grades/lycee/components/StudentGradesReport';
 import { WeeklyTimetableGrid } from '@/modules/Timetable/admin/components/WeeklyTimetableGrid';
 import { portalToSlots } from '@/modules/Timetable/admin/services/lyceeTimetableService';
 
 export default function ChildDetailPage() {
   const { studentId } = useParams<{ studentId: string }>();
   const id = Number(studentId);
+  const loadGrades = useCallback((semesterId?: number) => parentService.childGrades(id, semesterId), [id]);
 
   return (
     <Grid container spacing={6}>
@@ -32,21 +38,20 @@ export default function ChildDetailPage() {
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <ScaffoldPage
-          title='Notes'
-          subtitle='Notes publiées'
-          loader={() => parentService.childGrades(id)}
-          render={(grades) => <ChildGradesTable grades={grades} />}
-          emptyMessage='Aucune note publiée pour le moment.'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <ScaffoldPage
           title='Présences / Absences'
           subtitle='Appels de classe'
           loader={() => parentService.childAttendance(id)}
           render={(records) => <ChildAttendanceTable records={records} />}
           emptyMessage='Aucun appel enregistré pour le moment.'
         />
+      </Grid>
+      <Grid size={{ xs: 12 }}>
+        <Card>
+          <CardHeader title='Notes' subheader='Notes publiées, moyennes, rang et bulletin du semestre' />
+          <CardContent>
+            <StudentGradesReport key={id} loader={loadGrades} />
+          </CardContent>
+        </Card>
       </Grid>
       <Grid size={{ xs: 12 }}>
         <ScaffoldPage

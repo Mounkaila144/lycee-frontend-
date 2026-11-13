@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -15,15 +16,16 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+
 import type {
   StudentAttendanceRecord,
   StudentCard,
   StudentDashboard,
   StudentDocument,
-  StudentGrade,
   StudentInvoice,
   StudentReenrollment,
 } from '../types';
+import { formatScore, toScore } from '@/modules/Grades/lycee/types';
 
 type ChipColor = 'default' | 'success' | 'warning' | 'error' | 'info';
 
@@ -80,6 +82,7 @@ function Kpi({ label, value, hint }: { label: string; value: ReactNode; hint?: s
 
 export function StudentHomeView({ data }: { data: StudentDashboard }) {
   const next = data.next_class;
+  const currentAverage = toScore(data.moyenne_actuelle ?? data.average);
 
   return (
     <Stack spacing={4}>
@@ -94,8 +97,8 @@ export function StudentHomeView({ data }: { data: StudentDashboard }) {
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Kpi
             label='Moyenne actuelle'
-            value={data.moyenne_actuelle !== null ? `${data.moyenne_actuelle.toFixed(2)} / 20` : '—'}
-            hint='Notes publiées uniquement'
+            value={currentAverage === null ? '—' : `${formatScore(currentAverage)} / 20`}
+            hint='Semestre en cours · notes publiées'
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -119,39 +122,6 @@ export function StudentHomeView({ data }: { data: StudentDashboard }) {
         </Grid>
       </Grid>
     </Stack>
-  );
-}
-
-export function StudentGradesView({ data }: { data: StudentGrade[] }) {
-  return (
-    <TableContainer>
-      <Table size='small'>
-        <TableHead>
-          <TableRow>
-            <TableCell>Matière</TableCell>
-            <TableCell>Évaluation</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell align='right'>Coef.</TableCell>
-            <TableCell align='right'>Note</TableCell>
-            <TableCell>Appréciation</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data.map((grade) => (
-            <TableRow key={grade.id}>
-              <TableCell>{grade.subject ?? '—'}</TableCell>
-              <TableCell>{grade.evaluation ?? '—'}</TableCell>
-              <TableCell>{formatDate(grade.evaluation_date)}</TableCell>
-              <TableCell align='right'>{grade.coefficient}</TableCell>
-              <TableCell align='right'>
-                {grade.is_absent ? <Chip size='small' color='warning' label='Absent' /> : `${grade.score ?? '—'} / ${grade.max_score}`}
-              </TableCell>
-              <TableCell>{grade.comment ?? ''}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
   );
 }
 

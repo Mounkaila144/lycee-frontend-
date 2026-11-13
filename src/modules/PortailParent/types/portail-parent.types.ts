@@ -35,19 +35,6 @@ export interface ChildSummary {
   };
 }
 
-export interface ChildGrade {
-  id: number;
-  subject: string | null;
-  evaluation: string | null;
-  type: string | null;
-  score: number | null;
-  max_score: number;
-  is_absent: boolean;
-  comment: string | null;
-  semester: string | null;
-  evaluation_date: string | null;
-}
-
 export interface ChildAttendanceRecord {
   id: number;
   date: string | null;

@@ -26,7 +26,8 @@ import type { Classe, ClasseStudent } from '../../types/classe.types'
 import { teacherClassesService } from '../services/teacherClassesService'
 
 const shortcuts = [
-  { label: 'Saisie des notes', route: '/admin/grades/entry', icon: '✏️' },
+  { label: 'Saisie des notes', route: '/admin/teacher/grades', icon: '✏️' },
+  { label: 'Résultats & bulletins', route: '/admin/grades/class-results', icon: '📊' },
   { label: "Feuille d'appel", route: '/admin/attendance/sessions', icon: '✅' },
   { label: 'Mon emploi du temps', route: '/admin/timetable/teacher-view', icon: '📅' },
   { label: 'Messages', route: '/admin/teacher/messages', icon: '✉️' }

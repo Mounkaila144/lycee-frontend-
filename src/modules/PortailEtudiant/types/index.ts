@@ -32,27 +32,16 @@ export interface StudentTimetableSlot {
 export interface StudentDashboard {
   student: StudentProfile;
   classe: StudentClasseSummary | null;
-  moyenne_actuelle: number | null;
+
+  /** Moyenne générale du semestre actif (évaluations publiées) — décimal possiblement sérialisé en chaîne. */
+  moyenne_actuelle: number | string | null;
+  average?: number | string | null;
   next_class: StudentTimetableSlot | null;
   recent_absences_count: number;
   pending_invoices_count: number;
   balance_due: number;
   currency: string;
   available_documents_count: number;
-}
-
-export interface StudentGrade {
-  id: number;
-  subject: string | null;
-  evaluation: string | null;
-  type: string | null;
-  score: number | null;
-  max_score: number;
-  coefficient: number;
-  is_absent: boolean;
-  comment: string | null;
-  semester: string | null;
-  evaluation_date: string | null;
 }
 
 export interface StudentAttendanceRecord {
