@@ -18,6 +18,7 @@ import type {
   EvaluationPayload,
   GradeEntryPayload,
   PublishBulkPayload,
+  PublishBulkResult,
   ReportCardComment,
   ReportCardCommentPayload,
   SemesterRef,
@@ -216,8 +217,8 @@ export const lyceeGradesService = {
     return data.data;
   },
 
-  async publishBulk(payload: PublishBulkPayload): Promise<{ published_count?: number; message?: string }> {
-    const { data } = await client().post<ApiResponse<{ published_count?: number }>>(
+  async publishBulk(payload: PublishBulkPayload): Promise<PublishBulkResult> {
+    const { data } = await client().post<ApiResponse<Omit<PublishBulkResult, 'message'>>>(
       `${BASE}/evaluations/publish-bulk`,
       payload,
     );

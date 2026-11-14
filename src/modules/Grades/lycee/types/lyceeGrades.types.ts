@@ -159,6 +159,15 @@ export interface PublishBulkPayload {
   evaluation_ids?: number[];
 }
 
+/** Réponse de publish-bulk : les évaluations sans aucune note saisie sont ignorées. */
+export interface PublishBulkResult {
+  published_count?: number;
+  evaluation_ids?: number[];
+  skipped_count?: number;
+  skipped?: { id: number; title: string; reason: string }[];
+  message?: string;
+}
+
 /* ------------------------------------------------------------------ */
 /* Résultats de classe                                                 */
 /* ------------------------------------------------------------------ */

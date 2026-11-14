@@ -129,6 +129,9 @@ export interface AttendanceRecord {
   recorded_by: number | null;
   modified_by: number | null;
   modification_reason: string | null;
+
+  /** Auteur de la dernière correction (PUT /records/{id}), si l'enregistrement a été corrigé. */
+  modifier?: StudentSummary | null;
   student?: StudentSummary;
   student_profile?: StudentSummary | null;
   created_at: string;

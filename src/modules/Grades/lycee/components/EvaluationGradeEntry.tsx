@@ -22,6 +22,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import { useCurrentUser } from '../hooks/useCurrentUser';
@@ -112,6 +113,9 @@ export default function EvaluationGradeEntry({ evaluationId }: { evaluationId: n
   const isPublished = evaluation?.status === 'published';
   const locked = isPublished && !user.canPublish;
   const isDirty = serialize(rows) !== savedSnapshot;
+
+  /** Au moins une note ou absence saisie (y compris non encore enregistrée : la publication enregistre d'abord). */
+  const hasEnteredGrades = rows.some((row) => row.isAbsent || row.score.trim() !== '');
 
   const rowErrors = useMemo(
     () =>
@@ -342,9 +346,18 @@ export default function EvaluationGradeEntry({ evaluationId }: { evaluationId: n
                   </Button>
                 )}
                 {user.canPublish && evaluation.status !== 'published' && (
-                  <Button variant='contained' color='success' disabled={busy || hasErrors} onClick={() => changeStatus('publish')}>
-                    Publier
-                  </Button>
+                  <Tooltip title={hasEnteredGrades ? '' : 'Aucune note saisie'}>
+                    <span>
+                      <Button
+                        variant='contained'
+                        color='success'
+                        disabled={busy || hasErrors || !hasEnteredGrades}
+                        onClick={() => changeStatus('publish')}
+                      >
+                        Publier
+                      </Button>
+                    </span>
+                  </Tooltip>
                 )}
                 {user.canPublish && evaluation.status === 'published' && (
                   <Button variant='outlined' color='warning' disabled={busy} onClick={() => changeStatus('unpublish')}>

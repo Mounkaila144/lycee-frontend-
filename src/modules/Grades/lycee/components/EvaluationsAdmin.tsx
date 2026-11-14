@@ -91,7 +91,11 @@ export default function EvaluationsAdmin() {
     }
   }, [refLoading, load]);
 
-  const publishable = useMemo(() => evaluations.filter((evaluation) => evaluation.status === 'submitted'), [evaluations]);
+  const publishable = useMemo(
+    () => evaluations.filter((evaluation) => evaluation.status === 'submitted' && evaluation.grades_count > 0),
+    [evaluations],
+  );
+
   const submittedCount = useMemo(() => evaluations.filter((evaluation) => evaluation.status === 'submitted').length, [evaluations]);
 
   const toggle = (id: number) =>
@@ -142,16 +146,19 @@ export default function EvaluationsAdmin() {
     runAction(
       async () => {
         let count = 0;
+        let skipped = 0;
 
         for (const [semester, ids] of bySemester) {
           const result = await lyceeGradesService.publishBulk({ semester_id: semester, evaluation_ids: ids });
 
           count += result.published_count ?? ids.length;
+          skipped += result.skipped_count ?? 0;
         }
 
-        return count;
+        return { count, skipped };
       },
-      (count) => `${count} évaluation(s) publiée(s).`,
+      ({ count, skipped }) =>
+        `${count} évaluation(s) publiée(s).${skipped > 0 ? ` ${skipped} ignorée(s) : aucune note saisie.` : ''}`,
       'Échec de la publication.',
     );
   };
@@ -308,7 +315,7 @@ export default function EvaluationsAdmin() {
                         {canPublish && (
                           <TableCell padding='checkbox'>
                             <Checkbox
-                              disabled={evaluation.status !== 'submitted'}
+                              disabled={evaluation.status !== 'submitted' || evaluation.grades_count === 0}
                               checked={selected.includes(evaluation.id)}
                               onChange={() => toggle(evaluation.id)}
                             />
@@ -364,20 +371,24 @@ export default function EvaluationsAdmin() {
                               </Tooltip>
                             )}
                             {canPublish && evaluation.status !== 'published' && (
-                              <Button
-                                size='small'
-                                color='success'
-                                disabled={busy}
-                                onClick={() =>
-                                  runAction(
-                                    () => lyceeGradesService.publishEvaluation(evaluation.id),
-                                    'Évaluation publiée.',
-                                    'Échec de la publication.',
-                                  )
-                                }
-                              >
-                                Publier
-                              </Button>
+                              <Tooltip title={evaluation.grades_count === 0 ? 'Aucune note saisie' : ''}>
+                                <span>
+                                  <Button
+                                    size='small'
+                                    color='success'
+                                    disabled={busy || evaluation.grades_count === 0}
+                                    onClick={() =>
+                                      runAction(
+                                        () => lyceeGradesService.publishEvaluation(evaluation.id),
+                                        'Évaluation publiée.',
+                                        'Échec de la publication.',
+                                      )
+                                    }
+                                  >
+                                    Publier
+                                  </Button>
+                                </span>
+                              </Tooltip>
                             )}
                             {canPublish && (
                               <Tooltip

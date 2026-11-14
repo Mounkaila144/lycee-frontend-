@@ -503,6 +503,7 @@ const F = {
       'Publication et dépublication réservées à l’Administrator : le Manager consulte la liste et les notes, sans boutons « Publier » / « Dépublier », et ne peut plus modifier une évaluation publiée.',
       '« Notes » → ouvrir la grille de saisie (correction possible ; « Publier » / « Dépublier » aussi depuis cette page).',
       '« Publier » par ligne, ou cocher des évaluations soumises → « Publier la sélection (n) », ou « Publier toutes les soumises » du semestre.',
+      'Une évaluation sans aucune note saisie (ni note ni absence) ne peut pas être publiée : « Publier » est grisé (infobulle « Aucune note saisie ») et la publication en masse l’ignore en le signalant (« n ignorée(s) : aucune note saisie »).',
       '« Dépublier » repasse l’évaluation en « Soumise » (masquée des élèves et parents).',
       '« Supprimer » (Administrator) : supprime l’évaluation et ses notes après confirmation. Une évaluation publiée doit d’abord être dépubliée (bouton grisé sinon).',
       'Seules les évaluations publiées sont visibles des élèves/parents et comptent dans les bulletins.'
@@ -554,7 +555,8 @@ const F = {
       '« + Nouvelle séance » → Classe, Date, Début, Fin, Méthode → « Créer » : la feuille d’appel s’ouvre, tous les élèves sont « Présent » par défaut.',
       'Ne marquer que les exceptions : cliquer sur la pastille de statut d’un élève pour passer Présent → Absent → En retard → Excusé (enregistré immédiatement).',
       '« Tout présent » / « Tout absent » applique le statut à toute la classe en une seule fois.',
-      '« Terminer la séance » clôture l’appel (lecture seule ensuite).',
+      '« Terminer la séance » clôture l’appel : les statuts ne se changent plus d’un clic.',
+      'Séance terminée : « Corriger » sur la ligne d’un élève → nouveau statut + motif (obligatoire) → « Enregistrer la correction ». Réservé au professeur de la classe / de la séance, au Manager et à l’Administrator ; la ligne affiche ensuite « Modifié par … le … (motif) ».',
       'Dans la liste : « Faire l’appel » (séance en cours) ou « Voir » (terminée).'
     ]
   },

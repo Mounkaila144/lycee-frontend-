@@ -40,6 +40,7 @@ import {
   useAttendanceSheet,
   useCompleteSession,
   useCreateSession,
+  useModifyRecord,
   useRecordAttendance,
   useRecordAttendanceInBulk,
 } from '../hooks';
@@ -80,6 +81,15 @@ const studentName = (record: AttendanceRecord): string => {
   return person ? `${person.lastname ?? ''} ${person.firstname ?? ''}`.trim() : `#${record.student_id}`;
 };
 
+/** « Modifié par X le … (motif) » lorsque l'enregistrement a été corrigé. */
+const correctionLabel = (record: AttendanceRecord): string | null => {
+  if (!record.modified_by) return null;
+  const author = record.modifier ? `${record.modifier.firstname ?? ''} ${record.modifier.lastname ?? ''}`.trim() : `#${record.modified_by}`;
+  const date = new Date(record.updated_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+
+  return `Modifié par ${author} le ${date}${record.modification_reason ? ` (${record.modification_reason})` : ''}`;
+};
+
 const sessionLabel = (session: AttendanceSession): string =>
   session.classe?.name ?? session.timetable_slot?.module?.name ?? `Séance #${session.id}`;
 
@@ -89,6 +99,7 @@ export const AttendanceDashboard: React.FC = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<number | undefined>();
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({ classe_id: '' as number | '', subject_id: '' as number | '', session_date: today(), start_time: '08:00', end_time: '10:00', method: 'manual' as SessionMethod });
+  const [correction, setCorrection] = useState<{ record: AttendanceRecord; status: AttendanceStatus; reason: string } | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
   const { data: classes = [] } = useAttendanceClasses();
@@ -109,6 +120,7 @@ export const AttendanceDashboard: React.FC = () => {
   const recordAttendance = useRecordAttendance();
   const recordAttendanceInBulk = useRecordAttendanceInBulk();
   const completeSession = useCompleteSession();
+  const modifyRecord = useModifyRecord();
 
   const sessions = useMemo(() => sessionsData?.data ?? [], [sessionsData]);
   const isCompleted = sheet?.session.status === 'completed';
@@ -165,6 +177,29 @@ export const AttendanceDashboard: React.FC = () => {
       },
       onError: err => notify(errorMessage(err, 'Clôture impossible'), 'error'),
     });
+  };
+
+  /** Correction d'un enregistrement d'une séance clôturée (motif obligatoire, tracé côté serveur). */
+  const handleCorrect = () => {
+    if (!correction) return;
+    const reason = correction.reason.trim();
+
+    if (!reason) {
+      notify('Le motif de la correction est obligatoire', 'error');
+
+      return;
+    }
+
+    modifyRecord.mutate(
+      { recordId: correction.record.id, data: { status: correction.status, reason } },
+      {
+        onSuccess: () => {
+          notify(`${studentName(correction.record)} → ${ATTENDANCE_STATUS_LABELS[correction.status]} (corrigé)`);
+          setCorrection(null);
+        },
+        onError: err => notify(errorMessage(err, 'Correction impossible'), 'error'),
+      },
+    );
   };
 
   const handleCreate = () => {
@@ -373,6 +408,7 @@ export const AttendanceDashboard: React.FC = () => {
                       <TableCell>Nom & Prénom</TableCell>
                       <TableCell align="center">Statut</TableCell>
                       <TableCell>Retard</TableCell>
+                      {isCompleted && <TableCell align="right">Correction</TableCell>}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -384,7 +420,14 @@ export const AttendanceDashboard: React.FC = () => {
                             {record.student_profile?.matricule ?? '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell><Typography fontWeight="medium">{studentName(record)}</Typography></TableCell>
+                        <TableCell>
+                          <Typography fontWeight="medium">{studentName(record)}</Typography>
+                          {correctionLabel(record) && (
+                            <Typography variant="caption" color="text.secondary" component="div">
+                              {correctionLabel(record)}
+                            </Typography>
+                          )}
+                        </TableCell>
                         <TableCell align="center">
                           <Tooltip title={isCompleted ? 'Séance clôturée' : 'Cliquez pour changer le statut'}>
                             <Chip
@@ -401,6 +444,13 @@ export const AttendanceDashboard: React.FC = () => {
                           </Tooltip>
                         </TableCell>
                         <TableCell>{record.delay_minutes ? `${record.delay_minutes} min` : '-'}</TableCell>
+                        {isCompleted && (
+                          <TableCell align="right">
+                            <Button size="small" onClick={() => setCorrection({ record, status: record.status, reason: '' })}>
+                              Corriger
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -416,6 +466,52 @@ export const AttendanceDashboard: React.FC = () => {
               Terminer la séance
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!correction} onClose={() => setCorrection(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Corriger la présence</DialogTitle>
+        <DialogContent>
+          {correction && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              <Typography variant="body2">
+                {studentName(correction.record)} — statut actuel : {ATTENDANCE_STATUS_LABELS[correction.record.status]}
+              </Typography>
+              <FormControl fullWidth>
+                <InputLabel>Nouveau statut</InputLabel>
+                <Select
+                  label="Nouveau statut"
+                  value={correction.status}
+                  onChange={e => setCorrection(c => (c ? { ...c, status: e.target.value as AttendanceStatus } : c))}
+                >
+                  {STATUS_CYCLE.map(status => (
+                    <MenuItem key={status} value={status}>{ATTENDANCE_STATUS_LABELS[status]}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Motif de la correction"
+                required
+                multiline
+                minRows={2}
+                value={correction.reason}
+                onChange={e => setCorrection(c => (c ? { ...c, reason: e.target.value } : c))}
+                slotProps={{ htmlInput: { maxLength: 500 } }}
+                helperText="Obligatoire — conservé avec l'enregistrement."
+                fullWidth
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCorrection(null)}>Annuler</Button>
+          <Button
+            variant="contained"
+            onClick={handleCorrect}
+            disabled={modifyRecord.isPending || !correction?.reason.trim() || correction?.status === correction?.record.status}
+          >
+            Enregistrer la correction
+          </Button>
         </DialogActions>
       </Dialog>
 

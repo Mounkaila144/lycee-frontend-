@@ -78,6 +78,7 @@ export const useModifyRecord = (tenantId?: string) => {
       attendanceService.modifyRecord(recordId, data, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance-sheet'] });
+      qc.invalidateQueries({ queryKey: ['attendance-sessions'] });
     },
   });
 };
