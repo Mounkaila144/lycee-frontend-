@@ -10,7 +10,7 @@ export default function MyTimetablePage() {
   return (
     <ScaffoldPage<PortalTimetableSlot[]>
       title='Mon emploi du temps'
-      subtitle='Story Étudiant 03'
+      subtitle='Cours de la semaine de votre classe'
       loader={() => studentPortalService.myTimetable()}
       render={(slots) => <WeeklyTimetableGrid slots={portalToSlots(slots)} />}
       emptyMessage='Aucun créneau planifié.'

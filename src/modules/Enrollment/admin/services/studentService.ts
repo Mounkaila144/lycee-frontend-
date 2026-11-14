@@ -100,9 +100,14 @@ class StudentService {
       const queryString = queryParams.toString();
       const url = queryString ? `${this.baseUrl}?${queryString}` : this.baseUrl;
 
-      const response = await client.get<PaginatedStudentsResponse>(url);
+      const response = await client.get<
+        PaginatedStudentsResponse & { meta?: Omit<PaginatedStudentsResponse, 'data'> }
+      >(url);
 
-      return response.data;
+      const { data, meta } = response.data;
+
+      // L'API renvoie { data, meta: { current_page, last_page, per_page, total } }
+      return meta ? { data, ...meta } : response.data;
     } catch (error) {
       console.error('Error fetching students:', error);
       throw error;

@@ -93,25 +93,3 @@ export interface ChildDocument {
 
 /** Annonce de l'établissement (module Messaging) — GET /admin/parent/announcements. */
 export type { Announcement } from '@/modules/Messaging/types/announcement.types';
-
-export interface OnlinePaymentInitResponse {
-  payment_id: number;
-  transaction_id: string;
-  invoice_id: number;
-  student_id: number;
-  amount: number;
-  currency: string;
-  method: 'mobile_money' | 'card';
-  status: string;
-  payment_url: string | null;
-}
-
-export interface OnlinePaymentStatus {
-  payment_id: number;
-  transaction_id: string;
-  status: 'pending' | 'success' | 'failed' | 'cancelled' | 'refused';
-  amount: number;
-  currency: string;
-  cinetpay_transaction_id: string | null;
-  notified_at: string | null;
-}

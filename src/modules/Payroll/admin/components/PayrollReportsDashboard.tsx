@@ -48,25 +48,28 @@ export const PayrollReportsDashboard: React.FC = () => {
   const stats = statistics.data;
   const hasStats = !!stats?.overview;
 
-  const chargeRows: { label: string; employee: Money; employer: Money; total: Money }[] = charges.data
+  const chargeRows: { key: string; label: string; employee: Money; employer: Money; total: Money }[] = charges.data
     ? [
+        ...(charges.data.contributions ?? []).map(line => ({
+          key: `contribution-${line.code}`,
+          label: line.label,
+          employee: line.employee_amount,
+          employer: line.employer_amount,
+          total: line.total,
+        })),
+        ...(charges.data.employer_charges ?? []).map(line => ({
+          key: `charge-${line.code}`,
+          label: line.label,
+          employee: 0,
+          employer: line.amount,
+          total: line.amount,
+        })),
         {
-          label: 'CNSS',
-          employee: charges.data.cnss.employee_contributions,
-          employer: charges.data.cnss.employer_contributions,
-          total: charges.data.cnss.total,
-        },
-        {
-          label: 'AMO',
-          employee: charges.data.amo.employee_contributions,
-          employer: charges.data.amo.employer_contributions,
-          total: charges.data.amo.total,
-        },
-        {
-          label: 'CIMR',
-          employee: charges.data.cimr.employee_contributions,
-          employer: charges.data.cimr.employer_contributions,
-          total: charges.data.cimr.total,
+          key: 'income-tax',
+          label: 'Impôt sur salaires retenu',
+          employee: charges.data.taxes.income_tax,
+          employer: 0,
+          total: charges.data.taxes.income_tax,
         },
       ]
     : [];
@@ -205,7 +208,7 @@ export const PayrollReportsDashboard: React.FC = () => {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Organisme</TableCell>
+                    <TableCell>Cotisation / impôt</TableCell>
                     <TableCell align="right">Part salariale</TableCell>
                     <TableCell align="right">Part patronale</TableCell>
                     <TableCell align="right">Total</TableCell>
@@ -213,23 +216,13 @@ export const PayrollReportsDashboard: React.FC = () => {
                 </TableHead>
                 <TableBody>
                   {chargeRows.map(row => (
-                    <TableRow key={row.label}>
+                    <TableRow key={row.key}>
                       <TableCell>{row.label}</TableCell>
                       <TableCell align="right">{formatCurrency(row.employee)}</TableCell>
                       <TableCell align="right">{formatCurrency(row.employer)}</TableCell>
                       <TableCell align="right">{formatCurrency(row.total)}</TableCell>
                     </TableRow>
                   ))}
-                  <TableRow>
-                    <TableCell>Impôts et taxes</TableCell>
-                    <TableCell align="right">{formatCurrency(charges.data.taxes.income_tax)}</TableCell>
-                    <TableCell align="right">
-                      {formatCurrency(
-                        Number(charges.data.taxes.professional_tax) + Number(charges.data.taxes.training_tax),
-                      )}
-                    </TableCell>
-                    <TableCell align="right">{formatCurrency(charges.data.taxes.total)}</TableCell>
-                  </TableRow>
                   <TableRow>
                     <TableCell>
                       <strong>Total général</strong>

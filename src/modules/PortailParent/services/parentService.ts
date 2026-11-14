@@ -6,8 +6,6 @@ import type {
   ChildInvoice,
   ChildSummary,
   ChildTimetableSlot,
-  OnlinePaymentInitResponse,
-  OnlinePaymentStatus,
   ParentProfile,
 } from '../types/portail-parent.types';
 import type { StudentResultsResponse } from '@/modules/Grades/lycee/types';
@@ -79,25 +77,6 @@ export const parentService = {
   async announcements(): Promise<Announcement[]> {
     const { data } = await createApiClient().get<{ data: Announcement[] }>(
       '/admin/parent/announcements'
-    );
-    return data.data;
-  },
-
-  async initiatePayment(
-    studentId: number,
-    invoiceId: number,
-    params: { method: 'mobile_money' | 'card'; amount: number; phone?: string }
-  ): Promise<OnlinePaymentInitResponse> {
-    const { data } = await createApiClient().post<{ data: OnlinePaymentInitResponse }>(
-      `/admin/parent/children/${studentId}/invoices/${invoiceId}/pay`,
-      params
-    );
-    return data.data;
-  },
-
-  async paymentStatus(paymentId: number): Promise<OnlinePaymentStatus> {
-    const { data } = await createApiClient().get<{ data: OnlinePaymentStatus }>(
-      `/admin/parent/payments/${paymentId}/status`
     );
     return data.data;
   },

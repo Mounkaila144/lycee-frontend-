@@ -8,7 +8,11 @@ import type {
   SubmitDeclarationRequest,
 } from '../../types';
 
-export type GeneratedDeclarationType = 'cnss' | 'income-tax' | 'amo';
+/**
+ * Déclarations générées à partir d'une paie validée, agrégées par code configuré
+ * dans « Paramètres de paie ».
+ */
+export type GeneratedDeclarationType = 'social-contributions' | 'income-tax' | 'employer-charges';
 
 /**
  * Déclarations sociales (Epic 4).

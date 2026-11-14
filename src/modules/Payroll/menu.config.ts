@@ -104,6 +104,23 @@ export const payrollMenuConfig: ModuleMenuConfig = {
           isVisible: true,
           isActive: true,
         },
+        {
+          // Lecture : Manager ; modification : Administrator et Comptable (contrôlé côté API et dans l'écran).
+          id: 'payroll-settings',
+          label: 'Paramètres de paie',
+          route: '/admin/payroll/settings',
+          icon: {
+            type: 'emoji',
+            value: '\u2699\uFE0F',
+          },
+          order: 6,
+          module: 'Payroll',
+          parentId: 'payroll',
+          roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable'],
+          isVisible: true,
+          isActive: true,
+        },
       ],
     },
   ],

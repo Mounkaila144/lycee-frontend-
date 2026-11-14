@@ -17,6 +17,7 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
 
 import { messagingService } from '../../services/messagingService';
 import type { MessageRecipient } from '../../types/messaging.types';
@@ -155,7 +156,7 @@ return map;
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogTitle>Nouveau message</DialogTitle>
+        <DialogTitle>{defaultRecipient || defaultRecipientId ? 'Répondre' : 'Nouveau message'}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} mt={1}>
             {error && <Alert severity='error'>{error}</Alert>}
@@ -186,6 +187,11 @@ return map;
                       <li {...props} key={option.id}>
                         <Stack direction='row' spacing={1} alignItems='center' width='100%'>
                           <span>{option.full_name || option.username}</span>
+                          {option.full_name && option.username && (
+                            <Typography component='span' variant='caption' color='text.secondary'>
+                              {option.username}
+                            </Typography>
+                          )}
                           {option.role && (
                             <Chip label={option.role} size='small' color='primary' variant='outlined' />
                           )}

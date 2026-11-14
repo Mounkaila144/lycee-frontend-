@@ -69,7 +69,7 @@ const serialize = (rows: RowState[]): string =>
 /**
  * Grille de saisie des notes d'une évaluation — `/admin/teacher/grades/[evaluationId]`.
  * Élèves en lignes : note, absent, commentaire. Enregistrer, soumettre / rouvrir ;
- * Admin/Manager : publier / dépublier et modifier une évaluation publiée.
+ * Administrator : publier / dépublier et modifier une évaluation publiée (Manager : consultation et saisie hors publication).
  */
 export default function EvaluationGradeEntry({ evaluationId }: { evaluationId: number }) {
   const { lang } = useParams<{ lang: string }>();
@@ -110,7 +110,7 @@ export default function EvaluationGradeEntry({ evaluationId }: { evaluationId: n
 
   const maxScore = toScore(evaluation?.max_score) ?? 20;
   const isPublished = evaluation?.status === 'published';
-  const locked = isPublished && !user.isManager;
+  const locked = isPublished && !user.canPublish;
   const isDirty = serialize(rows) !== savedSnapshot;
 
   const rowErrors = useMemo(
@@ -304,16 +304,16 @@ export default function EvaluationGradeEntry({ evaluationId }: { evaluationId: n
           </Alert>
         </Grid>
       )}
-      {isPublished && user.isManager && (
+      {isPublished && user.canPublish && (
         <Grid size={{ xs: 12 }}>
           <Alert severity='warning'>
             Évaluation publiée : toute modification est immédiatement visible des élèves et des parents.
           </Alert>
         </Grid>
       )}
-      {evaluation.status === 'submitted' && !user.isManager && (
+      {evaluation.status === 'submitted' && !user.canPublish && (
         <Grid size={{ xs: 12 }}>
-          <Alert severity='info'>Évaluation soumise : en attente de publication par la direction.</Alert>
+          <Alert severity='info'>Évaluation soumise : en attente de publication par l&apos;administrateur.</Alert>
         </Grid>
       )}
 
@@ -341,12 +341,12 @@ export default function EvaluationGradeEntry({ evaluationId }: { evaluationId: n
                     Rouvrir
                   </Button>
                 )}
-                {user.isManager && evaluation.status !== 'published' && (
+                {user.canPublish && evaluation.status !== 'published' && (
                   <Button variant='contained' color='success' disabled={busy || hasErrors} onClick={() => changeStatus('publish')}>
                     Publier
                   </Button>
                 )}
-                {user.isManager && evaluation.status === 'published' && (
+                {user.canPublish && evaluation.status === 'published' && (
                   <Button variant='outlined' color='warning' disabled={busy} onClick={() => changeStatus('unpublish')}>
                     Dépublier
                   </Button>

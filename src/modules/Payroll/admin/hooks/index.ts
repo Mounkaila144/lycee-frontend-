@@ -3,3 +3,4 @@ export * from './useComponents';
 export * from './usePayroll';
 export * from './useDeclarations';
 export * from './usePayrollReports';
+export * from './usePayrollSettings';

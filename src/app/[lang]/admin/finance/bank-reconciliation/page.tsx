@@ -60,7 +60,7 @@ export default function BankReconciliationPage() {
         <Card>
           <CardHeader
             title='Comptes bancaires'
-            subheader='Story Comptable 03'
+            subheader='Comptes utilisés pour le rapprochement'
             action={
               <Button variant='contained' onClick={() => setDialogOpen(true)}>
                 Nouveau compte

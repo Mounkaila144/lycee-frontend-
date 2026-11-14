@@ -26,6 +26,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useFeedback } from '../hooks/useFeedback';
 import { useReferenceData } from '../hooks/useReferenceData';
 import { extractErrorMessage, lyceeGradesService } from '../services/lyceeGradesService';
@@ -34,7 +35,8 @@ import { EVALUATION_STATUS_COLORS, EVALUATION_STATUS_LABELS, EVALUATION_TYPE_LAB
 
 /**
  * Liste des évaluations (Admin/Manager) — `/admin/grades/evaluations`.
- * Filtres classe / matière / semestre / statut, publication unitaire et en masse, dépublication.
+ * Filtres classe / matière / semestre / statut. Publication unitaire et en masse, dépublication :
+ * Administrator uniquement (le Manager consulte).
  */
 export default function EvaluationsAdmin() {
   const { lang } = useParams<{ lang: string }>();
@@ -42,6 +44,8 @@ export default function EvaluationsAdmin() {
     withSubjects: true,
   });
   const { notify, feedbackElement } = useFeedback();
+  const { user } = useCurrentUser();
+  const canPublish = user.canPublish;
 
   const [classeId, setClasseId] = useState<number | ''>('');
   const [subjectId, setSubjectId] = useState<number | ''>('');
@@ -241,14 +245,16 @@ export default function EvaluationsAdmin() {
             title={`${evaluations.length} évaluation(s)`}
             subheader={submittedCount > 0 ? `${submittedCount} soumise(s) en attente de publication` : undefined}
             action={
-              <Box display='flex' gap={2} flexWrap='wrap'>
-                <Button variant='outlined' disabled={busy || selected.length === 0} onClick={publishSelected}>
-                  Publier la sélection ({selected.length})
-                </Button>
-                <Button variant='contained' disabled={busy || submittedCount === 0 || !semesterId} onClick={publishAllSubmitted}>
-                  Publier toutes les soumises
-                </Button>
-              </Box>
+              canPublish ? (
+                <Box display='flex' gap={2} flexWrap='wrap'>
+                  <Button variant='outlined' disabled={busy || selected.length === 0} onClick={publishSelected}>
+                    Publier la sélection ({selected.length})
+                  </Button>
+                  <Button variant='contained' disabled={busy || submittedCount === 0 || !semesterId} onClick={publishAllSubmitted}>
+                    Publier toutes les soumises
+                  </Button>
+                </Box>
+              ) : undefined
             }
           />
           <CardContent>
@@ -264,13 +270,15 @@ export default function EvaluationsAdmin() {
                 <Table size='small'>
                   <TableHead>
                     <TableRow>
-                      <TableCell padding='checkbox'>
-                        <Checkbox
-                          indeterminate={selected.length > 0 && selected.length < publishable.length}
-                          checked={publishable.length > 0 && selected.length === publishable.length}
-                          onChange={(event) => setSelected(event.target.checked ? publishable.map((item) => item.id) : [])}
-                        />
-                      </TableCell>
+                      {canPublish && (
+                        <TableCell padding='checkbox'>
+                          <Checkbox
+                            indeterminate={selected.length > 0 && selected.length < publishable.length}
+                            checked={publishable.length > 0 && selected.length === publishable.length}
+                            onChange={(event) => setSelected(event.target.checked ? publishable.map((item) => item.id) : [])}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell>Date</TableCell>
                       <TableCell>Classe</TableCell>
                       <TableCell>Matière</TableCell>
@@ -286,13 +294,15 @@ export default function EvaluationsAdmin() {
                   <TableBody>
                     {evaluations.map((evaluation) => (
                       <TableRow key={evaluation.id} hover>
-                        <TableCell padding='checkbox'>
-                          <Checkbox
-                            disabled={evaluation.status !== 'submitted'}
-                            checked={selected.includes(evaluation.id)}
-                            onChange={() => toggle(evaluation.id)}
-                          />
-                        </TableCell>
+                        {canPublish && (
+                          <TableCell padding='checkbox'>
+                            <Checkbox
+                              disabled={evaluation.status !== 'submitted'}
+                              checked={selected.includes(evaluation.id)}
+                              onChange={() => toggle(evaluation.id)}
+                            />
+                          </TableCell>
+                        )}
                         <TableCell>{new Date(evaluation.evaluation_date).toLocaleDateString('fr-FR')}</TableCell>
                         <TableCell>{evaluation.classe?.name}</TableCell>
                         <TableCell>{evaluation.subject?.name}</TableCell>
@@ -322,7 +332,7 @@ export default function EvaluationsAdmin() {
                             <Button size='small' component={Link} href={`/${lang}/admin/teacher/grades/${evaluation.id}`}>
                               Notes
                             </Button>
-                            {evaluation.status === 'published' ? (
+                            {canPublish && evaluation.status === 'published' && (
                               <Tooltip title='Repasser en « soumise » (masquée des élèves et parents)'>
                                 <span>
                                   <Button
@@ -341,7 +351,8 @@ export default function EvaluationsAdmin() {
                                   </Button>
                                 </span>
                               </Tooltip>
-                            ) : (
+                            )}
+                            {canPublish && evaluation.status !== 'published' && (
                               <Button
                                 size='small'
                                 color='success'

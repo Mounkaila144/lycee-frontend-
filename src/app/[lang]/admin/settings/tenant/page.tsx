@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+import Link from 'next/link';
+
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
@@ -35,6 +38,7 @@ export default function TenantSettingsPage() {
 
   const handleDelete = async (key: string) => {
     if (!confirm(`Supprimer le réglage "${key}" ?`)) return;
+
     try {
       await settingsService.remove(key);
       setRefreshKey((k) => k + 1);
@@ -46,8 +50,8 @@ export default function TenantSettingsPage() {
   return (
     <Card>
       <CardHeader
-        title='Réglages de l’établissement'
-        subheader='Story Admin 13'
+        title='Réglages avancés'
+        subheader='Paramètres techniques clé/valeur. Le nom, le logo et les coordonnées du lycée se règlent dans Paramètres > Établissement.'
         action={
           <Button
             variant='contained'
@@ -62,6 +66,10 @@ export default function TenantSettingsPage() {
       />
       <CardContent>
         {error && <Alert severity='error'>{error}</Alert>}
+        <Alert severity='info' sx={{ mb: 4 }}>
+          Les clés « school.* » sont gérées par la page{' '}
+          <Link href='/admin/settings/school'>Établissement</Link> : modifiez-les de préférence depuis cette page.
+        </Alert>
         {rows.length === 0 && !error && (
           <Alert severity='info'>Aucun réglage configuré.</Alert>
         )}

@@ -92,7 +92,7 @@ export const GUIDE_INTRO = {
   subtitle: 'Jandoo Secondaire : gestion d’un collège-lycée (scolarité, notes, présences, examens, finances, paie).',
   paragraphs: [
     'Jandoo Secondaire est une application multi-établissements : chaque école (« site » ou « tenant ») dispose de sa propre base de données et de ses propres utilisateurs. La plateforme est administrée par un super-administrateur qui crée et active les écoles ; chaque école est ensuite gérée par sa direction.',
-    'L’organisation pédagogique suit le modèle du secondaire : année scolaire découpée en semestres (S1, S2), cycles et niveaux (6ème à Terminale), séries (A, C, D) en 1ère et Terminale, classes (ex. « 6ème A », « Tle D1 »), matières et coefficients par niveau/série. Les notes sont saisies par évaluation (devoir, interrogation, composition) et ne deviennent visibles des élèves et des parents qu’après publication par la direction.',
+    'L’organisation pédagogique suit le modèle du secondaire : année scolaire découpée en semestres (S1, S2), cycles et niveaux (6ème à Terminale), séries (A, C, D) en 1ère et Terminale, classes (ex. « 6ème A », « Tle D1 »), matières et coefficients par niveau/série. Les notes sont saisies par évaluation (devoir, interrogation, composition) et ne deviennent visibles des élèves et des parents qu’après publication par l’administrateur (rôle Administrator).',
     'Après connexion, chaque utilisateur est redirigé vers la page d’accueil de son rôle et ne voit dans le menu latéral que les entrées autorisées. Une page ouverte par son adresse sans en avoir le droit affiche « Accès refusé » ; le serveur refuse de toute façon les actions non autorisées.'
   ]
 }
@@ -242,7 +242,7 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Utilisateurs, rôles et permissions',
       'Structure académique, classes, matières, coefficients',
       'Élèves, cartes scolaires, réinscriptions, passages de classe',
-      'Affectations des professeurs, publication des notes, bulletins PDF',
+      'Affectations des professeurs, publication / dépublication des notes (réservée à l’Administrator), bulletins PDF',
       'Emplois du temps, présences, examens, documents officiels',
       'Comptabilité complète (y compris clôture de caisse et rapprochement), paie',
       'Messagerie avec les parents, les professeurs et la direction (menu « Messages »)',
@@ -259,12 +259,13 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
     home: 'Tableau de bord avec indicateurs clés (/admin/dashboard)',
     can: [
       'Tous les menus pédagogiques (structure, élèves, notes, EDT, présences, examens, documents)',
-      'Publier / dépublier les évaluations, bulletins PDF, passages de classe',
-      'Consulter Facturation, Types de frais, Paiements, Recouvrement (consultation seule), Rapports financiers, Paie & RH',
+      'Consulter et contrôler les évaluations (Notes > Évaluations), bulletins PDF, passages de classe',
+      'Consulter Facturation, Types de frais, Paiements, Recouvrement (consultation seule), Rapports financiers, Paie & RH (Paramètres de paie en lecture et simulateur)',
       'Messagerie avec les parents, les professeurs et la direction (menu « Messages »)',
       'Publier, modifier et supprimer des annonces (menu « Annonces »)'
     ],
     cannot: [
+      'Publier / dépublier les notes, ou modifier une évaluation déjà publiée (réservé à l’Administrator)',
       'Réglages de l’établissement',
       'Clôture de caisse et rapprochement bancaire',
       'Créer des factures (y compris en masse), paramétrer les types de frais, rembourser, générer des relances (réservé Administrator / Comptable)',
@@ -286,7 +287,7 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Lire sur son accueil les annonces de l’établissement et de ses classes'
     ],
     cannot: [
-      'Publier des notes (réservé Administrator / Manager)',
+      'Publier des notes (réservé à l’Administrator)',
       'Saisir dans une matière / classe où il n’est pas affecté',
       'Traiter les justificatifs d’absence (lecture seule)',
       'Accéder à la structure, aux élèves, aux finances, à la paie'
@@ -360,7 +361,7 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Relances, blocages de services, échéanciers, passage en perte',
       'Rapports financiers et export comptable CSV',
       'Comptes bancaires (rapprochement)',
-      'Paie & RH complète : employés, contrats, périodes de paie, déclarations'
+      'Paie & RH complète : employés, contrats, périodes de paie, déclarations, Paramètres de paie (taux, barème, simulateur)'
     ],
     cannot: ['Accéder à la pédagogie (structure, élèves, notes, présences, examens)']
   }
@@ -443,7 +444,8 @@ const F = {
       'Par ligne : « Voir détails » (onglets Informations, Documents, Statuts — « Changer le statut », Audit, Classe, Parents, Compte), « Modifier », « Situation financière » (factures PDF ; « Nouvelle facture » pour Administrator / Comptable), « Supprimer ».',
       'Onglet « Classe » : classe de l’année en cours et historique ; « Inscrire en classe » (une seule inscription active par élève et par année, capacité de la classe respectée), « Changer de classe » (transfert interne dans la même année, motif facultatif, tracé dans l’historique et l’Audit), « Annuler l’inscription ».',
       'Onglet « Parents » : « Nouveau parent » (prénom, nom, lien de parenté, téléphone, e-mail, profession, contact principal / responsable financier → « Créer et lier » ; un téléphone déjà enregistré est refusé : utilisez la liaison), « Lier un parent existant » (recherche par nom, téléphone ou e-mail — utile pour les frères et sœurs), « Délier » (la fiche et le compte du parent sont conservés). Pour chaque parent : « Créer le compte » (identifiant prénom.nom), « Réinitialiser le mot de passe », « Désactiver » / « Activer ».',
-      'Onglet « Compte » : compte de connexion de l’élève (rôle Élève) — « Créer le compte » (identifiant eleve.<matricule> par défaut, ou saisi), « Réinitialiser le mot de passe », « Désactiver » / « Activer ». Le mot de passe généré s’affiche une seule fois (« Copier » ou « Copier les deux ») ; la réinitialisation et la désactivation ferment les sessions ouvertes.'
+      'Onglet « Compte » : compte de connexion de l’élève (rôle Élève) — « Créer le compte » (identifiant eleve.<matricule> par défaut, ou saisi), « Réinitialiser le mot de passe », « Désactiver » / « Activer ». Le mot de passe généré s’affiche une seule fois (« Copier » ou « Copier les deux ») ; la réinitialisation et la désactivation ferment les sessions ouvertes.',
+      'Onglet « Statuts » → « Changer le statut » (motif obligatoire, historisé) : un statut de sortie (Transféré, Exclu, Diplômé, Abandon) est définitif, désactive le compte de connexion de l’élève et ferme ses sessions ; le compte d’un parent est désactivé seulement s’il n’a plus d’autre enfant scolarisé (un compte qui a aussi un rôle du personnel n’est jamais désactivé). « Suspendu » ne touche pas aux comptes.'
     ]
   },
   enrollmentStats: {
@@ -480,6 +482,7 @@ const F = {
       'Choisir Année source, Classe, Année cible (l’année cible doit exister).',
       'Le tableau propose pour chaque élève une décision à partir de la moyenne annuelle et du rang (et affiche son souhait de réinscription).',
       'Ajuster la Décision : Passage (choisir la classe cible), Redoublement, Départ (motif : Abandon, Transfert, Exclusion, Diplôme).',
+      'Un Départ validé change le statut de l’élève (Abandon → « Abandon », Transfert → « Transféré », Exclusion → « Exclu », Diplôme → « Diplômé », visible dans l’onglet « Statuts ») et désactive son compte de connexion ; le compte d’un parent est aussi désactivé s’il n’a plus d’autre enfant scolarisé dans l’établissement.',
       'Cocher les élèves → « Valider la sélection (N) » : les élèves sont affectés dans leur classe de l’année cible. « Réinitialiser les propositions » recalcule.'
     ]
   },
@@ -497,6 +500,7 @@ const F = {
     route: '/admin/grades/evaluations',
     actions: [
       'Filtres Classe, Matière, Semestre, Statut (par défaut : « Soumise » = en attente de publication).',
+      'Publication et dépublication réservées à l’Administrator : le Manager consulte la liste et les notes, sans boutons « Publier » / « Dépublier », et ne peut plus modifier une évaluation publiée.',
       '« Notes » → ouvrir la grille de saisie (correction possible ; « Publier » / « Dépublier » aussi depuis cette page).',
       '« Publier » par ligne, ou cocher des évaluations soumises → « Publier la sélection (n) », ou « Publier toutes les soumises » du semestre.',
       '« Dépublier » repasse l’évaluation en « Soumise » (masquée des élèves et parents).',
@@ -510,6 +514,7 @@ const F = {
       'Choisir Classe et Semestre : moyennes par matière, moyenne générale, rang, mention, distinction.',
       'Cocher « Inclure les notes non publiées » pour une vue provisoire.',
       '« Bulletins PDF » : bulletins de toute la classe ; « PDF » sur une ligne : bulletin d’un élève (notes publiées uniquement).',
+      'Le bulletin (une page A4 par élève) reprend l’en-tête de Paramètres > Établissement, les moyennes, rangs, coefficients, appréciations, absences du semestre, la moyenne et le rang annuels en S2 (avec la décision de fin d’année si elle est enregistrée) et les signatures du professeur principal et du chef d’établissement.',
       '« Appréciations » par élève : appréciation générale (conseil de classe) et appréciations par matière → « Enregistrer ».'
     ]
   },
@@ -712,6 +717,7 @@ const F = {
     actions: [
       '« + Nouvelle période » → Mois, Année, Date de paiement.',
       '« Calculer la paie » (employés actifs avec contrat actif) → « Valider la paie » → « Générer les bulletins » → « Ordres de virement » → « Marquer comme payée ».',
+      'Le calcul applique les Paramètres de paie (cotisations, barème d’impôt, charges patronales) de la version en vigueur au 1er jour de la période. Une paie déjà calculée ou validée n’est jamais recalculée quand les paramètres changent.',
       'Indicateurs : masse brute, retenues, net à payer, charges patronales ; tableau des fiches par employé.',
       'Les bulletins de paie ne sont pas encore téléchargeables en PDF depuis l’écran.'
     ]
@@ -720,14 +726,28 @@ const F = {
     path: 'Paie & RH > Déclarations Sociales',
     route: '/admin/payroll/declarations',
     actions: [
-      '« + Générer une déclaration » → période de paie validée, type (CNSS, Impôt sur le revenu, AMO).',
+      '« + Générer une déclaration » → période de paie validée, type : Cotisations sociales (CNSS), Impôt sur salaires retenu (IUTS) ou Charges patronales additionnelles. Les montants sont détaillés par cotisation / charge configurée dans Paramètres de paie.',
       'Par déclaration : « Valider » → « Soumettre » (référence de dépôt) → « Payer ». « Récapitulatif annuel ».'
     ]
   },
   payrollReports: {
     path: 'Paie & RH > Rapports RH',
     route: '/admin/payroll/reports',
-    actions: ['Filtre Année : statistiques salariales ; choisir une période calculée pour le journal de paie et les charges sociales.']
+    actions: [
+      'Filtre Année : statistiques salariales ; choisir une période calculée pour le journal de paie et les charges sociales (une ligne par cotisation configurée, part salariale / patronale, impôt retenu).'
+    ]
+  },
+  payrollSettings: {
+    path: 'Paie & RH > Paramètres de paie',
+    route: '/admin/payroll/settings',
+    description:
+      'Taux de paie de l’école (FCFA, arrondi à l’unité). Pré-rempli avec des valeurs indicatives Niger à vérifier par le comptable : CNSS vieillesse 5,25 % salarié / 6,25 % employeur, prestations familiales 8,40 %, accidents du travail 1,75 % (employeur), plafond 500 000 FCFA ; le barème IUTS fourni est un exemple à remplacer.',
+    actions: [
+      'Onglet « Paramètres » : cotisations (code, libellé, taux salarié / employeur, plafond, plancher, déductible de l’impôt, active), barème de l’impôt par tranches mensuelles, abattement forfaitaire, déduction des cotisations avant impôt, charges patronales additionnelles (% de la masse salariale).',
+      'Choisir la date d’effet puis « Enregistrer une nouvelle version » (Administrateur et Comptable ; le Manager consulte). L’historique des versions est conservé.',
+      'Onglet « Simulateur » : saisir un salaire brut → détail ligne par ligne, impôt par tranche, net à payer et coût employeur (formulaire en cours ou version enregistrée).',
+      'Onglet « Historique des versions » : « Repartir de cette version » pour préparer une nouvelle version.'
+    ]
   },
   certificates: {
     path: 'Documents Officiels > Attestations',
@@ -753,10 +773,24 @@ const F = {
       'Registre de tous les documents émis en dessous.'
     ]
   },
+  schoolProfile: {
+    path: 'Paramètres > Établissement',
+    route: '/admin/settings/school',
+    actions: [
+      'Renseigner l’identité : nom officiel, sigle, type (Lycée, CEG, Collège, Complexe scolaire), devise, n° d’autorisation.',
+      'Tutelle : en-tête officiel (par défaut « République du Niger / Fraternité – Travail – Progrès / Ministère de l’Éducation Nationale », une ligne par retour à la ligne), Direction régionale (DREN), Inspection.',
+      'Coordonnées : adresse, ville (utilisée pour « Fait à …, le … »), BP, téléphones, e-mail, site web ; Direction : titre et nom du chef d’établissement, nom du censeur ; pays et devise (FCFA).',
+      '« Choisir une image » pour le logo et, si souhaité, le cachet / signature (PNG, JPG ou WEBP, 2 Mo max) → « Enregistrer ».',
+      'L’aperçu montre l’en-tête des bulletins. Ces informations apparaissent sur les bulletins de notes, attestations et certificats, factures, reçus et cartes scolaires générés ensuite, et le nom s’affiche dans la barre supérieure.'
+    ]
+  },
   settings: {
-    path: 'Réglages',
+    path: 'Paramètres > Réglages avancés',
     route: '/admin/settings/tenant',
-    actions: ['« Nouveau réglage » → Clé (ex. school.name), Type, Valeur, Catégorie, Description ; « Modifier » / « Supprimer ».']
+    actions: [
+      '« Nouveau réglage » → Clé, Type, Valeur, Catégorie, Description ; « Modifier » / « Supprimer ».',
+      'Le nom, le logo et les coordonnées du lycée se règlent dans Paramètres > Établissement, pas ici.'
+    ]
   },
   announcements: {
     path: 'Annonces',
@@ -820,7 +854,8 @@ const payrollFeatures: MenuFeature[] = [
   F.payrollComponents,
   F.payrollProcessing,
   F.declarations,
-  F.payrollReports
+  F.payrollReports,
+  F.payrollSettings
 ]
 
 const documentFeatures: MenuFeature[] = [F.transcripts, F.certificates, F.verification]
@@ -872,6 +907,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       ...documentFeatures,
       F.messages('/admin/messages'),
       F.announcements,
+      F.schoolProfile,
       F.settings
     ]
   },
@@ -913,7 +949,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
           'Cliquer une carte d’affectation (classe + matière). Sans carte : la direction doit vous affecter (Notes > Affectations).',
           'Choisir le Semestre → « Nouvelle évaluation » → Titre, Type (Devoir, Interrogation, Composition), Date, « Noté sur », Coefficient → « Enregistrer » : la grille de saisie s’ouvre.',
           'Saisir les notes (Entrée / ↓ pour passer à l’élève suivant), cocher « Absent », ajouter un commentaire → « Enregistrer » (brouillon).',
-          '« Soumettre » : l’évaluation part à la direction pour publication ; « Rouvrir » la repasse en brouillon tant qu’elle n’est pas publiée.',
+          '« Soumettre » : l’évaluation part à l’administrateur pour publication ; « Rouvrir » la repasse en brouillon tant qu’elle n’est pas publiée.',
           'Une évaluation publiée est verrouillée pour le professeur. « Appréciations » : appréciation par élève pour votre matière.'
         ]
       },
@@ -1066,8 +1102,9 @@ export const JOURNEYS: Journey[] = [
   {
     id: 'rentree',
     title: 'a) Rentrée scolaire',
-    summary: 'Préparer l’année : calendrier, structure, classes, élèves, affectations, emplois du temps, facturation.',
+    summary: 'Préparer l’année : établissement, calendrier, structure, classes, élèves, affectations, emplois du temps, facturation.',
     steps: [
+      { actor: 'Administrator', path: 'Paramètres > Établissement', action: 'Renseigner le nom officiel, l’en-tête (DREN, inspection), les coordonnées, le chef d’établissement et le logo : ils figurent sur tous les bulletins et documents.' },
       { actor: 'Administrator', path: 'Structure Académique > Années Scolaires', action: '« Nouvelle année » puis « Activer cette année ».' },
       { actor: 'Administrator', path: 'Années Scolaires > Gérer les semestres', action: 'Créer S1 et S2 (dates, périodes de cours et d’examens).' },
       { actor: 'Administrator', path: 'Structure Académique > Cycles et Niveaux / Séries', action: 'Vérifier les cycles, niveaux et séries actifs (pré-configurés).' },
@@ -1096,7 +1133,7 @@ export const JOURNEYS: Journey[] = [
       { actor: 'Administrator / Manager', path: 'Présences & Absences > Justificatifs', action: 'Onglet « En attente » → « Traiter » → Approuver (absences passées en « Excusé ») ou Rejeter.' },
       { actor: 'Administrator / Manager', path: 'Présences & Absences > Suivi & Alertes', action: '« Recalculer les alertes » puis traiter les élèves signalés.' },
       { actor: 'Professeur', path: 'Notes > Saisie des notes', action: 'Choisir l’affectation → « Nouvelle évaluation » → saisir les notes → « Enregistrer » → « Soumettre ».' },
-      { actor: 'Administrator / Manager', path: 'Notes > Évaluations', action: 'Filtre « Soumise » → contrôler (« Notes ») → « Publier » ou « Publier toutes les soumises ».' },
+      { actor: 'Administrator', path: 'Notes > Évaluations', action: 'Filtre « Soumise » → contrôler (« Notes ») → « Publier » ou « Publier toutes les soumises ».' },
       { actor: 'Élève / Parent', path: 'Mes notes / Mes enfants', action: 'Les notes publiées apparaissent immédiatement.' },
       { actor: 'Administrator / Manager', path: 'Examens > Planification', action: '« + Nouvelle session » (composition par classe ou niveau) → « Publier ».' },
       { actor: 'Administrator / Manager', path: 'Examens > Gestion des épreuves', action: 'Affecter les salles, placer les élèves, consignes.' },
@@ -1127,13 +1164,14 @@ export const JOURNEYS: Journey[] = [
   {
     id: 'paie',
     title: 'd) Paie mensuelle',
-    summary: 'Employés et contrats, éléments variables, calcul, validation, bulletins, virements, déclarations.',
+    summary: 'Paramètres de paie, employés et contrats, éléments variables, calcul, validation, bulletins, virements, déclarations.',
     steps: [
+      { actor: 'Comptable / Administrator', path: 'Paie & RH > Paramètres de paie', action: 'Vérifier les taux pré-remplis (Niger, à contrôler) et saisir le barème IUTS officiel ; tester avec le « Simulateur » ; choisir la date d’effet → « Enregistrer une nouvelle version ».' },
       { actor: 'Comptable / Administrator', path: 'Paie & RH > Employés', action: '« + Nouvel employé » → « Détails » → « + Nouveau contrat » → « Activer ».' },
       { actor: 'Comptable / Administrator', path: 'Paie & RH > Éléments de Paie', action: 'Primes, indemnités, retenues ; avances (« Approuver » → « Décaisser ») ; grilles salariales.' },
       { actor: 'Comptable / Administrator', path: 'Paie & RH > Traitement Paie', action: '« + Nouvelle période » (mois, année) → « Calculer la paie » → « Valider la paie ».' },
       { actor: 'Comptable / Administrator', path: 'Paie & RH > Traitement Paie', action: '« Générer les bulletins » → « Ordres de virement » → « Marquer comme payée ».' },
-      { actor: 'Comptable / Administrator', path: 'Paie & RH > Déclarations Sociales', action: '« + Générer une déclaration » (CNSS, IR, AMO) → « Valider » → « Soumettre » → « Payer ».' },
+      { actor: 'Comptable / Administrator', path: 'Paie & RH > Déclarations Sociales', action: '« + Générer une déclaration » (Cotisations sociales, Impôt sur salaires, Charges patronales) → « Valider » → « Soumettre » → « Payer ».' },
       { actor: 'Comptable / Administrator / Manager', path: 'Paie & RH > Rapports RH', action: 'Journal de paie et charges sociales de la période.' }
     ]
   },
@@ -1142,7 +1180,7 @@ export const JOURNEYS: Journey[] = [
     title: 'e) Documents et attestations',
     summary: 'Émettre, télécharger, vérifier et annuler un document officiel.',
     steps: [
-      { actor: 'Administrator / Manager', path: 'Documents Officiels > Attestations', action: '« Générer une attestation » → type, élève, année → « Générer » → « PDF ».' },
+      { actor: 'Administrator / Manager', path: 'Documents Officiels > Attestations', action: '« Générer une attestation » → type, élève, année → « Générer » → « PDF » (en-tête, lieu et signataire repris de Paramètres > Établissement).' },
       { actor: 'Administrator / Manager', path: 'Documents Officiels > Attestations > Demandes', action: '« Approuver » ou « Rejeter » les demandes reçues.' },
       { actor: 'Élève / Parent', path: 'Mes documents / Mes enfants > Documents', action: '« Télécharger » le document émis.' },
       { actor: 'Administrator / Manager', path: 'Documents Officiels > Vérification', action: 'Saisir le numéro ou le code de vérification → « Vérifier ».' },
@@ -1324,7 +1362,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'L’élève ou le parent ne voit pas les notes.',
-    a: 'Les notes ne sont visibles qu’après publication : le professeur « Soumet », puis la direction « Publie » dans Notes > Évaluations. Vérifiez aussi le semestre sélectionné.'
+    a: 'Les notes ne sont visibles qu’après publication : le professeur « Soumet », puis l’administrateur (Administrator) « Publie » dans Notes > Évaluations. Vérifiez aussi le semestre sélectionné.'
   },
   {
     q: 'Le professeur ne voit aucune classe dans « Saisie des notes ».',
@@ -1360,7 +1398,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'Les parents peuvent-ils payer en ligne ?',
-    a: 'Pas encore : aucun bouton de paiement en ligne n’est proposé. Les paiements sont enregistrés au guichet par le caissier.'
+    a: 'Pas pour l’instant : aucune passerelle de paiement en ligne n’est branchée (une intégration est prévue ultérieurement). Les paiements sont enregistrés au guichet par le caissier.'
   },
   {
     q: 'L’interface passe en anglais ou certains libellés sont en anglais.',

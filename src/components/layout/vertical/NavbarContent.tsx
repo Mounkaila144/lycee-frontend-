@@ -13,6 +13,7 @@ import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import ShortcutsDropdown from '@components/layout/shared/ShortcutsDropdown'
 import NotificationsDropdown from '@components/layout/shared/NotificationsDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
+import { SchoolNameBadge } from '@/modules/Settings/admin/components/SchoolNameBadge'
 
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
@@ -110,6 +111,7 @@ const NavbarContent = () => {
       <div className='flex items-center gap-[7px]'>
         <NavToggle />
         <NavSearch />
+        <SchoolNameBadge />
       </div>
       <div className='flex items-center'>
         <LanguageDropdown />

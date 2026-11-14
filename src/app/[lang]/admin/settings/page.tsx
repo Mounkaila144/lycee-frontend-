@@ -15,8 +15,15 @@ import Typography from '@mui/material/Typography';
  */
 const settingsCategories = [
   {
-    title: "Réglages de l'établissement",
-    description: "Paramètres clé/valeur du lycée (réservé à l'administrateur)",
+    title: 'Établissement',
+    description:
+      "Nom officiel, en-tête, logo, coordonnées et signataires affichés sur les bulletins, attestations et reçus",
+    icon: '🏫',
+    path: '/admin/settings/school',
+  },
+  {
+    title: 'Réglages avancés',
+    description: "Paramètres clé/valeur techniques du lycée (réservé à l'administrateur)",
     icon: '⚙️',
     path: '/admin/settings/tenant',
   },

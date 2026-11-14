@@ -34,6 +34,16 @@ export interface ReceiptData {
   invoice_balance: number | string;
   recorded_by?: string | null;
   notes?: string | null;
+
+  /** Profil de l'établissement (Paramètres > Établissement) pour l'en-tête du reçu imprimé. */
+  school?: {
+    name: string;
+    header_lines: string[];
+    contact_line: string;
+    city: string | null;
+    currency: string | null;
+    logo_data_uri: string | null;
+  };
 }
 
 export const FINANCE_PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -79,13 +89,32 @@ const printReceipt = (receipt: ReceiptData) => {
     ['Encaissé par', receipt.recorded_by ?? '—'],
   ];
 
+  const school = receipt.school;
+
+  // Le logo est une data URI PNG générée par le backend : seul ce format est accepté.
+  const logo = school?.logo_data_uri?.startsWith('data:image/png;base64,') ? school.logo_data_uri : null;
+
+  const schoolHeader = school
+    ? `<table class="school"><tr>
+<td class="official">${school.header_lines.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}</td>
+<td class="logo">${logo ? `<img src="${logo}" alt="">` : ''}</td>
+<td class="name"><strong>${escapeHtml(school.name)}</strong><div>${escapeHtml(school.contact_line)}</div></td>
+</tr></table>`
+    : '';
+
+  const place = school?.city ? `Fait à ${escapeHtml(school.city)}, le ${escapeHtml(receipt.payment_date)}<br>` : '';
+
   win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reçu ${escapeHtml(receipt.receipt_number)}</title>
 <style>body{font-family:Arial,sans-serif;padding:32px;color:#222}h1{text-align:center;font-size:20px;margin-bottom:24px}
 table{width:100%;border-collapse:collapse}td{padding:8px;border-bottom:1px solid #ddd}td:first-child{color:#555;width:40%}
+table.school{border-bottom:2px solid #1976d2;margin-bottom:16px}table.school td{border:none;vertical-align:top;font-size:11px;color:#222}
+table.school td.official{width:38%;text-align:center}table.school td.official div:first-child{font-weight:bold}
+table.school td.logo{width:20%;text-align:center}table.school td.logo img{max-height:64px;max-width:96px}
+table.school td.name{text-align:center}table.school td.name strong{font-size:15px;color:#1976d2;text-transform:uppercase}
 .sign{margin-top:48px;text-align:right}</style></head><body>
-<h1>REÇU DE PAIEMENT</h1><table>${rows
+${schoolHeader}<h1>REÇU DE PAIEMENT</h1><table>${rows
     .map(([label, value]) => `<tr><td>${escapeHtml(label)}</td><td><strong>${escapeHtml(value)}</strong></td></tr>`)
-    .join('')}</table><p class="sign">Signature et cachet</p></body></html>`);
+    .join('')}</table><p class="sign">${place}Signature et cachet</p></body></html>`);
   win.document.close();
   win.focus();
   win.print();

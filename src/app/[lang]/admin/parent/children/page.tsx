@@ -53,7 +53,7 @@ export default function ChildrenListPage() {
 
   return (
     <Card>
-      <CardHeader title='Mes enfants' subheader='Story Parent 01' />
+      <CardHeader title='Mes enfants' subheader='Fiches, notes, présences et factures de vos enfants' />
       <CardContent>
         <Grid container spacing={4}>
           {children.map((child) => (

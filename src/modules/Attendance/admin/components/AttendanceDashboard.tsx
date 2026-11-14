@@ -30,6 +30,9 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useQuery } from '@tanstack/react-query';
+
+import { lyceeGradesService } from '@/modules/Grades/lycee';
 
 import {
   useAttendanceClasses,
@@ -84,7 +87,7 @@ export const AttendanceDashboard: React.FC = () => {
   const [classeFilter, setClasseFilter] = useState<number | ''>('');
   const [selectedSessionId, setSelectedSessionId] = useState<number | undefined>();
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ classe_id: '' as number | '', session_date: today(), start_time: '08:00', end_time: '10:00', method: 'manual' as SessionMethod });
+  const [form, setForm] = useState({ classe_id: '' as number | '', subject_id: '' as number | '', session_date: today(), start_time: '08:00', end_time: '10:00', method: 'manual' as SessionMethod });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
   const { data: classes = [] } = useAttendanceClasses();
@@ -93,6 +96,13 @@ export const AttendanceDashboard: React.FC = () => {
     classe_id: classeFilter || undefined,
   });
   const { data: sheet, isLoading: sheetLoading } = useAttendanceSheet(selectedSessionId);
+
+  const { data: classSubjects = [] } = useQuery({
+    queryKey: ['attendance', 'class-subjects', form.classe_id],
+    queryFn: () => lyceeGradesService.getClassSubjects(Number(form.classe_id)),
+    enabled: createOpen && !!form.classe_id,
+    retry: false,
+  });
 
   const createSession = useCreateSession();
   const recordAttendance = useRecordAttendance();
@@ -167,6 +177,7 @@ export const AttendanceDashboard: React.FC = () => {
     createSession.mutate(
       {
         classe_id: Number(form.classe_id),
+        subject_id: form.subject_id ? Number(form.subject_id) : undefined,
         session_date: form.session_date,
         start_time: form.start_time || undefined,
         end_time: form.end_time || undefined,
@@ -412,10 +423,25 @@ export const AttendanceDashboard: React.FC = () => {
               <Select
                 label="Classe"
                 value={form.classe_id}
-                onChange={e => setForm(f => ({ ...f, classe_id: e.target.value as number | '' }))}
+                onChange={e => setForm(f => ({ ...f, classe_id: e.target.value as number | '', subject_id: '' }))}
               >
                 {classes.map(c => (
                   <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth disabled={!form.classe_id || classSubjects.length === 0}>
+              <InputLabel>Matière</InputLabel>
+              <Select
+                label="Matière"
+                value={form.subject_id}
+                onChange={e => setForm(f => ({ ...f, subject_id: e.target.value as number | '' }))}
+              >
+                <MenuItem value="">
+                  <em>Non précisée</em>
+                </MenuItem>
+                {classSubjects.map(subject => (
+                  <MenuItem key={subject.id} value={subject.id}>{subject.name}</MenuItem>
                 ))}
               </Select>
             </FormControl>

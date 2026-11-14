@@ -6,14 +6,17 @@ export interface LyceeCurrentUser {
   id: number | null;
   roles: string[];
   isManager: boolean;
+
+  /** Publication / dépublication des notes : Administrator uniquement. */
+  canPublish: boolean;
   isTeacher: boolean;
 }
 
-const EMPTY_USER: LyceeCurrentUser = { id: null, roles: [], isManager: false, isTeacher: false };
+const EMPTY_USER: LyceeCurrentUser = { id: null, roles: [], isManager: false, canPublish: false, isTeacher: false };
 
 /**
  * Utilisateur connecté (id + rôles Spatie) lu depuis le localStorage, SSR-safe.
- * `isManager` = Administrator ou Manager (droits de publication / gestion).
+ * `isManager` = Administrator ou Manager (gestion) ; `canPublish` = Administrator seul (publication des notes).
  */
 export function useCurrentUser(): { user: LyceeCurrentUser; ready: boolean } {
   const [user, setUser] = useState<LyceeCurrentUser>(EMPTY_USER);
@@ -31,6 +34,7 @@ export function useCurrentUser(): { user: LyceeCurrentUser; ready: boolean } {
         id: typeof parsed?.id === 'number' ? parsed.id : parsed?.id ? Number(parsed.id) : null,
         roles,
         isManager: roles.includes('Administrator') || roles.includes('Manager'),
+        canPublish: roles.includes('Administrator'),
         isTeacher: roles.includes('Professeur'),
       });
     } catch {

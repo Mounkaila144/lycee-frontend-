@@ -137,13 +137,17 @@ export const PAYROLL_PERIOD_STATUS_COLORS: Record<PayrollPeriodStatus, ChipColor
   closed: 'default',
 };
 
+/**
+ * Libellés des types de déclaration. Les montants sont agrégés par code de cotisation
+ * configuré dans « Paramètres de paie » ; les anciens types hérités restent lisibles.
+ */
 export const DECLARATION_TYPE_LABELS: Record<DeclarationType, string> = {
-  cnss: 'CNSS',
-  amo: 'AMO',
-  cimr: 'CIMR',
-  income_tax: 'Impôt sur le revenu',
-  professional_tax: 'Taxe professionnelle',
-  training_tax: 'Taxe de formation',
+  cnss: 'Cotisations sociales (CNSS)',
+  amo: 'Cotisation (ancien type)',
+  cimr: 'Cotisation (ancien type)',
+  income_tax: 'Impôt sur salaires (IUTS)',
+  professional_tax: 'Taxe sur salaires (ancien type)',
+  training_tax: 'Charges patronales additionnelles',
   annual_tax_summary: 'Récapitulatif annuel',
 };
 
@@ -272,10 +276,14 @@ export interface PayrollRecord {
   base_salary: Money;
   total_earnings: Money;
   gross_salary: Money;
+
+  /** Total des cotisations salariales configurées. */
   cnss_employee: Money;
-  amo_employee: Money;
-  cimr_employee: Money;
   income_tax: Money;
+  net_taxable?: Money;
+
+  /** Total des cotisations patronales configurées. */
+  cnss_employer?: Money;
   advance_deductions: Money;
   total_deductions: Money;
   net_salary: Money;
@@ -492,26 +500,149 @@ export interface PayrollJournalEmployee {
   total_cost: Money;
 }
 
-interface ChargeBlock {
-  employee_contributions: Money;
-  employer_contributions: Money;
-  total: Money;
-  employee_rate: number;
-  employer_rate: number;
+export interface ContributionReportLine {
+  code: string;
+  label: string;
+  employee_rate: number | null;
+  employer_rate: number | null;
+  base_total: number;
+  employee_amount: number;
+  employer_amount: number;
+  total: number;
 }
 
+export interface EmployerChargeReportLine {
+  code: string;
+  label: string;
+  rate: number | null;
+  amount: number;
+}
+
+/** Charges sociales et fiscales agrégées par code configuré (Paramètres de paie). */
 export interface SocialChargesReport {
   period: { code: string; name: string; year: number; month: number };
-  cnss: ChargeBlock;
-  amo: ChargeBlock;
-  cimr: ChargeBlock;
-  taxes: { income_tax: Money; professional_tax: Money; training_tax: Money; total: Money };
+  contributions: ContributionReportLine[];
+  employer_charges: EmployerChargeReportLine[];
+  taxes: { income_tax: Money; employer_charges: Money; total: Money };
   summary: {
     total_employee_contributions: Money;
     total_employer_contributions: Money;
+    total_additional_employer_charges: Money;
     total_taxes: Money;
     grand_total: Money;
   };
+}
+
+// ──── Paramètres de paie (versionnés par date d'effet) ────
+
+export interface PayrollContributionSetting {
+  code: string;
+  label: string;
+  employee_rate: number;
+  employer_rate: number;
+
+  /** Plafond mensuel de l'assiette (null = pas de plafond). */
+  ceiling: number | null;
+
+  /** Plancher mensuel de l'assiette (null = aucun). */
+  floor: number | null;
+  active: boolean;
+
+  /** Part salariale déductible de la base imposable. */
+  tax_deductible: boolean;
+}
+
+export interface PayrollTaxBracket {
+  from: number;
+
+  /** null = dernière tranche, sans limite. */
+  to: number | null;
+  rate: number;
+}
+
+export interface PayrollEmployerChargeSetting {
+  code: string;
+  label: string;
+
+  /** % de la masse salariale brute. */
+  rate: number;
+  active: boolean;
+}
+
+export interface PayrollSettings {
+  country: string;
+  currency: string;
+  currency_label: string;
+  rounding_precision: number;
+  requires_review: boolean;
+  review_notice: string | null;
+  contributions: PayrollContributionSetting[];
+  income_tax: {
+    label: string;
+    brackets: PayrollTaxBracket[];
+    flat_allowance_rate: number;
+    deduct_employee_contributions: boolean;
+  };
+  employer_charges: PayrollEmployerChargeSetting[];
+}
+
+export interface PayrollSettingsVersion {
+  id: number | null;
+  version: number | null;
+  effective_date: string | null;
+  is_default: boolean;
+  settings: PayrollSettings;
+  notes?: string | null;
+  created_at?: string | null;
+}
+
+export interface PayrollSettingsOverview {
+  current: PayrollSettingsVersion;
+  upcoming: PayrollSettingsVersion[];
+  storage_available: boolean;
+}
+
+export interface SavePayrollSettingsRequest {
+  effective_date: string;
+  notes?: string;
+  settings: PayrollSettings;
+}
+
+export interface PayrollSimulationRequest {
+  gross_salary: number;
+  date?: string;
+  settings?: PayrollSettings;
+}
+
+export interface PayrollSimulation {
+  currency_label: string;
+  gross_salary: number;
+  contributions: {
+    code: string;
+    label: string;
+    base: number;
+    employee_rate: number;
+    employer_rate: number;
+    employee_amount: number;
+    employer_amount: number;
+    tax_deductible: boolean;
+  }[];
+  total_employee_contributions: number;
+  total_employer_contributions: number;
+  deductible_contributions: number;
+  taxable_before_allowance: number;
+  flat_allowance_rate: number;
+  flat_allowance_amount: number;
+  taxable_income: number;
+  income_tax_label: string;
+  income_tax_brackets: { from: number; to: number | null; rate: number; base: number; amount: number }[];
+  income_tax: number;
+  employer_charges: { code: string; label: string; rate: number; base: number; amount: number }[];
+  total_additional_employer_charges: number;
+  total_employer_charges: number;
+  net_salary: number;
+  employer_cost: number;
+  settings_version: { id: number | null; version: number | null; effective_date: string | null; is_default: boolean; is_draft: boolean };
 }
 
 export interface PayrollJournal {

@@ -40,10 +40,22 @@ import type { DeclarationPaymentMethod, DeclarationStatus, SocialDeclaration } f
 
 type SnackbarState = { open: boolean; message: string; severity: 'success' | 'error' };
 
-const GENERATED_TYPES: { value: GeneratedDeclarationType; label: string }[] = [
-  { value: 'cnss', label: 'CNSS' },
-  { value: 'income-tax', label: 'Impôt sur le revenu (retenues)' },
-  { value: 'amo', label: 'AMO' },
+const GENERATED_TYPES: { value: GeneratedDeclarationType; label: string; help: string }[] = [
+  {
+    value: 'social-contributions',
+    label: 'Cotisations sociales (CNSS)',
+    help: 'Parts salariales et patronales, détaillées par cotisation configurée.',
+  },
+  {
+    value: 'income-tax',
+    label: 'Impôt sur salaires retenu (IUTS)',
+    help: 'Impôt retenu à la source selon le barème configuré.',
+  },
+  {
+    value: 'employer-charges',
+    label: 'Charges patronales additionnelles',
+    help: 'Taxes assises sur la masse salariale (ex. taxe d’apprentissage), par code.',
+  },
 ];
 
 const PAYABLE_STATUSES: DeclarationStatus[] = ['validated', 'submitted', 'accepted'];
@@ -53,7 +65,7 @@ export const SocialDeclarationDashboard: React.FC = () => {
   const [generateOpen, setGenerateOpen] = useState(false);
 
   const [generateForm, setGenerateForm] = useState<{ periodId?: number; type: GeneratedDeclarationType }>({
-    type: 'cnss',
+    type: 'social-contributions',
   });
 
   const [submitting, setSubmitting] = useState<SocialDeclaration | null>(null);
@@ -282,6 +294,10 @@ export const SocialDeclarationDashboard: React.FC = () => {
                 </MenuItem>
               ))}
             </TextField>
+            <Typography variant="caption" color="text.secondary">
+              {GENERATED_TYPES.find(type => type.value === generateForm.type)?.help} Les taux et organismes se
+              règlent dans Paie → Paramètres de paie.
+            </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
