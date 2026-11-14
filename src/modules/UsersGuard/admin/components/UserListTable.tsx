@@ -58,13 +58,19 @@ const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'lastname', label: 'Nom', defaultVisible: true },
   { id: 'full_name', label: 'Nom complet', defaultVisible: false },
   { id: 'email', label: 'E-mail', defaultVisible: true },
-  { id: 'application', label: 'Application', defaultVisible: true },
+  { id: 'application', label: 'Espace', defaultVisible: true },
   { id: 'is_active', label: 'Statut', defaultVisible: true },
   { id: 'roles', label: 'Rôles', defaultVisible: true },
   { id: 'permissions', label: 'Permissions', defaultVisible: false },
   { id: 'created_at', label: 'Créé le', defaultVisible: true },
   { id: 'updated_at', label: 'Modifié le', defaultVisible: false }
 ]
+
+/** Libellés français du champ technique `application`. */
+const APPLICATION_LABELS: Record<string, string> = {
+  admin: 'Administration',
+  frontend: 'Portail (élèves / parents)'
+}
 
 const STORAGE_KEY = 'userListTableColumns'
 
@@ -228,14 +234,13 @@ const UserListTable = () => {
       }),
       columnHelper.accessor('application', {
         id: 'application',
-        header: t('Application'),
+        header: 'Espace',
         cell: ({ row }) => (
           <Chip
             variant='tonal'
-            label={row.original.application}
+            label={APPLICATION_LABELS[row.original.application] ?? row.original.application}
             size='small'
             color={row.original.application === 'admin' ? 'primary' : 'secondary'}
-            className='capitalize'
           />
         )
       }),
@@ -409,14 +414,13 @@ const UserListTable = () => {
               },
               {
                 icon: 'ri-apps-line',
-                label: t('Application'),
+                label: 'Espace',
                 value: (
                   <Chip
                     variant='tonal'
-                    label={user.application}
+                    label={APPLICATION_LABELS[user.application] ?? user.application}
                     size='small'
                     color={user.application === 'admin' ? 'primary' : 'secondary'}
-                    className='capitalize'
                   />
                 )
               },

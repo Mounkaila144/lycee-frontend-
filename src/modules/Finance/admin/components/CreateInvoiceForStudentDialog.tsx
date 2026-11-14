@@ -142,7 +142,7 @@ export const CreateInvoiceForStudentDialog: React.FC<Props> = ({ student, open, 
 
           {activeYear ? (
             <Alert severity="info">
-              Année académique : <strong>{activeYear.name}</strong> · Étudiant : <strong>{student.matricule}</strong>
+              Année académique : <strong>{activeYear.name}</strong> · Élève : <strong>{student.matricule}</strong>
             </Alert>
           ) : (
             <Alert severity="warning">

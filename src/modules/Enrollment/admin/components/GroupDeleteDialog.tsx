@@ -59,7 +59,7 @@ export const GroupDeleteDialog = ({ open, group, onClose, onConfirm }: GroupDele
 
         {hasStudents && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Ce groupe contient {group?.current_count} étudiant(s). La suppression retirera toutes les affectations.
+            Ce groupe contient {group?.current_count} élève(s). La suppression retirera toutes les affectations.
           </Alert>
         )}
 
@@ -78,7 +78,7 @@ export const GroupDeleteDialog = ({ open, group, onClose, onConfirm }: GroupDele
             <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
               <Chip label={group.type} size="small" />
               <Chip label={group.level} size="small" variant="outlined" />
-              <Chip label={`${group.current_count || 0}/${group.capacity_max} étudiants`} size="small" variant="outlined" />
+              <Chip label={`${group.current_count || 0}/${group.capacity_max} élèves`} size="small" variant="outlined" />
             </Box>
           </Box>
         )}

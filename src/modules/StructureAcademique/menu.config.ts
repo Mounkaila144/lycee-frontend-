@@ -17,7 +17,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
       },
       order: 10,
       module: 'StructureAcademique',
-      roles: ['admin', 'superadmin'],
+      roles: ['admin'],
       isVisible: true,
       isActive: true,
       children: [
@@ -32,7 +32,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
           order: 1,
           module: 'StructureAcademique',
           parentId: 'structure-academique',
-          roles: ['admin', 'superadmin'],
+          roles: ['admin'],
           isVisible: true,
           isActive: true
         },
@@ -47,7 +47,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
           order: 2,
           module: 'StructureAcademique',
           parentId: 'structure-academique',
-          roles: ['admin', 'superadmin'],
+          roles: ['admin'],
           isVisible: true,
           isActive: true
         },
@@ -62,7 +62,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
           order: 3,
           module: 'StructureAcademique',
           parentId: 'structure-academique',
-          roles: ['admin', 'superadmin'],
+          roles: ['admin'],
           isVisible: true,
           isActive: true
         },
@@ -77,7 +77,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
           order: 4,
           module: 'StructureAcademique',
           parentId: 'structure-academique',
-          roles: ['admin', 'superadmin'],
+          roles: ['admin'],
           isVisible: true,
           isActive: true
         },
@@ -92,7 +92,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
           order: 5,
           module: 'StructureAcademique',
           parentId: 'structure-academique',
-          roles: ['admin', 'superadmin'],
+          roles: ['admin'],
           isVisible: true,
           isActive: true
         },
@@ -107,7 +107,7 @@ export const structureAcademiqueMenuConfig: ModuleMenuConfig = {
           order: 6,
           module: 'StructureAcademique',
           parentId: 'structure-academique',
-          roles: ['admin', 'superadmin'],
+          roles: ['admin'],
           isVisible: true,
           isActive: true
         }

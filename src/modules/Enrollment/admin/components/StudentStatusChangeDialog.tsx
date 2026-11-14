@@ -41,7 +41,7 @@ const statusColorMap: StudentStatusColor = {
 };
 
 const statusDescriptions: Record<StudentStatus, string> = {
-  Actif: 'Étudiant en cours de formation avec accès complet à la plateforme.',
+  Actif: 'Élève en cours de formation avec accès complet à la plateforme.',
   Suspendu: 'Suspension temporaire - accès à la plateforme révoqué.',
   Exclu: 'Exclusion définitive - retrait de tous les modules et accès révoqué.',
   Diplômé: 'Formation terminée avec succès - génération automatique du diplôme.',

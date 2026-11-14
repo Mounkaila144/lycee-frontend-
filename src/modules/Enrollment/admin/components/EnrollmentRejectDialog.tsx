@@ -104,7 +104,7 @@ export const EnrollmentRejectDialog = ({
             </Box>
 
             <Alert severity="warning" sx={{ mb: 3 }}>
-              L'étudiant sera notifié du rejet de son inscription et devra corriger les problèmes identifiés.
+              L'élève sera notifié du rejet de son inscription et devra corriger les problèmes identifiés.
             </Alert>
 
             {/* Reason */}

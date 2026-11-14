@@ -454,8 +454,8 @@ const StudentListTable = () => {
     onPageSizeChange: setPageSize,
     onSearch: setSearch,
     onRefresh: refresh,
-    searchPlaceholder: 'Rechercher un étudiant',
-    emptyMessage: 'Aucun étudiant disponible',
+    searchPlaceholder: 'Rechercher un élève',
+    emptyMessage: 'Aucun élève disponible',
     rowsPerPageOptions: [10, 25, 50, 100],
 
     // Actions

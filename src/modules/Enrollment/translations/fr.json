@@ -21,8 +21,8 @@
   "City": "Ville",
   "Contact name": "Nom du contact",
   "Contact phone": "Téléphone du contact",
-  "Add student": "Ajouter un étudiant",
-  "Edit student": "Modifier l'étudiant",
+  "Add student": "Ajouter un élève",
+  "Edit student": "Modifier l'élève",
   "Cancel": "Annuler",
   "Create": "Créer",
   "Edit": "Modifier",
@@ -37,25 +37,25 @@
   "Invalid email format": "Format d'email invalide",
   "Mobile must be in international format (+227...)": "Le mobile doit être au format international (+227...)",
   "Phone must be in international format (+227...)": "Le téléphone doit être au format international (+227...)",
-  "Student must be between 15 and 60 years old": "L'étudiant doit avoir entre 15 et 60 ans",
-  "Warning: {{count}} similar student(s) found. Do you want to continue?": "Attention : {{count}} étudiant(s) similaire(s) trouvé(s). Voulez-vous continuer ?",
+  "Student must be between 15 and 60 years old": "L'élève doit avoir entre 15 et 60 ans",
+  "Warning: {{count}} similar student(s) found. Do you want to continue?": "Attention : {{count}} élève(s) similaire(s) trouvé(s). Voulez-vous continuer ?",
   "An error occurred": "Une erreur est survenue",
   "module": {
     "name": "Inscriptions",
-    "description": "Gestion des inscriptions et dossiers étudiants"
+    "description": "Gestion des inscriptions et dossiers élèves"
   },
   "menu": {
-    "students": "Étudiants",
+    "students": "Élèves",
     "enrollments": "Inscriptions",
     "statistics": "Statistiques"
   },
   "students": {
-    "title": "Gestion des Étudiants",
-    "add": "Ajouter un étudiant",
-    "edit": "Modifier l'étudiant",
-    "delete": "Supprimer l'étudiant",
+    "title": "Gestion des Élèves",
+    "add": "Ajouter un élève",
+    "edit": "Modifier l'élève",
+    "delete": "Supprimer l'élève",
     "view": "Voir les détails",
-    "search": "Rechercher un étudiant...",
+    "search": "Rechercher un élève...",
     "matricule": "Matricule",
     "firstname": "Prénom(s)",
     "lastname": "Nom",
@@ -108,13 +108,13 @@
   },
   "statusHistory": {
     "title": "Historique des Statuts",
-    "subtitle": "Suivi complet des changements de statut de l'étudiant",
+    "subtitle": "Suivi complet des changements de statut de l'élève",
     "exportPdf": "Exporter PDF",
     "changeStatus": "Changer le statut",
     "currentStatus": "Statut actuel",
     "changesCount": "Nombre de changements",
     "noHistory": "Aucun historique de changement",
-    "noHistoryDescription": "L'étudiant n'a jamais changé de statut depuis sa création.",
+    "noHistoryDescription": "L'élève n'a jamais changé de statut depuis sa création.",
     "changedBy": "Par",
     "documentAvailable": "Document justificatif disponible"
   },
@@ -139,19 +139,19 @@
     "mobileInvalid": "Le mobile doit être au format international (+227...)",
     "phoneInvalid": "Le téléphone doit être au format international (+227...)",
     "programmeRequired": "La filière est obligatoire",
-    "ageRange": "L'étudiant doit avoir entre 15 et 60 ans"
+    "ageRange": "L'élève doit avoir entre 15 et 60 ans"
   },
   "messages": {
-    "createSuccess": "Étudiant créé avec succès",
-    "updateSuccess": "Étudiant modifié avec succès",
-    "deleteSuccess": "Étudiant supprimé avec succès",
-    "createError": "Erreur lors de la création de l'étudiant",
-    "updateError": "Erreur lors de la modification de l'étudiant",
-    "deleteError": "Erreur lors de la suppression de l'étudiant",
+    "createSuccess": "Élève créé avec succès",
+    "updateSuccess": "Élève modifié avec succès",
+    "deleteSuccess": "Élève supprimé avec succès",
+    "createError": "Erreur lors de la création de l'élève",
+    "updateError": "Erreur lors de la modification de l'élève",
+    "deleteError": "Erreur lors de la suppression de l'élève",
     "loadError": "Erreur lors du chargement des données",
-    "duplicateWarning": "Attention: {count} étudiant(s) similaire(s) trouvé(s). Voulez-vous continuer ?",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet étudiant ?",
-    "deleteWarning": "Cette action est réversible. L'étudiant sera marqué comme supprimé mais pourra être restauré par un administrateur."
+    "duplicateWarning": "Attention: {count} élève(s) similaire(s) trouvé(s). Voulez-vous continuer ?",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet élève ?",
+    "deleteWarning": "Cette action est réversible. L'élève sera marqué comme supprimé mais pourra être restauré par un administrateur."
   },
   "actions": {
     "create": "Créer",
@@ -179,7 +179,7 @@
     "missing": "Documents manquants"
   },
   "statistics": {
-    "total": "Total étudiants",
+    "total": "Total élèves",
     "active": "Actifs",
     "suspended": "Suspendus",
     "graduated": "Diplômés",
@@ -230,7 +230,7 @@
     },
     "summary": {
       "summary": "Récapitulatif de l'inscription",
-      "student": "Étudiant",
+      "student": "Élève",
       "program": "Filière",
       "semester": "Semestre",
       "selectedModules": "Modules sélectionnés",
@@ -290,7 +290,7 @@
     },
     "statistics": {
       "title": "Statistiques",
-      "totalStudents": "Total étudiants",
+      "totalStudents": "Total élèves",
       "assigned": "Affectés",
       "pending": "En attente",
       "satisfactionRate": "Taux de satisfaction 1er vœu"
@@ -305,7 +305,7 @@
   },
   "groups": {
     "title": "Gestion des Groupes",
-    "subtitle": "Gérer les groupes TD/TP et les affectations d'étudiants",
+    "subtitle": "Gérer les groupes TD/TP et les affectations d'élèves",
     "add": "Ajouter un groupe",
     "edit": "Modifier le groupe",
     "delete": "Supprimer le groupe",
@@ -339,9 +339,9 @@
       "assigned": "Affectés",
       "move": "Déplacer",
       "remove": "Retirer",
-      "assignStudent": "Affecter l'étudiant",
-      "removeStudent": "Retirer l'étudiant",
-      "moveStudent": "Déplacer l'étudiant",
+      "assignStudent": "Affecter l'élève",
+      "removeStudent": "Retirer l'élève",
+      "moveStudent": "Déplacer l'élève",
       "strategy": "Stratégie",
       "strategies": {
         "balanced": "Équilibrée",
@@ -356,8 +356,8 @@
     },
     "statistics": {
       "totalGroups": "Total groupes",
-      "totalStudents": "Total étudiants",
-      "assignedStudents": "Étudiants affectés",
+      "totalStudents": "Total élèves",
+      "assignedStudents": "Élèves affectés",
       "unassignedStudents": "Non affectés",
       "fillRate": "Taux de remplissage"
     },
@@ -375,19 +375,19 @@
       "updateSuccess": "Groupe modifié avec succès",
       "deleteSuccess": "Groupe supprimé avec succès",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce groupe ?",
-      "deleteWarning": "Les étudiants affectés seront retirés du groupe.",
+      "deleteWarning": "Les élèves affectés seront retirés du groupe.",
       "loadError": "Erreur lors du chargement des groupes"
     }
   },
   "enrollmentValidation": {
     "title": "Validation des Inscriptions",
-    "subtitle": "Valider et gérer les inscriptions pédagogiques des étudiants",
+    "subtitle": "Valider et gérer les inscriptions pédagogiques des élèves",
     "pending": "En attente de validation",
     "validated": "Inscriptions validées",
     "rejected": "Inscriptions rejetées",
     "all": "Toutes les inscriptions",
     "search": "Rechercher une inscription...",
-    "student": "Étudiant",
+    "student": "Élève",
     "program": "Filière",
     "semester": "Semestre",
     "academicYear": "Année académique",
@@ -463,9 +463,9 @@
     }
   },
   "studentCards": {
-    "title": "Cartes Étudiants",
-    "description": "Gérez la génération, l'impression et la vérification des cartes étudiants.",
-    "student": "Étudiant",
+    "title": "Cartes Élèves",
+    "description": "Gérez la génération, l'impression et la vérification des cartes élèves.",
+    "student": "Élève",
     "cardNumber": "N° Carte",
     "academicYear": "Année académique",
     "program": "Filière",
@@ -492,14 +492,14 @@
     },
     "generateCards": "Générer des cartes",
     "generationMode": "Mode de génération",
-    "singleStudent": "Étudiant unique",
-    "batchMode": "Lot d'étudiants",
-    "searchStudents": "Rechercher des étudiants",
+    "singleStudent": "Élève unique",
+    "batchMode": "Lot d'élèves",
+    "searchStudents": "Rechercher des élèves",
     "searchPlaceholder": "Tapez le matricule ou le nom...",
     "selectYearRequired": "Veuillez sélectionner une année académique",
-    "selectStudentsRequired": "Veuillez sélectionner au moins un étudiant",
-    "selectAllEligible": "Sélectionner tous les étudiants éligibles",
-    "studentsSelected": "étudiant(s) sélectionné(s)",
+    "selectStudentsRequired": "Veuillez sélectionner au moins un élève",
+    "selectAllEligible": "Sélectionner tous les élèves éligibles",
+    "studentsSelected": "élève(s) sélectionné(s)",
     "generatingCards": "Génération en cours...",
     "generate": "Générer",
     "generateSuccess": "Carte(s) générée(s) avec succès",
@@ -556,7 +556,7 @@
     "activeCards": "Cartes actives",
     "pendingPrint": "En attente d'impression",
     "issuedThisMonth": "Émises ce mois",
-    "noStudentsFound": "Aucun étudiant trouvé",
+    "noStudentsFound": "Aucun élève trouvé",
     "deleteCard": "Supprimer la carte",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette carte ?",
     "deleteSuccess": "Carte supprimée avec succès",
@@ -564,7 +564,7 @@
   },
   "reenrollment": {
     "title": "Réinscriptions",
-    "description": "Gérez les campagnes de réinscription et les demandes des étudiants",
+    "description": "Gérez les campagnes de réinscription et les demandes des élèves",
     "campaigns": {
       "title": "Campagnes de Réinscription",
       "add": "Créer une campagne",
@@ -590,7 +590,7 @@
         "close": "Clôturer la campagne",
         "statistics": "Voir les statistiques"
       },
-      "activateConfirm": "Êtes-vous sûr de vouloir activer cette campagne ? Les étudiants pourront commencer à soumettre leurs réinscriptions.",
+      "activateConfirm": "Êtes-vous sûr de vouloir activer cette campagne ? Les élèves pourront commencer à soumettre leurs réinscriptions.",
       "closeConfirm": "Êtes-vous sûr de vouloir clôturer cette campagne ? Les nouvelles soumissions ne seront plus acceptées.",
       "allPrograms": "Toutes les filières",
       "allLevels": "Tous les niveaux",
@@ -609,7 +609,7 @@
     "list": {
       "title": "Gestion des Réinscriptions",
       "search": "Rechercher une réinscription...",
-      "student": "Étudiant",
+      "student": "Élève",
       "campaign": "Campagne",
       "previousLevel": "Niveau précédent",
       "targetLevel": "Niveau cible",
@@ -641,16 +641,16 @@
     },
     "validation": {
       "title": "Valider la Réinscription",
-      "subtitle": "Vous êtes sur le point de valider la réinscription de l'étudiant suivant :",
-      "studentInfo": "Informations de l'étudiant",
+      "subtitle": "Vous êtes sur le point de valider la réinscription de l'élève suivant :",
+      "studentInfo": "Informations de l'élève",
       "levelTransition": "Progression de niveau",
       "confirm": "Valider la réinscription",
       "impacts": "Cette action va :",
       "impactCreateEnrollment": "Créer une nouvelle inscription pédagogique",
-      "impactUpdateLevel": "Mettre à jour le niveau de l'étudiant",
+      "impactUpdateLevel": "Mettre à jour le niveau de l'élève",
       "impactApplyUpdates": "Appliquer les mises à jour des informations personnelles",
-      "redoingWarning": "Cet étudiant redouble son niveau.",
-      "reorientationInfo": "Cet étudiant change de filière (réorientation).",
+      "redoingWarning": "Cet élève redouble son niveau.",
+      "reorientationInfo": "Cet élève change de filière (réorientation).",
       "success": "Réinscription validée avec succès",
       "error": "Erreur lors de la validation"
     },
@@ -660,7 +660,7 @@
       "reason": "Motif du rejet",
       "reasonPlaceholder": "Veuillez indiquer la raison du rejet...",
       "reasonRequired": "Le motif de rejet est obligatoire",
-      "reasonHelperText": "Ce motif sera communiqué à l'étudiant",
+      "reasonHelperText": "Ce motif sera communiqué à l'élève",
       "confirm": "Rejeter",
       "success": "Réinscription rejetée",
       "error": "Erreur lors du rejet"
@@ -714,8 +714,8 @@
     "eligibility": {
       "title": "Vérification d'éligibilité",
       "checking": "Vérification en cours...",
-      "isEligible": "L'étudiant est éligible à la réinscription",
-      "notEligible": "L'étudiant n'est pas éligible à la réinscription",
+      "isEligible": "L'élève est éligible à la réinscription",
+      "notEligible": "L'élève n'est pas éligible à la réinscription",
       "reasons": "Raisons"
     },
     "messages": {

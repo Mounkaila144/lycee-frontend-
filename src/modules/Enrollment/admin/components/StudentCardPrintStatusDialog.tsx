@@ -100,7 +100,7 @@ export const StudentCardPrintStatusDialog = ({
             </Stack>
             {card.student && (
               <Typography variant="body2">
-                <strong>{t.studentCards?.student || 'Étudiant'}:</strong>{' '}
+                <strong>{t.studentCards?.student || 'Élève'}:</strong>{' '}
                 {card.student.firstname} {card.student.lastname} ({card.student.matricule})
               </Typography>
             )}

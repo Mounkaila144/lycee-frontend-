@@ -284,14 +284,14 @@ const UserAddModal = ({ open, onClose, onSuccess }: UserAddModalProps) => {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth required>
-                    <InputLabel>{t('Application')}</InputLabel>
+                    <InputLabel>Espace</InputLabel>
                     <Select
                       value={formData.application}
-                      label={t('Application')}
+                      label='Espace'
                       onChange={e => handleFieldChange('application', e.target.value)}
                     >
-                      <MenuItem value='admin'>Admin</MenuItem>
-                      <MenuItem value='frontend'>Frontend</MenuItem>
+                      <MenuItem value='admin'>Administration</MenuItem>
+                      <MenuItem value='frontend'>Portail (élèves / parents)</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>

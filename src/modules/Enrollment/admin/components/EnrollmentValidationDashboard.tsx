@@ -46,7 +46,7 @@ type EnrollmentWithAction = PedagogicalEnrollment & {
 const columnHelper = createColumnHelper<EnrollmentWithAction>();
 
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
-  { id: 'student', label: 'Étudiant', defaultVisible: true },
+  { id: 'student', label: 'Élève', defaultVisible: true },
   { id: 'program', label: 'Filière', defaultVisible: true },
   { id: 'level', label: 'Niveau', defaultVisible: true },
   { id: 'total_modules', label: 'Modules', defaultVisible: true },
@@ -230,7 +230,7 @@ export const EnrollmentValidationDashboard = () => {
       },
       columnHelper.accessor('student', {
         id: 'student',
-        header: 'Étudiant',
+        header: 'Élève',
         cell: ({ row }) => (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <CustomAvatar skin="light" size={32} color="primary">

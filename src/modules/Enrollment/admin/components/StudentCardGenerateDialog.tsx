@@ -161,7 +161,7 @@ export const StudentCardGenerateDialog = ({
     }
 
     if (selectedStudents.length === 0) {
-      setError(t.studentCards?.selectStudentsRequired || 'Veuillez sélectionner au moins un étudiant');
+      setError(t.studentCards?.selectStudentsRequired || 'Veuillez sélectionner au moins un élève');
 
       return;
     }
@@ -249,7 +249,7 @@ export const StudentCardGenerateDialog = ({
       <DialogTitle>
         <Stack direction="row" alignItems="center" spacing={1}>
           <i className="ri-id-card-line" style={{ fontSize: 24 }} />
-          <span>{t.studentCards?.generateCards || 'Générer des cartes étudiants'}</span>
+          <span>{t.studentCards?.generateCards || 'Générer des cartes élèves'}</span>
         </Stack>
       </DialogTitle>
 
@@ -309,14 +309,14 @@ export const StudentCardGenerateDialog = ({
                   onClick={() => setMode('single')}
                   startIcon={<i className="ri-user-line" />}
                 >
-                  {t.studentCards?.singleStudent || 'Étudiant unique'}
+                  {t.studentCards?.singleStudent || 'Élève unique'}
                 </Button>
                 <Button
                   variant={mode === 'batch' ? 'contained' : 'outlined'}
                   onClick={() => setMode('batch')}
                   startIcon={<i className="ri-group-line" />}
                 >
-                  {t.studentCards?.batchMode || 'Lot d\'étudiants'}
+                  {t.studentCards?.batchMode || 'Lot d\'élèves'}
                 </Button>
               </Stack>
             </Box>
@@ -346,7 +346,7 @@ export const StudentCardGenerateDialog = ({
                     onChange={e => handleSelectAllChange(e.target.checked)}
                   />
                 }
-                label={t.studentCards?.selectAllEligible || 'Sélectionner tous les étudiants éligibles'}
+                label={t.studentCards?.selectAllEligible || 'Sélectionner tous les élèves éligibles'}
               />
             )}
 
@@ -371,7 +371,7 @@ export const StudentCardGenerateDialog = ({
                 renderInput={params => (
                   <TextField
                     {...params}
-                    label={t.studentCards?.searchStudents || 'Rechercher des étudiants'}
+                    label={t.studentCards?.searchStudents || 'Rechercher des élèves'}
                     placeholder={t.studentCards?.searchPlaceholder || 'Tapez le matricule ou le nom...'}
                     InputProps={{
                       ...params.InputProps,
@@ -394,13 +394,13 @@ export const StudentCardGenerateDialog = ({
                     />
                   ))
                 }
-                noOptionsText={t.studentCards?.noStudentsFound || 'Aucun étudiant trouvé'}
+                noOptionsText={t.studentCards?.noStudentsFound || 'Aucun élève trouvé'}
               />
             )}
 
             {selectedStudents.length > 0 && (
               <Alert severity="info">
-                {selectedStudents.length} {t.studentCards?.studentsSelected || 'étudiant(s) sélectionné(s)'}
+                {selectedStudents.length} {t.studentCards?.studentsSelected || 'élève(s) sélectionné(s)'}
               </Alert>
             )}
 

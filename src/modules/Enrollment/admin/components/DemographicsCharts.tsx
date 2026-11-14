@@ -131,7 +131,7 @@ export const DemographicsCharts: React.FC<DemographicsChartsProps> = ({
     tooltip: {
       theme: theme.palette.mode,
       y: {
-        formatter: (val: number) => val != null ? `${val.toLocaleString()} étudiants` : '0 étudiants',
+        formatter: (val: number) => val != null ? `${val.toLocaleString()} élèves` : '0 élèves',
       },
     },
   }), [nonZeroGenderData, theme]);
@@ -184,14 +184,14 @@ export const DemographicsCharts: React.FC<DemographicsChartsProps> = ({
     tooltip: {
       theme: theme.palette.mode,
       y: {
-        formatter: (val: number) => val != null ? `${val.toLocaleString()} étudiants` : '0 étudiants',
+        formatter: (val: number) => val != null ? `${val.toLocaleString()} élèves` : '0 élèves',
       },
     },
     legend: { show: false },
   }), [ageData, theme]);
 
   const ageChartSeries = useMemo(() => [{
-    name: 'Étudiants',
+    name: 'Élèves',
     data: ageData.map((a) => a.count),
   }], [ageData]);
 

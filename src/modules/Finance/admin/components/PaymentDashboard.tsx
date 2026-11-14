@@ -195,6 +195,23 @@ export const PaymentDashboard: React.FC = () => {
   const payments = listData?.data ?? [];
   const total = listData?.meta?.total ?? 0;
 
+  /** Montant déjà remboursé par n° de reçu (lignes « REFUND-<reçu> » de la page courante). */
+  const refundedByReceipt = useMemo(() => {
+    const map = new Map<string, number>();
+
+    payments.forEach(p => {
+      const ref = p.reference_number ?? '';
+
+      if (Number(p.amount) < 0 && ref.startsWith('REFUND-')) {
+        const receipt = ref.slice('REFUND-'.length);
+
+        map.set(receipt, (map.get(receipt) ?? 0) + Math.abs(Number(p.amount)));
+      }
+    });
+
+    return map;
+  }, [payments]);
+
   const openRefund = (payment: PaymentListRow) => {
     setRefundPayment(payment);
     setRefundAmount(String(Number(payment.amount)));
@@ -359,6 +376,8 @@ export const PaymentDashboard: React.FC = () => {
                       payments.map(payment => {
                         const amount = Number(payment.amount);
                         const isRefund = amount < 0;
+                        const isFullyRefunded =
+                          !isRefund && !!payment.receipt_number && (refundedByReceipt.get(payment.receipt_number) ?? 0) >= amount;
 
                         return (
                           <TableRow key={payment.id} hover>
@@ -378,6 +397,7 @@ export const PaymentDashboard: React.FC = () => {
                             <TableCell>
                               <Chip size='small' label={FINANCE_PAYMENT_METHOD_LABELS[payment.payment_method] ?? payment.payment_method} />
                               {isRefund && <Chip size='small' color='warning' label='Remboursement' sx={{ ml: 0.5 }} />}
+                              {isFullyRefunded && <Chip size='small' color='secondary' label='Remboursé' sx={{ ml: 0.5 }} />}
                             </TableCell>
                             <TableCell>{payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('fr-FR') : '—'}</TableCell>
                             <TableCell>{payment.reference_number || '—'}</TableCell>
@@ -387,7 +407,7 @@ export const PaymentDashboard: React.FC = () => {
                                 <Button size='small' variant='outlined' onClick={() => setReceiptPaymentId(payment.id)}>
                                   Reçu
                                 </Button>
-                                {canRefund && !isRefund && (
+                                {canRefund && !isRefund && !isFullyRefunded && (
                                   <Button size='small' variant='outlined' color='secondary' onClick={() => openRefund(payment)}>
                                     Rembourser
                                   </Button>

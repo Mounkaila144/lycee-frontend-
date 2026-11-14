@@ -237,7 +237,7 @@ export const QRScannerDialog = ({ open, onClose, translations }: QRScannerDialog
       <DialogTitle>
         <Stack direction="row" alignItems="center" spacing={1}>
           <i className="ri-qr-scan-2-line" style={{ fontSize: 24 }} />
-          <span>{t.studentCards?.verifyCard || 'Vérifier une carte étudiant'}</span>
+          <span>{t.studentCards?.verifyCard || 'Vérifier une carte élève'}</span>
         </Stack>
       </DialogTitle>
 

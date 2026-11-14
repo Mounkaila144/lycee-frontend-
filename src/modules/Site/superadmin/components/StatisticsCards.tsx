@@ -23,7 +23,7 @@ export default function StatisticsCards({ statistics, isLoading }: StatisticsCar
 
   const stats = [
     {
-      label: 'Total Tenants',
+      label: 'Sites au total',
       value: statistics.total || 0,
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +33,7 @@ export default function StatisticsCards({ statistics, isLoading }: StatisticsCar
       bgColor: 'from-blue-500 to-blue-600',
     },
     {
-      label: 'Tenants Actifs',
+      label: 'Sites actifs',
       value: statistics.active || 0,
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +43,7 @@ export default function StatisticsCards({ statistics, isLoading }: StatisticsCar
       bgColor: 'from-green-500 to-green-600',
     },
     {
-      label: 'Tenants Inactifs',
+      label: 'Sites inactifs',
       value: statistics.inactive || 0,
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

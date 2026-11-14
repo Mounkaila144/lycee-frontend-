@@ -109,29 +109,20 @@ class SiteService {
   }
 
   /**
-   * Récupérer les statistiques des tenants
-   * Note: Cette méthode peut nécessiter une implémentation côté backend
+   * Statistiques des sites, calculées à partir de la liste (le backend n'expose pas
+   * d'endpoint `/superadmin/tenants/statistics` : l'appeler renvoyait un 404).
    */
   async getStatistics(): Promise<SiteStatistics> {
-    const client = createApiClient();
+    const tenantsResponse = await this.getSites({ per_page: 1000 });
+    const total = tenantsResponse.meta.total;
+    const active = tenantsResponse.data.filter(t => t.is_active).length;
+    const inactive = total - active;
 
-    try {
-      // Essayer d'abord un endpoint dédié si disponible
-      const response = await client.get<{ data: SiteStatistics }>('/superadmin/tenants/statistics');
-      return response.data.data;
-    } catch {
-      // Fallback: calculer les stats à partir de la liste complète
-      const tenantsResponse = await this.getSites({ per_page: 1000 });
-      const total = tenantsResponse.meta.total;
-      const active = tenantsResponse.data.filter(t => t.is_active).length;
-      const inactive = total - active;
-
-      return {
-        total,
-        active,
-        inactive,
-      };
-    }
+    return {
+      total,
+      active,
+      inactive,
+    };
   }
 }
 

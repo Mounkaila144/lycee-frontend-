@@ -235,7 +235,7 @@ export const StudentFinancialDialog: React.FC<StudentFinancialDialogProps> = ({ 
             <CircularProgress />
           </Box>
         ) : invoices.length === 0 ? (
-          <Alert severity="info">Aucune facture pour cet étudiant.</Alert>
+          <Alert severity="info">Aucune facture pour cet élève.</Alert>
         ) : (
           <>
             <Grid container spacing={2} sx={{ mb: 3 }}>

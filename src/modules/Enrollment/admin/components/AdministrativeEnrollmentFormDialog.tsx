@@ -258,7 +258,7 @@ export const AdministrativeEnrollmentFormDialog = ({ open, onClose, onSuccess, e
                     }}
                   />
                 )}
-                noOptionsText={studentInputValue.length < 2 ? 'Tapez au moins 2 caractères' : 'Aucun étudiant trouvé'}
+                noOptionsText={studentInputValue.length < 2 ? 'Tapez au moins 2 caractères' : 'Aucun élève trouvé'}
               />
             </Grid>
           )}

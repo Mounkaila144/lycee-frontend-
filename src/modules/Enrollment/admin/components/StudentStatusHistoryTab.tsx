@@ -135,7 +135,7 @@ export const StudentStatusHistoryTab = ({
         <Box>
           <Typography variant="h6">Historique des Statuts</Typography>
           <Typography variant="body2" color="text.secondary">
-            Suivi complet des changements de statut de l'étudiant
+            Suivi complet des changements de statut de l'élève
           </Typography>
         </Box>
         {onChangeStatus && (
@@ -263,7 +263,7 @@ export const StudentStatusHistoryTab = ({
             Aucun historique de changement
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            L'étudiant n'a jamais changé de statut depuis sa création.
+            L'élève n'a jamais changé de statut depuis sa création.
           </Typography>
         </Box>
       )}

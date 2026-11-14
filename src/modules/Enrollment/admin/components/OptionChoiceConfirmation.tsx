@@ -62,7 +62,7 @@ interface OptionChoiceConfirmationProps {
 const defaultTranslations: NonNullable<OptionChoiceConfirmationProps['translations']> = {
   title: 'Confirmation de vos vœux',
   subtitle: 'Récapitulatif de vos choix d\'options',
-  student: 'Étudiant',
+  student: 'Élève',
   yourChoices: 'Vos vœux enregistrés',
   rank: 'Rang',
   option: 'Option',

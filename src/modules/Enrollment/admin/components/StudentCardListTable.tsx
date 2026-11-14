@@ -53,7 +53,7 @@ const columnHelper = createColumnHelper<StudentCardWithAction>();
 
 // Available columns configuration
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
-  { id: 'student', label: 'Étudiant', defaultVisible: true },
+  { id: 'student', label: 'Élève', defaultVisible: true },
   { id: 'card_number', label: 'N° Carte', defaultVisible: true },
   { id: 'academic_year', label: 'Année', defaultVisible: true },
   { id: 'program', label: 'Formation', defaultVisible: true },
@@ -140,7 +140,7 @@ const StudentCardListTable = ({
     () => [
       columnHelper.accessor('student', {
         id: 'student',
-        header: t.studentCards?.student || 'Étudiant',
+        header: t.studentCards?.student || 'Élève',
         cell: ({ row }) => {
           const student = row.original.student;
 

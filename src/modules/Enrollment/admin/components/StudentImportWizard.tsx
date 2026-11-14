@@ -193,7 +193,7 @@ export const StudentImportWizard = ({
     <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box className="flex justify-between items-center">
-          <Typography variant="h5">Import en Masse d'Étudiants</Typography>
+          <Typography variant="h5">Import en Masse d'Élèves</Typography>
           <IconButton onClick={handleClose} size="small">
             <i className="ri-close-line" />
           </IconButton>
@@ -677,8 +677,8 @@ export const StudentImportWizard = ({
             {(result?.created || 0) > 0 && result?.results && (
               <Box sx={{ mt: 3, textAlign: 'left' }}>
                 <Alert severity="success" sx={{ mb: 2 }}>
-                  <AlertTitle>Étudiants importés avec succès</AlertTitle>
-                  {result.created} étudiant(s) ont été créés.
+                  <AlertTitle>Élèves importés avec succès</AlertTitle>
+                  {result.created} élève(s) ont été créés.
                 </Alert>
                 <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 200 }}>
                   <Table size="small" stickyHeader>
@@ -737,7 +737,7 @@ export const StudentImportWizard = ({
                 isExecuting ? <CircularProgress size={20} color="inherit" /> : <i className="ri-upload-2-line" />
               }
             >
-              {isExecuting ? 'Lancement...' : `Importer ${preview?.valid_rows || 0} étudiants`}
+              {isExecuting ? 'Lancement...' : `Importer ${preview?.valid_rows || 0} élèves`}
             </Button>
           </>
         )}

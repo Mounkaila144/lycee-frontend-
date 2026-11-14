@@ -253,13 +253,13 @@ export const InvoiceDashboard: React.FC = () => {
       setResolvedStudent(exact);
 
       if (!exact) {
-        setCreateError(`Aucun étudiant trouvé pour le matricule "${form.matricule}".`);
+        setCreateError(`Aucun élève trouvé pour le matricule "${form.matricule}".`);
       } else {
         setCreateError(null);
       }
     } catch (err) {
       console.error(err);
-      setCreateError("Erreur lors de la recherche de l'étudiant.");
+      setCreateError("Erreur lors de la recherche de l'élève.");
     } finally {
       setMatriculeLookupLoading(false);
     }
@@ -269,7 +269,7 @@ export const InvoiceDashboard: React.FC = () => {
     setCreateError(null);
 
     if (!resolvedStudent) {
-      setCreateError('Vérifiez le matricule de l\'étudiant avant de créer la facture.');
+      setCreateError('Vérifiez le matricule de l\'élève avant de créer la facture.');
 
       return;
     }
@@ -522,6 +522,7 @@ export const InvoiceDashboard: React.FC = () => {
             onPageChange={(_, p) => setPage(p)}
             onRowsPerPageChange={e => { setPerPage(Number(e.target.value)); setPage(0); }}
             labelRowsPerPage="Lignes par page"
+            labelDisplayedRows={({ from, to, count }) => `${from}–${to} sur ${count !== -1 ? count : `plus de ${to}`}`}
           />
         </CardContent>
       </Card>
@@ -616,7 +617,7 @@ export const InvoiceDashboard: React.FC = () => {
 
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
               <TextField
-                label="Matricule étudiant"
+                label="Matricule élève"
                 fullWidth
                 placeholder="Ex: 2026-0001"
                 value={form.matricule}
@@ -635,7 +636,7 @@ export const InvoiceDashboard: React.FC = () => {
 
             {resolvedStudent && (
               <Alert severity="success">
-                Étudiant identifié : <strong>{resolvedStudent.firstname} {resolvedStudent.lastname}</strong> ({resolvedStudent.matricule})
+                Élève identifié : <strong>{resolvedStudent.firstname} {resolvedStudent.lastname}</strong> ({resolvedStudent.matricule})
               </Alert>
             )}
 

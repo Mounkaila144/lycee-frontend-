@@ -132,7 +132,7 @@ export const GroupAssignmentDashboard = ({
     try {
       await assignStudent({ student_id: studentId, group_id: selectedGroup.id });
       refreshUnassigned();
-      setSnackbar({ open: true, message: 'Étudiant affecté avec succès', severity: 'success' });
+      setSnackbar({ open: true, message: 'Élève affecté avec succès', severity: 'success' });
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -146,7 +146,7 @@ export const GroupAssignmentDashboard = ({
     try {
       await removeStudent(assignment.id);
       refreshUnassigned();
-      setSnackbar({ open: true, message: 'Étudiant retiré du groupe', severity: 'success' });
+      setSnackbar({ open: true, message: 'Élève retiré du groupe', severity: 'success' });
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -164,7 +164,7 @@ export const GroupAssignmentDashboard = ({
       refreshAssignments();
       setMoveDialogOpen(false);
       setSelectedAssignment(null);
-      setSnackbar({ open: true, message: 'Étudiant déplacé avec succès', severity: 'success' });
+      setSnackbar({ open: true, message: 'Élève déplacé avec succès', severity: 'success' });
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -368,7 +368,7 @@ export const GroupAssignmentDashboard = ({
                   </Box>
                 ) : assignments.length === 0 ? (
                   <Box sx={{ p: 3, textAlign: 'center' }}>
-                    <Typography color="text.secondary">Aucun étudiant dans ce groupe</Typography>
+                    <Typography color="text.secondary">Aucun élève dans ce groupe</Typography>
                   </Box>
                 ) : (
                   <List disablePadding>
@@ -432,12 +432,12 @@ export const GroupAssignmentDashboard = ({
 
       {/* Assign Student Dialog */}
       <Dialog open={assignDialogOpen} onClose={() => setAssignDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Affecter un étudiant</DialogTitle>
+        <DialogTitle>Affecter un élève</DialogTitle>
         <DialogContent>
           {loadingUnassigned ? (
             <CircularProgress />
           ) : unassignedStudents.length === 0 ? (
-            <Alert severity="info">Tous les étudiants sont déjà affectés à un groupe.</Alert>
+            <Alert severity="info">Tous les élèves sont déjà affectés à un groupe.</Alert>
           ) : (
             <List>
               {unassignedStudents.slice(0, 20).map(student => (
@@ -458,7 +458,7 @@ export const GroupAssignmentDashboard = ({
               ))}
               {unassignedStudents.length > 20 && (
                 <Typography variant="caption" color="text.secondary" sx={{ p: 2, display: 'block' }}>
-                  Et {unassignedStudents.length - 20} autres étudiants...
+                  Et {unassignedStudents.length - 20} autres élèves...
                 </Typography>
               )}
             </List>
@@ -497,7 +497,7 @@ export const GroupAssignmentDashboard = ({
           const result = await executeAutoAssign(data);
           setSnackbar({
             open: true,
-            message: `${result.assigned} étudiant(s) affecté(s) avec succès`,
+            message: `${result.assigned} élève(s) affecté(s) avec succès`,
             severity: 'success',
           });
           refreshAssignments();
@@ -544,7 +544,7 @@ const MoveStudentDialog = ({ open, assignment, groups, onClose, onMove }: MoveSt
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Déplacer l'étudiant</DialogTitle>
+      <DialogTitle>Déplacer l'élève</DialogTitle>
       <DialogContent>
         {assignment && (
           <Box sx={{ mb: 3 }}>
@@ -634,7 +634,7 @@ const AutoAssignDialog = ({
         <Grid container spacing={3} sx={{ mt: 1 }}>
           <Grid size={{ xs: 12 }}>
             <Alert severity="info" sx={{ mb: 2 }}>
-              {unassignedStudents.length} étudiant(s) non affecté(s) • {groups.length} groupe(s) disponible(s)
+              {unassignedStudents.length} élève(s) non affecté(s) • {groups.length} groupe(s) disponible(s)
             </Alert>
           </Grid>
 
@@ -656,7 +656,7 @@ const AutoAssignDialog = ({
           {preview && (
             <Grid size={{ xs: 12 }}>
               <Alert severity="info" sx={{ mb: 2 }}>
-                {preview.total_students} étudiants seront répartis dans {preview.total_groups} groupes
+                {preview.total_students} élèves seront répartis dans {preview.total_groups} groupes
               </Alert>
 
               {preview.warnings?.length > 0 && (
@@ -670,7 +670,7 @@ const AutoAssignDialog = ({
                   <Paper key={group.group_id} sx={{ p: 2, minWidth: 200 }}>
                     <Typography variant="subtitle2">{group.group_code}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {group.current_count} → {group.projected_count} étudiants
+                      {group.current_count} → {group.projected_count} élèves
                     </Typography>
                     <LinearProgress
                       variant="determinate"

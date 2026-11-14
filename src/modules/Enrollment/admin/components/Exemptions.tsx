@@ -475,7 +475,7 @@ export const Exemptions = () => {
                         />
                       </TableCell>
                       <TableCell>N° Dispense</TableCell>
-                      <TableCell>Etudiant</TableCell>
+                      <TableCell>Élève</TableCell>
                       <TableCell>Module</TableCell>
                       <TableCell>Type</TableCell>
                       <TableCell>Motif</TableCell>

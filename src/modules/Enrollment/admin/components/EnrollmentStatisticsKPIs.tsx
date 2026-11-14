@@ -127,36 +127,36 @@ export const EnrollmentStatisticsKPIs: React.FC<EnrollmentStatisticsKPIsProps> =
 
   const kpiCards: KPICardProps[] = [
     {
-      title: 'Total Étudiants',
+      title: 'Total Élèves',
       value: (kpis.total_students ?? 0).toLocaleString(),
       subtitle: 'Inscriptions administratives',
       icon: 'ri-user-add-line',
       color: 'primary',
-      tooltip: 'Nombre total d\'étudiants inscrits',
+      tooltip: 'Nombre total d\'élèves inscrits',
     },
     {
-      title: 'Étudiants Actifs',
+      title: 'Élèves Actifs',
       value: (kpis.active_students ?? 0).toLocaleString(),
       subtitle: 'Actuellement actifs',
       icon: 'ri-user-follow-line',
       color: 'success',
-      tooltip: 'Étudiants avec inscription active',
+      tooltip: 'Élèves avec inscription active',
     },
     {
-      title: 'Nouveaux Étudiants',
+      title: 'Nouveaux Élèves',
       value: (kpis.new_students ?? 0).toLocaleString(),
       subtitle: 'Premières inscriptions',
       icon: 'ri-user-star-line',
       color: 'info',
-      tooltip: 'Étudiants inscrits pour la première fois',
+      tooltip: 'Élèves inscrits pour la première fois',
     },
     {
       title: 'Réinscriptions',
       value: (kpis.reenrollments ?? 0).toLocaleString(),
-      subtitle: 'Étudiants existants',
+      subtitle: 'Élèves existants',
       icon: 'ri-refresh-line',
       color: 'secondary',
-      tooltip: 'Étudiants déjà inscrits les années précédentes',
+      tooltip: 'Élèves déjà inscrits les années précédentes',
     },
     {
       title: 'Inscriptions Péda.',
@@ -172,7 +172,7 @@ export const EnrollmentStatisticsKPIs: React.FC<EnrollmentStatisticsKPIsProps> =
       subtitle: 'Admin → Péda',
       icon: 'ri-percent-line',
       color: conversionRate >= 90 ? 'success' : conversionRate >= 70 ? 'warning' : 'error',
-      tooltip: 'Pourcentage d\'étudiants ayant complété leur inscription pédagogique',
+      tooltip: 'Pourcentage d\'élèves ayant complété leur inscription pédagogique',
     },
   ];
 

@@ -344,7 +344,7 @@ export const OptionFormDialog = ({
                         onChange={(e) => field.onChange(e.target.checked)}
                       />
                     }
-                    label="Option obligatoire (les étudiants doivent choisir)"
+                    label="Option obligatoire (les élèves doivent choisir)"
                   />
                 )}
               />

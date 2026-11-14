@@ -209,7 +209,7 @@ export const ExemptionFormDialog = ({ open, onClose, onSuccess }: ExemptionFormD
   const handleSubmit = async () => {
     // Validate required fields
     if (!formData.student_id) {
-      setError('Veuillez sélectionner un étudiant');
+      setError('Veuillez sélectionner un élève');
 
       return;
     }
@@ -285,7 +285,7 @@ export const ExemptionFormDialog = ({ open, onClose, onSuccess }: ExemptionFormD
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Rechercher un étudiant"
+                      label="Rechercher un élève"
                       placeholder="Tapez le matricule ou le nom..."
                       required
                     />
@@ -302,7 +302,7 @@ export const ExemptionFormDialog = ({ open, onClose, onSuccess }: ExemptionFormD
                       </Box>
                     </li>
                   )}
-                  noOptionsText="Aucun étudiant trouvé"
+                  noOptionsText="Aucun élève trouvé"
                   loading={students.length === 0 && studentSearch.length >= 2}
                 />
               </Grid>

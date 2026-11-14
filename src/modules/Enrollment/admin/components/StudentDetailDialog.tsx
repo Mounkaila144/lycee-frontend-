@@ -101,7 +101,7 @@ export const StudentDetailDialog = ({
       setStudent(data)
     } catch (err) {
       console.error('Error fetching student:', err)
-      setError('Impossible de charger les informations de l\'étudiant')
+      setError('Impossible de charger les informations de l\'élève')
     } finally {
       setLoading(false)
     }
@@ -162,7 +162,7 @@ export const StudentDetailDialog = ({
     >
       <DialogTitle>
         <Box className="flex justify-between items-center">
-          <Typography variant="h5">Détails de l'étudiant</Typography>
+          <Typography variant="h5">Détails de l'élève</Typography>
           <IconButton onClick={handleClose} size="small">
             <i className="ri-close-line" />
           </IconButton>

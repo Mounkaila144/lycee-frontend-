@@ -90,7 +90,7 @@ export const ReenrollmentRejectDialog = ({
             setError('');
           }}
           error={!!error}
-          helperText={error || 'Ce motif sera communiqué à l\'étudiant'}
+          helperText={error || 'Ce motif sera communiqué à l\'élève'}
           required
         />
       </DialogContent>

@@ -89,7 +89,7 @@ export const ExemptionRevokeDialog = ({
               Attention : cette action est irréversible
             </Typography>
             <Typography variant="body2">
-              La révocation annulera définitivement cette dispense. L&apos;étudiant devra refaire une nouvelle demande si nécessaire.
+              La révocation annulera définitivement cette dispense. L&apos;élève devra refaire une nouvelle demande si nécessaire.
             </Typography>
           </Alert>
 

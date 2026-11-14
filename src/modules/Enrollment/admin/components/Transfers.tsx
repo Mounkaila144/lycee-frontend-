@@ -227,7 +227,7 @@ export const Transfers = () => {
         const result = await integrateTransfer(transfer.id);
         setSnackbar({
           open: true,
-          message: `Étudiant intégré avec succès. Matricule: ${result.student_matricule}`,
+          message: `Élève intégré avec succès. Matricule: ${result.student_matricule}`,
           severity: 'success',
         });
       } catch (err: any) {
@@ -605,7 +605,7 @@ export const Transfers = () => {
                                   </Tooltip>
                                 )}
                                 {transfer.can_be_integrated && (
-                                  <Tooltip title="Intégrer l'étudiant">
+                                  <Tooltip title="Intégrer l'élève">
                                     <IconButton size="small" color="success" onClick={() => handleIntegrate(transfer)}>
                                       <i className="ri-user-add-line" />
                                     </IconButton>

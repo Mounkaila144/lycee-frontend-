@@ -261,7 +261,7 @@ export const GroupExportDialog: React.FC<GroupExportDialogProps> = ({
             <Typography variant="h6">Exporter la liste du groupe</Typography>
             {group && (
               <Typography variant="body2" color="text.secondary">
-                {group.name} ({group.code}) - {group.current_count || 0} étudiants
+                {group.name} ({group.code}) - {group.current_count || 0} élèves
               </Typography>
             )}
           </Box>

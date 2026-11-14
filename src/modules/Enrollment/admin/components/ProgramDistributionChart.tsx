@@ -104,7 +104,7 @@ export const ProgramDistributionChart: React.FC<ProgramDistributionChartProps> =
     tooltip: {
       theme: theme.palette.mode,
       y: {
-        formatter: (val: number) => val != null ? `${val.toLocaleString()} étudiants` : '0 étudiants',
+        formatter: (val: number) => val != null ? `${val.toLocaleString()} élèves` : '0 élèves',
       },
     },
     responsive: [
