@@ -142,6 +142,10 @@ const UserDropdown = () => {
                     <i className='ri-money-dollar-circle-line' />
                     <Typography color='text.primary'>Pricing</Typography>
                   </MenuItem>
+                  <MenuItem className='gap-3 pli-4' onClick={e => handleDropdownClose(e, '/guide')}>
+                    <i className='ri-book-open-line' />
+                    <Typography color='text.primary'>Guide d&apos;utilisation</Typography>
+                  </MenuItem>
                   <MenuItem className='gap-3 pli-4' onClick={e => handleDropdownClose(e, '/pages/faq')}>
                     <i className='ri-question-line' />
                     <Typography color='text.primary'>FAQ</Typography>

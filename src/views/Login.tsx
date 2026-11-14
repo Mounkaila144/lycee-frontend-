@@ -224,6 +224,15 @@ const Login = ({ mode }: { mode: Mode }) => {
                 Create an account
               </Typography>
             </div>
+            <Button
+              fullWidth
+              variant='outlined'
+              component={Link}
+              href={getLocalizedUrl('/guide', locale as Locale)}
+              startIcon={<i className='ri-book-open-line' />}
+            >
+              Guide d&apos;utilisation &amp; comptes de démo
+            </Button>
           </form>
         </div>
       </div>

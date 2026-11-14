@@ -230,6 +230,11 @@ const LoginSuperAdmin = ({ mode }: { mode: Mode }) => {
                 Sign in here
               </Typography>
             </div>
+            <div className='flex justify-center items-center'>
+              <Typography component={Link} href={getLocalizedUrl('/guide', locale as Locale)} color='primary.main'>
+                Guide d&apos;utilisation
+              </Typography>
+            </div>
           </form>
         </div>
       </div>

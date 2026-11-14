@@ -56,7 +56,8 @@ export const useAuth = (): UseAuthReturn => {
                     isLoading: false,
                 });
 
-                router.push('/superadmin/dashboard');
+                const locale = window.location.pathname.match(/^\/(fr|en|ar)(?=\/|$)/)?.[1] ?? 'fr';
+                router.push(`/${locale}/superadmin/dashboard`);
             } else {
                 throw new Error(response.message || 'Login failed');
             }
