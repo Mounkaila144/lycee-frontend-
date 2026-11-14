@@ -101,16 +101,26 @@ export interface StudentCard {
   pdf_url: string | null;
 }
 
+export interface StudentReenrollmentIntention {
+  wants_to_reenroll: boolean;
+  comment: string | null;
+  responded_at: string | null;
+}
+
 export interface StudentReenrollmentCampaign {
   id: number;
   name: string;
   start_date: string | null;
   end_date: string | null;
   description: string | null;
+  /** L'élève est inscrit dans une classe de l'année source de la campagne. */
+  can_respond?: boolean;
+  my_intention?: StudentReenrollmentIntention | null;
 }
 
 export interface StudentReenrollment {
   student_id: number;
   open_campaigns: StudentReenrollmentCampaign[];
   eligible: boolean;
+  intentions_available?: boolean;
 }

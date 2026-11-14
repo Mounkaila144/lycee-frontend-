@@ -169,6 +169,19 @@ function LoadingState() {
  * Error state component
  */
 function ErrorState({ error, slug, context = 'admin' }: { error: string; slug: string[]; context?: string }) {
+    if (process.env.NODE_ENV === 'production') {
+        return (
+            <div style={{ padding: '40px', textAlign: 'center' }}>
+                <div style={{ fontSize: '72px', marginBottom: '16px' }}>🔍</div>
+                <h1 style={{ fontSize: '28px', marginBottom: '12px' }}>Page introuvable</h1>
+                <p style={{ opacity: 0.7, fontSize: '16px', marginBottom: '24px' }}>
+                    Cette page n&apos;existe pas ou n&apos;est pas disponible.
+                </p>
+                <a href={`/${slug[0] && slug[0].length === 2 ? slug[0] : 'fr'}/admin/dashboard`}>Retour à l&apos;accueil</a>
+            </div>
+        );
+    }
+
     const { moduleName, componentName, importPath } = transformSlugToModule(slug, context);
 
     return (

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { reportService } from '../services';
+import type { ReportFilters } from '../../types';
 
 export const useSemesters = (tenantId?: string) => {
   return useQuery({
@@ -10,34 +11,30 @@ export const useSemesters = (tenantId?: string) => {
   });
 };
 
-export const useAttendanceRates = (
-  semesterId?: number,
-  classeId?: number,
-  tenantId?: string,
-) => {
+export const useAttendanceRates = (filters?: ReportFilters, tenantId?: string) => {
   return useQuery({
-    queryKey: ['attendance-rates', semesterId, classeId],
-    queryFn: () => reportService.getAttendanceRates(semesterId!, classeId, tenantId),
-    enabled: !!semesterId,
+    queryKey: ['attendance-rates', filters],
+    queryFn: () => reportService.getAttendanceRates(filters!, tenantId),
+    enabled: !!filters?.semester_id,
   });
 };
 
 export const useAbsenteesList = (
-  semesterId?: number,
+  filters?: ReportFilters,
   minAbsenceRate?: number,
   tenantId?: string,
 ) => {
   return useQuery({
-    queryKey: ['absentees-list', semesterId, minAbsenceRate],
-    queryFn: () => reportService.getAbsenteesList(semesterId!, minAbsenceRate, tenantId),
-    enabled: !!semesterId,
+    queryKey: ['absentees-list', filters, minAbsenceRate],
+    queryFn: () => reportService.getAbsenteesList(filters!, minAbsenceRate, tenantId),
+    enabled: !!filters?.semester_id,
   });
 };
 
-export const useDetailedStatistics = (semesterId?: number, tenantId?: string) => {
+export const useDetailedStatistics = (filters?: ReportFilters, tenantId?: string) => {
   return useQuery({
-    queryKey: ['attendance-statistics', semesterId],
-    queryFn: () => reportService.getDetailedStatistics(semesterId!, tenantId),
-    enabled: !!semesterId,
+    queryKey: ['attendance-statistics', filters],
+    queryFn: () => reportService.getDetailedStatistics(filters!, tenantId),
+    enabled: !!filters?.semester_id,
   });
 };

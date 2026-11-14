@@ -64,7 +64,7 @@ export const ProgramDistributionChart: React.FC<ProgramDistributionChartProps> =
       position: 'bottom',
       fontSize: '12px',
       labels: {
-        colors: theme.palette.text.primary,
+        colors: 'var(--mui-palette-text-primary)',
       },
     },
     plotOptions: {
@@ -88,7 +88,7 @@ export const ProgramDistributionChart: React.FC<ProgramDistributionChartProps> =
               show: true,
               label: 'Total',
               fontSize: '14px',
-              color: theme.palette.text.secondary,
+              color: 'var(--mui-palette-text-secondary)',
               formatter: (w) => {
                 const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
                 return total.toLocaleString();

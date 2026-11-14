@@ -47,8 +47,10 @@ export const documentsMenuConfig: ModuleMenuConfig = {
           module: 'Documents',
           parentId: 'documents',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
-          isActive: true,
+
+          // Diplômes (BEPC / BAC) délivrés par l'État : voir Attestations (attestation de réussite).
+          isVisible: false,
+          isActive: false,
         },
         {
           id: 'documents-certificates',
@@ -77,7 +79,7 @@ export const documentsMenuConfig: ModuleMenuConfig = {
           module: 'Documents',
           parentId: 'documents',
           roles: ['admin', 'superadmin'],
-          isVisible: true,
+          isVisible: false,
           isActive: true,
         },
         {

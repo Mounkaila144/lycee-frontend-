@@ -7,6 +7,7 @@ import type {
   StudentInvoice,
   StudentProfile,
   StudentReenrollment,
+  StudentReenrollmentIntention,
 } from '../types';
 import type { PortalTimetableSlot } from '@/modules/Timetable/types/lycee.types';
 import type { StudentResultsResponse } from '@/modules/Grades/lycee/types';
@@ -40,4 +41,18 @@ export const studentPortalService = {
   myTimetable: () => get<PortalTimetableSlot[]>('/my-timetable'),
   myCard: () => get<StudentCard>('/my-card'),
   reenrollment: () => get<StudentReenrollment>('/reenrollment'),
+
+  /** Intention de réinscription (oui / non) pour une campagne ouverte. */
+  saveReenrollmentIntention: async (
+    campaignId: number,
+    wantsToReenroll: boolean,
+    comment?: string,
+  ): Promise<StudentReenrollmentIntention> => {
+    const { data } = await createApiClient().post<StudentPortalResponse<StudentReenrollmentIntention>>(
+      '/frontend/student/reenrollment/intention',
+      { campaign_id: campaignId, wants_to_reenroll: wantsToReenroll, comment: comment || null },
+    );
+
+    return data.data;
+  },
 };

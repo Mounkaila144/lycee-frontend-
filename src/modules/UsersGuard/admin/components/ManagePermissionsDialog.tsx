@@ -33,7 +33,7 @@ export const ManagePermissionsDialog: React.FC<ManagePermissionsDialogProps> = (
   onClose,
   onSuccess
 }) => {
-  const { permissions: availablePermissions, loading: loadingPermissions } = usePermissionsList();
+  const { permissions: availablePermissions, loading: loadingPermissions } = usePermissionsList({ enabled: open });
   const { syncPermissions, loading: syncing, error } = useUserPermissionsMutations(user.id);
 
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>(user.permissions || []);

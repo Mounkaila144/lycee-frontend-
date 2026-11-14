@@ -61,6 +61,7 @@ export { ReenrollmentCampaignFormDialog } from './ReenrollmentCampaignFormDialog
 export { ReenrollmentCampaignDeleteDialog } from './ReenrollmentCampaignDeleteDialog';
 export { ReenrollmentCampaignStatisticsDialog } from './ReenrollmentCampaignStatisticsDialog';
 export { Reenrollments } from './Reenrollments';
+export { ClassPromotions } from './ClassPromotions';
 export { ReenrollmentCreateDialog } from './ReenrollmentCreateDialog';
 export { ReenrollmentDetailDialog } from './ReenrollmentDetailDialog';
 export { ReenrollmentValidationDialog } from './ReenrollmentValidationDialog';

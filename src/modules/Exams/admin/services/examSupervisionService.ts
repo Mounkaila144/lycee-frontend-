@@ -23,6 +23,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamSupervisor[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamSupervisor[]>(
       `${this.baseUrl}/sessions/${sessionId}/supervisors`,
       { supervisors },
@@ -36,6 +37,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamSupervisor> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamSupervisor>(
       `${this.baseUrl}/supervisors/${supervisorId}/present`,
     );
@@ -49,6 +51,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamSupervisor> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamSupervisor>(
       `${this.baseUrl}/supervisors/${supervisorId}/replace`,
       data,
@@ -63,6 +66,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamSupervisor[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<ExamSupervisor[]>(
       `${this.baseUrl}/teachers/${teacherId}/schedule`,
       { params },
@@ -77,6 +81,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamAttendanceSheet> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamAttendanceSheet>(
       `${this.baseUrl}/attendance-sheets/${sheetId}/status`,
       data,
@@ -87,6 +92,7 @@ class ExamSupervisionService {
 
   async recordSubmission(sheetId: number, tenantId?: string): Promise<ExamAttendanceSheet> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamAttendanceSheet>(
       `${this.baseUrl}/attendance-sheets/${sheetId}/submit`,
     );
@@ -96,6 +102,7 @@ class ExamSupervisionService {
 
   async verifySheet(sheetId: number, tenantId?: string): Promise<ExamAttendanceSheet> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamAttendanceSheet>(
       `${this.baseUrl}/attendance-sheets/${sheetId}/verify`,
     );
@@ -105,6 +112,7 @@ class ExamSupervisionService {
 
   async getAttendanceStats(sessionId: number, tenantId?: string): Promise<AttendanceStatistics> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<AttendanceStatistics>(
       `${this.baseUrl}/sessions/${sessionId}/attendance-stats`,
     );
@@ -114,6 +122,7 @@ class ExamSupervisionService {
 
   async getIncidents(sessionId: number, tenantId?: string): Promise<ExamIncident[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<ExamIncident[]>(
       `${this.baseUrl}/sessions/${sessionId}/incidents`,
     );
@@ -123,6 +132,7 @@ class ExamSupervisionService {
 
   async getIncidentsSummary(sessionId: number, tenantId?: string): Promise<IncidentsSummary> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<IncidentsSummary>(
       `${this.baseUrl}/sessions/${sessionId}/incidents/summary`,
     );
@@ -136,6 +146,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamIncident> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamIncident>(`${this.baseUrl}/incidents`, {
       ...data,
       exam_session_id: sessionId,
@@ -150,6 +161,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamIncident> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamIncident>(
       `${this.baseUrl}/incidents/${incidentId}/status`,
       data,
@@ -164,6 +176,7 @@ class ExamSupervisionService {
     tenantId?: string,
   ): Promise<ExamIncident> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamIncident>(
       `${this.baseUrl}/incidents/${incidentId}/escalate`,
       data,

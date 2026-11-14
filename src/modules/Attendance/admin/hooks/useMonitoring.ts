@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { monitoringService } from '../services';
+import type { AlertFilters } from '../../types';
 
-export const useActiveAlerts = (semesterId?: number, tenantId?: string) => {
+export const useAttendanceAlerts = (filters?: AlertFilters, tenantId?: string) => {
   return useQuery({
-    queryKey: ['attendance-alerts', semesterId],
-    queryFn: () => monitoringService.getActiveAlerts(semesterId!, tenantId),
-    enabled: !!semesterId,
+    queryKey: ['attendance-alerts', filters],
+    queryFn: () => monitoringService.getAlerts(filters!, tenantId),
+    enabled: !!filters?.semester_id,
   });
 };
 
@@ -40,6 +41,17 @@ export const useTriggerAlerts = (tenantId?: string) => {
   return useMutation({
     mutationFn: (semesterId: number) =>
       monitoringService.triggerAlerts(semesterId, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['attendance-alerts'] });
+    },
+  });
+};
+
+export const useAcknowledgeAlert = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (alertId: number) => monitoringService.acknowledgeAlert(alertId, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance-alerts'] });
     },

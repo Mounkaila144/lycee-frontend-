@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { examReportService } from '../services';
-import type { ExamReportPeriodFilters } from '../../types';
+import type { ExamReportPeriodFilters, ExamStatisticsFilters } from '../../types';
 
 export const useExamStatistics = (
-  filters?: ExamReportPeriodFilters & { module_id?: number },
+  filters?: ExamStatisticsFilters,
   tenantId?: string,
 ) => {
   return useQuery({

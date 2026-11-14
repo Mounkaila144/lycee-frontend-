@@ -80,8 +80,8 @@ const Login = ({ mode }: { mode: Mode }) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      username: 'admin',
-      password: 'password'
+      username: '',
+      password: ''
     }
   })
 
@@ -136,15 +136,9 @@ const Login = ({ mode }: { mode: Mode }) => {
         </div>
         <div className='flex flex-col gap-5 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset]'>
           <div>
-            <Typography variant='h4'>{`Welcome to ${themeConfig.templateName}!👋🏻`}</Typography>
-            <Typography>Please sign-in to your account and start the adventure</Typography>
+            <Typography variant='h4'>{`Bienvenue sur ${themeConfig.templateName} !`}</Typography>
+            <Typography>Connectez-vous à votre compte pour continuer</Typography>
           </div>
-          <Alert icon={false} className='bg-[var(--mui-palette-primary-lightOpacity)]'>
-            <Typography variant='body2' color='primary.main'>
-              Username: <span className='font-medium'>superadmin</span> / Pass:{' '}
-              <span className='font-medium'>123</span>
-            </Typography>
-          </Alert>
           {error && (
             <Alert severity='error'>
               <Typography variant='body2'>{error}</Typography>

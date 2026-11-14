@@ -79,7 +79,7 @@ export const EnrollmentTrendsChart: React.FC<EnrollmentTrendsChartProps> = ({
       categories: yearlyTrends.map((t) => t?.year?.toString() ?? ''),
       labels: {
         style: {
-          colors: theme.palette.text.secondary,
+          colors: 'var(--mui-palette-text-secondary)',
           fontSize: '12px',
         },
       },
@@ -88,13 +88,13 @@ export const EnrollmentTrendsChart: React.FC<EnrollmentTrendsChartProps> = ({
       labels: {
         formatter: (val: number) => val != null ? val.toLocaleString() : '0',
         style: {
-          colors: theme.palette.text.secondary,
+          colors: 'var(--mui-palette-text-secondary)',
           fontSize: '12px',
         },
       },
     },
     grid: {
-      borderColor: theme.palette.divider,
+      borderColor: 'var(--mui-palette-divider)',
       strokeDashArray: 4,
     },
     tooltip: {
@@ -150,7 +150,7 @@ export const EnrollmentTrendsChart: React.FC<EnrollmentTrendsChartProps> = ({
       categories: monthlyTrends.map((t) => t?.month ?? ''),
       labels: {
         style: {
-          colors: theme.palette.text.secondary,
+          colors: 'var(--mui-palette-text-secondary)',
           fontSize: '11px',
         },
         rotate: -45,
@@ -161,13 +161,13 @@ export const EnrollmentTrendsChart: React.FC<EnrollmentTrendsChartProps> = ({
       labels: {
         formatter: (val: number) => val != null ? val.toLocaleString() : '0',
         style: {
-          colors: theme.palette.text.secondary,
+          colors: 'var(--mui-palette-text-secondary)',
           fontSize: '12px',
         },
       },
     },
     grid: {
-      borderColor: theme.palette.divider,
+      borderColor: 'var(--mui-palette-divider)',
       strokeDashArray: 4,
     },
     tooltip: {

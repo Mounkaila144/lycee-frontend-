@@ -4,8 +4,16 @@ import type {
   AttendanceRates,
   AbsenteeEntry,
   DetailedStatistics,
+  ExportType,
+  ReportFilters,
   SemesterSummary,
 } from '../../types';
+
+/** Supprime les filtres vides pour ne pas envoyer `classe_id=` à l'API. */
+const cleanParams = <T extends object>(params: T): Partial<T> =>
+  Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+  ) as Partial<T>;
 
 class AttendanceReportService {
   private baseUrl = '/admin/attendance/reports';
@@ -17,56 +25,47 @@ class AttendanceReportService {
     return response.data.data;
   }
 
-  async getAttendanceRates(
-    semesterId: number,
-    classeId?: number,
-    tenantId?: string,
-  ): Promise<AttendanceRates> {
+  async getAttendanceRates(filters: ReportFilters, tenantId?: string): Promise<AttendanceRates> {
     const client = createApiClient(tenantId);
-    const response = await client.get<AttendanceRates>(
-      `${this.baseUrl}/rates`,
-      { params: { semester_id: semesterId, classe_id: classeId } },
-    );
+    const response = await client.get<AttendanceRates>(`${this.baseUrl}/rates`, { params: cleanParams(filters) });
 
     return response.data;
   }
 
   async getAbsenteesList(
-    semesterId: number,
+    filters: ReportFilters,
     minAbsenceRate?: number,
     tenantId?: string,
   ): Promise<AbsenteeEntry[]> {
     const client = createApiClient(tenantId);
-    const response = await client.get<AbsenteeEntry[]>(
-      `${this.baseUrl}/absentees`,
-      { params: { semester_id: semesterId, min_absence_rate: minAbsenceRate } },
-    );
+
+    const response = await client.get<AbsenteeEntry[]>(`${this.baseUrl}/absentees`, {
+      params: cleanParams({ ...filters, min_absence_rate: minAbsenceRate }),
+    });
 
     return response.data;
   }
 
-  async getDetailedStatistics(
-    semesterId: number,
-    tenantId?: string,
-  ): Promise<DetailedStatistics> {
+  async getDetailedStatistics(filters: ReportFilters, tenantId?: string): Promise<DetailedStatistics> {
     const client = createApiClient(tenantId);
-    const response = await client.get<DetailedStatistics>(
-      `${this.baseUrl}/statistics`,
-      { params: { semester_id: semesterId } },
-    );
+
+    const response = await client.get<DetailedStatistics>(`${this.baseUrl}/statistics`, {
+      params: cleanParams(filters),
+    });
 
     return response.data;
   }
 
-  async exportData(
-    semesterId: number,
-    type: 'students' | 'modules',
+  async exportData<T = Record<string, unknown>>(
+    filters: ReportFilters,
+    type: ExportType,
     tenantId?: string,
-  ): Promise<{ data: unknown[]; export_type: string }> {
+  ): Promise<{ data: T[]; export_type: ExportType; semester_id: number }> {
     const client = createApiClient(tenantId);
-    const response = await client.get<{ data: unknown[]; export_type: string }>(
+
+    const response = await client.get<{ data: T[]; export_type: ExportType; semester_id: number }>(
       `${this.baseUrl}/export`,
-      { params: { semester_id: semesterId, type } },
+      { params: cleanParams({ ...filters, type }) },
     );
 
     return response.data;

@@ -55,7 +55,7 @@ interface RoleFormData {
 const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps) => {
   const { tenantId } = useTenant()
   const tenantIdOrUndefined = tenantId || undefined
-  const { permissions, loading: loadingPermissions } = usePermissionsList()
+  const { permissions, loading: loadingPermissions } = usePermissionsList({ enabled: open })
 
   // States
   const [loading, setLoading] = useState(false)

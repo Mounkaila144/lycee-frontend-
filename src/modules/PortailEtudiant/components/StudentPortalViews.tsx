@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -15,6 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import type {
@@ -24,7 +27,11 @@ import type {
   StudentDocument,
   StudentInvoice,
   StudentReenrollment,
+  StudentReenrollmentCampaign,
+  StudentReenrollmentIntention,
 } from '../types';
+import { studentPortalService } from '../services/studentPortalService';
+import { extractErrorMessage } from '@/modules/Grades/lycee/services/lyceeGradesService';
 import { formatScore, toScore } from '@/modules/Grades/lycee/types';
 
 type ChipColor = 'default' | 'success' | 'warning' | 'error' | 'info';
@@ -299,6 +306,76 @@ export function StudentCardView({ data }: { data: StudentCard }) {
   );
 }
 
+function ReenrollmentIntentionForm({ campaign }: { campaign: StudentReenrollmentCampaign }) {
+  const [intention, setIntention] = useState<StudentReenrollmentIntention | null>(campaign.my_intention ?? null);
+  const [comment, setComment] = useState(campaign.my_intention?.comment ?? '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async (wantsToReenroll: boolean) => {
+    setSaving(true);
+    setError(null);
+
+    try {
+      setIntention(await studentPortalService.saveReenrollmentIntention(campaign.id, wantsToReenroll, comment.trim()));
+    } catch (err) {
+      setError(await extractErrorMessage(err, "Votre réponse n'a pas pu être enregistrée."));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!campaign.can_respond) {
+    return (
+      <Typography variant='body2' color='text.secondary'>
+        Cette campagne ne vous concerne pas (aucune inscription sur l&apos;année concernée).
+      </Typography>
+    );
+  }
+
+  return (
+    <Stack spacing={1.5}>
+      {intention && (
+        <Alert severity={intention.wants_to_reenroll ? 'success' : 'warning'}>
+          {intention.wants_to_reenroll
+            ? 'Vous avez indiqué souhaiter vous réinscrire l\'an prochain.'
+            : 'Vous avez indiqué ne pas vous réinscrire l\'an prochain.'}
+          {intention.responded_at ? ` (réponse du ${formatDate(intention.responded_at)})` : ''}
+        </Alert>
+      )}
+      <Typography variant='body2'>Souhaitez-vous vous réinscrire dans l&apos;établissement l&apos;année prochaine ?</Typography>
+      <TextField
+        size='small'
+        label='Commentaire (facultatif)'
+        value={comment}
+        onChange={(event) => setComment(event.target.value)}
+        inputProps={{ maxLength: 500 }}
+        multiline
+        minRows={1}
+      />
+      <Stack direction='row' spacing={2}>
+        <Button
+          variant={intention?.wants_to_reenroll === true ? 'contained' : 'outlined'}
+          color='success'
+          disabled={saving}
+          onClick={() => save(true)}
+        >
+          Oui, je me réinscris
+        </Button>
+        <Button
+          variant={intention?.wants_to_reenroll === false ? 'contained' : 'outlined'}
+          color='warning'
+          disabled={saving}
+          onClick={() => save(false)}
+        >
+          Non, je quitte l&apos;établissement
+        </Button>
+      </Stack>
+      {error && <Alert severity='error'>{error}</Alert>}
+    </Stack>
+  );
+}
+
 export function StudentReenrollmentView({ data }: { data: StudentReenrollment }) {
   if (data.open_campaigns.length === 0) {
     return <Alert severity='info'>Aucune campagne de réinscription n&apos;est ouverte pour le moment.</Alert>;
@@ -309,11 +386,22 @@ export function StudentReenrollmentView({ data }: { data: StudentReenrollment })
       {data.open_campaigns.map((campaign) => (
         <Card key={campaign.id} variant='outlined'>
           <CardContent>
-            <Typography variant='subtitle1'>{campaign.name}</Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Du {formatDate(campaign.start_date)} au {formatDate(campaign.end_date)}
-            </Typography>
-            {campaign.description && <Typography variant='body2'>{campaign.description}</Typography>}
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant='subtitle1'>{campaign.name}</Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Du {formatDate(campaign.start_date)} au {formatDate(campaign.end_date)}
+                </Typography>
+                {campaign.description && <Typography variant='body2'>{campaign.description}</Typography>}
+              </Box>
+              {data.intentions_available === false ? (
+                <Typography variant='body2' color='text.secondary'>
+                  La réponse en ligne n&apos;est pas encore disponible : adressez-vous à l&apos;administration.
+                </Typography>
+              ) : (
+                <ReenrollmentIntentionForm campaign={campaign} />
+              )}
+            </Stack>
           </CardContent>
         </Card>
       ))}

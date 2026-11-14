@@ -98,7 +98,13 @@ export const useAuth = (): UseAuthReturn => {
                 const loggedUser: any = response.data.user;
                 const landingRoute =
                     loggedUser?.home_route || resolveLandingRoute(loggedUser?.roles ?? []);
-                router.push(landingRoute);
+                // home_route has no locale prefix: keep the current one, otherwise
+                // the i18n middleware falls back to the default locale (en).
+                const currentLocale = window.location.pathname.split('/')[1] || 'fr';
+                const localizedLanding = /^\/(fr|en|ar)(\/|$)/.test(landingRoute)
+                    ? landingRoute
+                    : `/${currentLocale}${landingRoute.startsWith('/') ? '' : '/'}${landingRoute}`;
+                router.push(localizedLanding);
             } else {
                 throw new Error(response.message || 'Login failed');
             }

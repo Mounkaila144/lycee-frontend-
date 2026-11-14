@@ -82,3 +82,15 @@ export const usePreparationChecklist = (sessionId?: number, tenantId?: string) =
     enabled: !!sessionId,
   });
 };
+
+export const useReassignExamStudent = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sheetId, data }: { sheetId: number; data: { room_assignment_id: number; seat_number?: string } }) =>
+      examManagementService.reassignStudent(sheetId, data, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['exam-session'] });
+    },
+  });
+};

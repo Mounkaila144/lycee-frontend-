@@ -7,6 +7,7 @@ import type {
   AssignRoomRequest,
   ExamSessionFilters,
   ValidateScheduleRequest,
+  CreateEvaluationsRequest,
 } from '../../types';
 
 export const useExamSessions = (filters?: ExamSessionFilters, tenantId?: string) => {
@@ -134,6 +135,40 @@ export const useRemoveRoom = (tenantId?: string) => {
   return useMutation({
     mutationFn: ({ sessionId, roomAssignmentId }: { sessionId: number; roomAssignmentId: number }) =>
       examSessionService.removeRoom(sessionId, roomAssignmentId, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['exam-sessions'] });
+      qc.invalidateQueries({ queryKey: ['exam-session'] });
+    },
+  });
+};
+
+export const useExamOptions = (academicYearId?: number, tenantId?: string) => {
+  return useQuery({
+    queryKey: ['exam-options', academicYearId],
+    queryFn: () => examSessionService.getOptions(academicYearId ? { academic_year_id: academicYearId } : undefined, tenantId),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useChangeExamSessionStatus = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, status }: { sessionId: number; status: 'ongoing' | 'completed' }) =>
+      examSessionService.changeStatus(sessionId, status, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['exam-sessions'] });
+      qc.invalidateQueries({ queryKey: ['exam-session'] });
+    },
+  });
+};
+
+export const useCreateEvaluationsFromSession = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, data }: { sessionId: number; data: CreateEvaluationsRequest }) =>
+      examSessionService.createEvaluations(sessionId, data, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['exam-sessions'] });
       qc.invalidateQueries({ queryKey: ['exam-session'] });

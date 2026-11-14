@@ -121,7 +121,7 @@ export const DemographicsCharts: React.FC<DemographicsChartsProps> = ({
       position: 'bottom',
       fontSize: '12px',
       labels: {
-        colors: theme.palette.text.primary,
+        colors: 'var(--mui-palette-text-primary)',
       },
     },
     dataLabels: {
@@ -164,7 +164,7 @@ export const DemographicsCharts: React.FC<DemographicsChartsProps> = ({
       categories: ageData.map((a) => a.range),
       labels: {
         style: {
-          colors: theme.palette.text.secondary,
+          colors: 'var(--mui-palette-text-secondary)',
           fontSize: '12px',
         },
       },
@@ -172,13 +172,13 @@ export const DemographicsCharts: React.FC<DemographicsChartsProps> = ({
     yaxis: {
       labels: {
         style: {
-          colors: theme.palette.text.secondary,
+          colors: 'var(--mui-palette-text-secondary)',
           fontSize: '12px',
         },
       },
     },
     grid: {
-      borderColor: theme.palette.divider,
+      borderColor: 'var(--mui-palette-divider)',
       strokeDashArray: 4,
     },
     tooltip: {

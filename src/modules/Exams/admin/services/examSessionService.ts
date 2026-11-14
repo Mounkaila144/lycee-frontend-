@@ -11,6 +11,9 @@ import type {
   ScheduleValidation,
   RoomSummary,
   ValidateScheduleRequest,
+  ExamOptions,
+  CreateEvaluationsRequest,
+  CreateEvaluationsResponse,
 } from '../../types';
 
 class ExamSessionService {
@@ -21,9 +24,57 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<PaginatedResponse<ExamSession>> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<PaginatedResponse<ExamSession>>(
       `${this.baseUrl}/sessions`,
       { params: filters },
+    );
+
+    return response.data;
+  }
+
+  /** Référentiels du formulaire (classes, niveaux, matières, semestres, salles, professeurs). */
+  async getOptions(
+    params?: { academic_year_id?: number },
+    tenantId?: string,
+  ): Promise<ExamOptions> {
+    const client = createApiClient(tenantId);
+
+    const response = await client.get<{ data: ExamOptions }>(
+      `${this.baseUrl}/sessions/options`,
+      { params },
+    );
+
+    return response.data.data;
+  }
+
+  /** Démarrer (ongoing) ou terminer (completed) une session publiée. */
+  async changeStatus(
+    sessionId: number,
+    status: 'ongoing' | 'completed',
+    tenantId?: string,
+  ): Promise<ExamSession> {
+    const client = createApiClient(tenantId);
+
+    const response = await client.put<ExamSession>(
+      `${this.baseUrl}/sessions/${sessionId}/status`,
+      { status },
+    );
+
+    return response.data;
+  }
+
+  /** Crée les compositions (notes lycée, brouillon) d'une session terminée. */
+  async createEvaluations(
+    sessionId: number,
+    data: CreateEvaluationsRequest,
+    tenantId?: string,
+  ): Promise<CreateEvaluationsResponse> {
+    const client = createApiClient(tenantId);
+
+    const response = await client.post<CreateEvaluationsResponse>(
+      `${this.baseUrl}/sessions/${sessionId}/create-evaluations`,
+      data,
     );
 
     return response.data;
@@ -34,6 +85,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}`,
     );
@@ -46,6 +98,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamSession>(
       `${this.baseUrl}/sessions`,
       data,
@@ -60,6 +113,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}`,
       data,
@@ -82,6 +136,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/publish`,
     );
@@ -95,6 +150,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/cancel`,
       { reason },
@@ -108,6 +164,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/duplicate`,
     );
@@ -120,6 +177,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ScheduleValidation> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ScheduleValidation>(
       `${this.baseUrl}/sessions/validate-schedule`,
       data,
@@ -133,6 +191,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<RoomSummary[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<RoomSummary[]>(
       `${this.baseUrl}/sessions/available-rooms`,
       { params },
@@ -147,6 +206,7 @@ class ExamSessionService {
     tenantId?: string,
   ): Promise<ExamRoomAssignment[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamRoomAssignment[]>(
       `${this.baseUrl}/sessions/${sessionId}/rooms`,
       data,

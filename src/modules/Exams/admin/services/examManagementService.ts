@@ -20,6 +20,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/materials`,
       data,
@@ -34,6 +35,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<ExamSession> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamSession>(
       `${this.baseUrl}/sessions/${sessionId}/instructions`,
       data,
@@ -48,6 +50,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<ExamAttendanceSheet[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamAttendanceSheet[]>(
       `${this.baseUrl}/sessions/${sessionId}/students/assign`,
       data,
@@ -61,6 +64,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<ExamAttendanceSheet[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.post<ExamAttendanceSheet[]>(
       `${this.baseUrl}/sessions/${sessionId}/students/auto-assign`,
     );
@@ -74,6 +78,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<ExamAttendanceSheet> {
     const client = createApiClient(tenantId);
+
     const response = await client.put<ExamAttendanceSheet>(
       `${this.baseUrl}/attendance-sheets/${sheetId}/reassign`,
       data,
@@ -93,6 +98,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<StudentSummary[]> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<StudentSummary[]>(
       `${this.baseUrl}/sessions/${sessionId}/eligible-students`,
     );
@@ -105,6 +111,7 @@ class ExamManagementService {
     tenantId?: string,
   ): Promise<PreparationChecklist> {
     const client = createApiClient(tenantId);
+
     const response = await client.get<PreparationChecklist>(
       `${this.baseUrl}/sessions/${sessionId}/preparation-checklist`,
     );

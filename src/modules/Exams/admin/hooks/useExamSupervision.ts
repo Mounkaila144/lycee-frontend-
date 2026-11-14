@@ -88,6 +88,7 @@ export const useReportIncident = (tenantId?: string) => {
       examSupervisionService.reportIncident(sessionId, data, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['exam-incidents'] });
+      qc.invalidateQueries({ queryKey: ['exam-incidents-summary'] });
     },
   });
 };
@@ -100,6 +101,50 @@ export const useUpdateIncidentStatus = (tenantId?: string) => {
       examSupervisionService.updateIncidentStatus(incidentId, data, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['exam-incidents'] });
+    },
+  });
+};
+
+export const useRecordExamSubmission = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sheetId: number) => examSupervisionService.recordSubmission(sheetId, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['exam-session'] });
+      qc.invalidateQueries({ queryKey: ['exam-attendance-stats'] });
+    },
+  });
+};
+
+export const useVerifyExamSheet = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sheetId: number) => examSupervisionService.verifySheet(sheetId, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['exam-session'] });
+    },
+  });
+};
+
+export const useExamIncidentsSummary = (sessionId?: number, tenantId?: string) => {
+  return useQuery({
+    queryKey: ['exam-incidents-summary', sessionId],
+    queryFn: () => examSupervisionService.getIncidentsSummary(sessionId!, tenantId),
+    enabled: !!sessionId,
+  });
+};
+
+export const useEscalateIncident = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ incidentId, reason }: { incidentId: number; reason: string }) =>
+      examSupervisionService.escalateIncident(incidentId, { reason }, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['exam-incidents'] });
+      qc.invalidateQueries({ queryKey: ['exam-incidents-summary'] });
     },
   });
 };

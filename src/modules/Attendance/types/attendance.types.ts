@@ -180,7 +180,7 @@ export interface AttendanceAlert {
   notified_at: string | null;
   acknowledged_at: string | null;
   acknowledged_by: number | null;
-  student?: StudentSummary;
+  student?: StudentSummary | null;
   created_at: string;
   updated_at: string;
 }
@@ -256,6 +256,24 @@ export interface JustificationFilters {
 export interface ReportFilters {
   semester_id: number;
   classe_id?: number;
+  date_from?: string;
+  date_to?: string;
+}
+
+export type AlertStatusFilter = 'active' | 'acknowledged' | 'all';
+
+export interface AlertFilters {
+  semester_id: number;
+  classe_id?: number;
+  status?: AlertStatusFilter;
+}
+
+export type ExportType = 'students' | 'modules';
+
+export interface StudentExportRow extends AttendanceRates {
+  student_id: number;
+  name: string;
+  email: string | null;
 }
 
 // ──── Response Types ────
@@ -294,6 +312,7 @@ export interface DetailedStatistics {
     present_count: number;
     absent_count: number;
   }>;
+  /** day_of_week : 1 = dimanche … 7 = samedi (DAYOFWEEK MySQL). */
   by_day: Array<{ day_of_week: number; total_records: number; absent_count: number }>;
   semester_id: number;
 }
@@ -305,6 +324,7 @@ export interface SemesterSummary {
   start_date: string;
   end_date: string;
   is_active: boolean;
+  is_current?: boolean;
 }
 
 export interface FamilyStudent {

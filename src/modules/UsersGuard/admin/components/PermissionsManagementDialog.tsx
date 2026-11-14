@@ -39,7 +39,7 @@ interface PermissionsManagementDialogProps {
 }
 
 const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDialogProps) => {
-  const { permissions, loading, error, refresh } = usePermissionsList()
+  const { permissions, loading, error, refresh } = usePermissionsList({ enabled: open })
   
   // States
   const [formDialogOpen, setFormDialogOpen] = useState(false)

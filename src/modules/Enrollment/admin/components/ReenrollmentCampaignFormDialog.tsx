@@ -41,13 +41,6 @@ interface AcademicYear {
   is_current: boolean;
 }
 
-interface Programme {
-  id: number;
-  name: string;
-  code: string;
-}
-
-const LEVELS = ['L1', 'L2', 'L3', 'M1', 'M2'];
 const getDocumentTypes = (t: (key: string) => string) => [
   { value: 'photo', label: t('ID photo') },
   { value: 'attestation', label: t('Success certificate') },
@@ -66,6 +59,7 @@ export const ReenrollmentCampaignFormDialog = ({
   campaign,
 }: ReenrollmentCampaignFormDialogProps) => {
   const { t } = useTranslation('Enrollment');
+  const DOCUMENT_TYPES = getDocumentTypes(t);
   const { tenantId: rawTenantId } = useTenant();
   const tenantId = rawTenantId ?? undefined;
 
@@ -73,7 +67,6 @@ export const ReenrollmentCampaignFormDialog = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [programmes, setProgrammes] = useState<Programme[]>([]);
 
   // Form state
   const [formData, setFormData] = useState<ReenrollmentCampaignFormData>({
@@ -86,7 +79,7 @@ export const ReenrollmentCampaignFormDialog = ({
     eligible_levels: [],
     required_documents: [],
     fees_config: {},
-    min_ects_required: 24,
+    min_ects_required: 0,
     check_financial_clearance: false,
     description: '',
   });
@@ -107,10 +100,6 @@ export const ReenrollmentCampaignFormDialog = ({
         // Fetch academic years
         const yearsResponse = await client.get<{ data: AcademicYear[] }>('/admin/academic-years');
         setAcademicYears(yearsResponse.data.data || []);
-
-        // Fetch programmes
-        const progsResponse = await client.get<{ data: Programme[] }>('/admin/programmes');
-        setProgrammes(progsResponse.data.data || []);
       } catch (err) {
         console.error('Error fetching form data:', err);
         setError(t('Error loading data'));
@@ -150,7 +139,7 @@ export const ReenrollmentCampaignFormDialog = ({
         eligible_levels: [],
         required_documents: [],
         fees_config: {},
-        min_ects_required: 24,
+        min_ects_required: 0,
         check_financial_clearance: false,
         description: '',
       });
@@ -313,68 +302,6 @@ export const ReenrollmentCampaignFormDialog = ({
                 error={!!errors.end_date}
                 helperText={errors.end_date}
                 InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-
-            {/* Eligibility Criteria */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl fullWidth>
-                <InputLabel>Programmes éligibles</InputLabel>
-                <Select
-                  multiple
-                  value={formData.eligible_programs || []}
-                  onChange={e => handleChange('eligible_programs', e.target.value)}
-                  input={<OutlinedInput label="Programmes éligibles" />}
-                  renderValue={selected =>
-                    (selected as number[]).map(id => programmes.find(p => p.id === id)?.name).join(', ')
-                  }
-                >
-                  {programmes.map(prog => (
-                    <MenuItem key={prog.id} value={prog.id}>
-                      {prog.code} - {prog.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem', mt: 0.5 }}>
-                  Laisser vide pour tous les programmes
-                </Box>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl fullWidth>
-                <InputLabel>Niveaux éligibles</InputLabel>
-                <Select
-                  multiple
-                  value={formData.eligible_levels || []}
-                  onChange={e => handleChange('eligible_levels', e.target.value)}
-                  input={<OutlinedInput label="Niveaux éligibles" />}
-                  renderValue={selected => (selected as string[]).join(', ')}
-                >
-                  {LEVELS.map(level => (
-                    <MenuItem key={level} value={level}>
-                      {level}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem', mt: 0.5 }}>
-                  Laisser vide pour tous les niveaux
-                </Box>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                type="number"
-                label="ECTS minimum requis"
-                value={formData.min_ects_required}
-                onChange={e => handleChange('min_ects_required', Number(e.target.value))}
-                error={!!errors.min_ects_required}
-                helperText={errors.min_ects_required || 'Nombre de crédits ECTS validés minimum'}
-                InputProps={{
-                  inputProps: { min: 0, max: 60 },
-                }}
               />
             </Grid>
 

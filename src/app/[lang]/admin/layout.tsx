@@ -16,6 +16,7 @@ import VerticalFooter from '@components/layout/vertical/Footer'
 import HorizontalFooter from '@components/layout/horizontal/Footer'
 import Customizer from '@core/components/customizer'
 import ScrollToTop from '@core/components/scroll-to-top'
+import RouteRoleGuard from '@/shared/components/RouteRoleGuard'
 
 // MUI Imports
 import Button from '@mui/material/Button'
@@ -48,12 +49,12 @@ const AdminLayout = async (props: ChildrenType & { params: Promise<{ lang: Local
             navbar={<Navbar />}
             footer={<VerticalFooter />}
           >
-            {children}
+            <RouteRoleGuard>{children}</RouteRoleGuard>
           </VerticalLayout>
         }
         horizontalLayout={
           <HorizontalLayout header={<Header dictionary={dictionary} />} footer={<HorizontalFooter />}>
-            {children}
+            <RouteRoleGuard>{children}</RouteRoleGuard>
           </HorizontalLayout>
         }
       />
