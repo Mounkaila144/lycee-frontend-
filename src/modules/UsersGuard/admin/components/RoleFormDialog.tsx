@@ -138,7 +138,7 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
       onSuccess()
     } catch (err: any) {
       console.error('Error saving role:', err)
-      setError(err?.response?.data?.message || 'Failed to save role')
+      setError(err?.response?.data?.message || 'Échec de l\'enregistrement du rôle')
     } finally {
       setLoading(false)
     }
@@ -153,9 +153,9 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
     <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
       <DialogTitle className='flex items-center justify-between'>
         <div>
-          <Typography variant='h5'>{role ? 'Edit Role' : 'Create New Role'}</Typography>
+          <Typography variant='h5'>{role ? 'Modifier le rôle' : 'Nouveau rôle'}</Typography>
           <Typography variant='body2' color='text.secondary'>
-            {role ? `Editing: ${role.name}` : 'Fill in the information to create a new role'}
+            {role ? `Modification : ${role.name}` : 'Renseignez les informations pour créer un nouveau rôle'}
           </Typography>
         </div>
         <IconButton onClick={onClose} size='small'>
@@ -174,7 +174,7 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
           {/* Basic Information */}
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<i className='ri-arrow-down-s-line' />}>
-              <Typography variant='h6'>Basic Information</Typography>
+              <Typography variant='h6'>Informations principales</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={3}>
@@ -182,7 +182,7 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
                   <TextField
                     fullWidth
                     required
-                    label='Role Name'
+                    label='Nom du rôle'
                     value={formData.name}
                     onChange={e => handleFieldChange('name', e.target.value)}
                     helperText='Unique identifier (e.g., admin, teacher)'
@@ -193,7 +193,7 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
                   <TextField
                     fullWidth
                     required
-                    label='Display Name'
+                    label='Libellé'
                     value={formData.display_name}
                     onChange={e => handleFieldChange('display_name', e.target.value)}
                     helperText='Human-readable name'
@@ -207,15 +207,15 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
                     label='Description'
                     value={formData.description}
                     onChange={e => handleFieldChange('description', e.target.value)}
-                    helperText='Brief description of this role'
+                    helperText='Brève description du rôle'
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth>
-                    <InputLabel>Guard Name</InputLabel>
+                    <InputLabel>Guard</InputLabel>
                     <Select
                       value={formData.guard_name}
-                      label='Guard Name'
+                      label='Guard'
                       onChange={e => handleFieldChange('guard_name', e.target.value)}
                     >
                       <MenuItem value='web'>Web</MenuItem>
@@ -241,12 +241,12 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
                 </div>
               ) : permissions.length === 0 ? (
                 <Alert severity='warning'>
-                  No permissions available. Please create permissions first.
+                  Aucune permission disponible.
                 </Alert>
               ) : (
                 <div className='space-y-3'>
                   <Typography variant='body2' color='text.secondary'>
-                    Select permissions for this role
+                    Sélectionnez les permissions de ce rôle
                   </Typography>
                   {Object.entries(permissionsByCategory).map(([category, categoryPermissions]) => (
                     <div key={category} className='space-y-2'>
@@ -279,7 +279,7 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
       <Divider />
       <DialogActions>
         <Button onClick={onClose} variant='outlined' color='secondary' disabled={loading}>
-          Cancel
+          Annuler
         </Button>
         <Button
           onClick={handleSubmit}
@@ -288,7 +288,7 @@ const RoleFormDialog = ({ open, onClose, onSuccess, role }: RoleFormDialogProps)
           disabled={loading || !isFormValid()}
           startIcon={loading ? <CircularProgress size={20} color='inherit' /> : <i className='ri-save-line' />}
         >
-          {loading ? 'Saving...' : role ? 'Update Role' : 'Create Role'}
+          {loading ? 'Enregistrement…' : role ? 'Enregistrer le rôle' : 'Créer le rôle'}
         </Button>
       </DialogActions>
     </Dialog>

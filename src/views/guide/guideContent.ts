@@ -504,6 +504,7 @@ const F = {
       '« Notes » → ouvrir la grille de saisie (correction possible ; « Publier » / « Dépublier » aussi depuis cette page).',
       '« Publier » par ligne, ou cocher des évaluations soumises → « Publier la sélection (n) », ou « Publier toutes les soumises » du semestre.',
       '« Dépublier » repasse l’évaluation en « Soumise » (masquée des élèves et parents).',
+      '« Supprimer » (Administrator) : supprime l’évaluation et ses notes après confirmation. Une évaluation publiée doit d’abord être dépubliée (bouton grisé sinon).',
       'Seules les évaluations publiées sont visibles des élèves/parents et comptent dans les bulletins.'
     ]
   },
@@ -550,8 +551,9 @@ const F = {
     path: 'Présences & Absences > Feuille d’Appel',
     route: '/admin/attendance/sessions',
     actions: [
-      '« + Nouvelle séance » → Classe, Date, Début, Fin, Méthode → « Créer » : la feuille d’appel s’ouvre.',
-      'Cliquer sur la pastille de statut d’un élève pour passer Présent → Absent → En retard → Excusé (enregistré immédiatement) ; « Tout présent » / « Tout absent ».',
+      '« + Nouvelle séance » → Classe, Date, Début, Fin, Méthode → « Créer » : la feuille d’appel s’ouvre, tous les élèves sont « Présent » par défaut.',
+      'Ne marquer que les exceptions : cliquer sur la pastille de statut d’un élève pour passer Présent → Absent → En retard → Excusé (enregistré immédiatement).',
+      '« Tout présent » / « Tout absent » applique le statut à toute la classe en une seule fois.',
       '« Terminer la séance » clôture l’appel (lecture seule ensuite).',
       'Dans la liste : « Faire l’appel » (séance en cours) ou « Voir » (terminée).'
     ]
@@ -1128,7 +1130,7 @@ export const JOURNEYS: Journey[] = [
     title: 'b) Vie du semestre : présences, notes, examens',
     summary: 'Appel, justificatifs, évaluations, publication, bulletins, compositions.',
     steps: [
-      { actor: 'Professeur', path: 'Présences & Absences > Feuille d’Appel', action: '« + Nouvelle séance » → marquer présents / absents / retards → « Terminer la séance ».' },
+      { actor: 'Professeur', path: 'Présences & Absences > Feuille d’Appel', action: '« + Nouvelle séance » (tous présents par défaut) → marquer les absents / retards → « Terminer la séance ».' },
       { actor: 'Élève ou Parent', path: 'Absences & justificatifs', action: '« Soumettre un justificatif » avec pièce jointe.' },
       { actor: 'Administrator / Manager', path: 'Présences & Absences > Justificatifs', action: 'Onglet « En attente » → « Traiter » → Approuver (absences passées en « Excusé ») ou Rejeter.' },
       { actor: 'Administrator / Manager', path: 'Présences & Absences > Suivi & Alertes', action: '« Recalculer les alertes » puis traiter les élèves signalés.' },
@@ -1293,7 +1295,7 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     account: 'prof.maths',
     steps: [
       'Présences & Absences > Feuille d’Appel → « + Nouvelle séance » → classe 6ème A → « Créer ».',
-      'Cliquer sur la pastille de deux élèves pour les passer « Absent » / « En retard ».',
+      'Tous les élèves sont « Présent » par défaut : cliquer sur la pastille de deux élèves pour les passer « Absent » / « En retard ».',
       '« Terminer la séance ».'
     ],
     expected: 'La séance apparaît « Terminée » avec le taux de présence ; eleve.001 / parent.001 voient l’absence si eleve.001 a été marqué absent.'

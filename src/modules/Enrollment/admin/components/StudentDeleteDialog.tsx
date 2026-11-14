@@ -50,7 +50,7 @@ export const StudentDeleteDialog = ({ open, onClose, onSuccess, student }: Stude
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Supprimer l'étudiant</DialogTitle>
+      <DialogTitle>Supprimer l'élève</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -58,7 +58,7 @@ export const StudentDeleteDialog = ({ open, onClose, onSuccess, student }: Stude
           </Alert>
         )}
         <DialogContentText>
-          Êtes-vous sûr de vouloir supprimer cet étudiant ?
+          Êtes-vous sûr de vouloir supprimer cet élève ?
         </DialogContentText>
         <Typography variant="body2" sx={{ mt: 2, fontWeight: 'medium' }}>
           Matricule: {student.matricule}
@@ -68,8 +68,10 @@ export const StudentDeleteDialog = ({ open, onClose, onSuccess, student }: Stude
         </Typography>
         <Typography variant="body2">Téléphone: {student.phone || '-'}</Typography>
         <Alert severity="warning" sx={{ mt: 2 }}>
-          Cette action est réversible. L'étudiant sera marqué comme supprimé mais pourra être
-          restauré par un administrateur.
+          Le dossier est archivé (suppression logique), comme pour une sortie : son inscription en
+          classe en cours est annulée et son compte élève est désactivé, ainsi que le compte des
+          parents qui n'ont plus d'autre enfant scolarisé. Pour un départ normal, préférez le
+          changement de statut (Transféré, Abandon…).
         </Alert>
       </DialogContent>
       <DialogActions>

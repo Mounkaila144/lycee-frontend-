@@ -39,4 +39,12 @@ export interface MessageRecipient {
   full_name: string;
   email: string | null;
   role: string | null;
+  /** Rôles du destinataire que l'expéditeur peut joindre (un utilisateur n'apparaît qu'une fois). */
+  roles?: string[];
+}
+
+export interface MessageRecipientList {
+  recipients: MessageRecipient[];
+  /** Rôles joignables par l'expéditeur courant (meta.allowed_roles). */
+  allowedRoles: string[];
 }

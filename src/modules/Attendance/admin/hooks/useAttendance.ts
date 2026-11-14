@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { attendanceService } from '../services';
 import type {
+  BulkRecordAttendanceRequest,
   CreateSessionRequest,
   RecordAttendanceRequest,
   ModifyRecordRequest,
@@ -49,6 +50,19 @@ export const useRecordAttendance = (tenantId?: string) => {
   return useMutation({
     mutationFn: (data: RecordAttendanceRequest) =>
       attendanceService.recordAttendance(data, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['attendance-sheet'] });
+      qc.invalidateQueries({ queryKey: ['attendance-sessions'] });
+    },
+  });
+};
+
+export const useRecordAttendanceInBulk = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, data }: { sessionId: number; data: BulkRecordAttendanceRequest }) =>
+      attendanceService.recordAttendanceInBulk(sessionId, data, tenantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance-sheet'] });
       qc.invalidateQueries({ queryKey: ['attendance-sessions'] });

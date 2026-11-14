@@ -69,9 +69,9 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
       <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth>
         <DialogTitle className='flex items-center justify-between'>
           <div>
-            <Typography variant='h5'>Roles Management</Typography>
+            <Typography variant='h5'>Gestion des rôles</Typography>
             <Typography variant='body2' color='text.secondary'>
-              Manage all system roles
+              Tous les rôles de l'établissement
             </Typography>
           </div>
           <IconButton onClick={onClose} size='small'>
@@ -84,7 +84,7 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
             {/* Action Bar */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant='body2' color='text.secondary'>
-                Total: {roles.length} role(s)
+                Total : {roles.length} rôle(s)
               </Typography>
               <Button
                 variant='contained'
@@ -92,7 +92,7 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
                 onClick={handleCreate}
                 disabled={loading}
               >
-                Create New Role
+                Nouveau rôle
               </Button>
             </Box>
 
@@ -106,10 +106,10 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
             {/* Error State */}
             {error && (
               <Alert severity='error'>
-                <strong>Error loading roles:</strong> {error.message}
+                <strong>Erreur de chargement des rôles :</strong> {error.message}
                 <br />
                 <Typography variant='caption'>
-                  Make sure the backend has implemented <code>GET /api/admin/roles</code>
+                  Vérifiez que le serveur expose <code>GET /api/admin/roles</code>
                 </Typography>
               </Alert>
             )}
@@ -117,7 +117,7 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
             {/* Empty State */}
             {!loading && !error && roles.length === 0 && (
               <Alert severity='info'>
-                No roles found. Click "Create New Role" to add your first role.
+                Aucun rôle. Cliquez sur « Nouveau rôle » pour en créer un.
               </Alert>
             )}
 
@@ -128,8 +128,8 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
                   <TableHead>
                     <TableRow>
                       <TableCell>ID</TableCell>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Display Name</TableCell>
+                      <TableCell>Nom</TableCell>
+                      <TableCell>Libellé</TableCell>
                       <TableCell>Description</TableCell>
                       <TableCell>Guard</TableCell>
                       <TableCell>Permissions</TableCell>
@@ -166,7 +166,7 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
                             />
                           ) : (
                             <Typography variant='caption' color='text.secondary'>
-                              No permissions
+                              Aucune permission
                             </Typography>
                           )}
                         </TableCell>
@@ -186,7 +186,7 @@ const RolesManagementDialog = ({ open, onClose }: RolesManagementDialogProps) =>
         <Divider />
         <DialogActions>
           <Button onClick={onClose} variant='outlined' color='secondary'>
-            Close
+            Fermer
           </Button>
         </DialogActions>
       </Dialog>

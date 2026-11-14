@@ -34,8 +34,8 @@ const NotAuthorized = ({ mode }: { mode: Mode }) => {
           <Typography className='text-8xl font-medium' color='text.primary'>
             401
           </Typography>
-          <Typography variant='h4'>You are not authorized! 🔐</Typography>
-          <Typography>You don&#39;t have permission to access this page. Go Home!</Typography>
+          <Typography variant='h4'>Accès non autorisé 🔐</Typography>
+          <Typography>Vous n&#39;avez pas les droits nécessaires pour accéder à cette page.</Typography>
         </div>
         <img
           alt='error-illustration'
@@ -43,7 +43,7 @@ const NotAuthorized = ({ mode }: { mode: Mode }) => {
           className='object-cover bs-[400px] md:bs-[450px] lg:bs-[500px]'
         />
         <Button href={getLocalizedUrl('/', locale as Locale)} component={Link} variant='contained'>
-          Back to Home
+          Retour à l&#39;accueil
         </Button>
       </div>
       <img src={miscBackground} className='absolute bottom-0 z-[-1] is-full max-md:hidden' />

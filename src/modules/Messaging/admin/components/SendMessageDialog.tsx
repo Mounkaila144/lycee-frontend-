@@ -22,6 +22,30 @@ import Typography from '@mui/material/Typography';
 import { messagingService } from '../../services/messagingService';
 import type { MessageRecipient } from '../../types/messaging.types';
 
+const ROLE_LABELS: Record<string, string> = {
+  Administrator: 'Administrateur',
+  Manager: 'Direction',
+  Professeur: 'Enseignant',
+  Parent: 'Parent',
+};
+
+const roleLabel = (role: string): string => ROLE_LABELS[role] ?? role;
+
+/** Texte d'aide selon les rôles que l'expéditeur peut joindre. */
+const recipientHelpText = (allowedRoles: string[]): string => {
+  const audiences: string[] = [];
+
+  if (allowedRoles.includes('Professeur')) audiences.push('un enseignant');
+  if (allowedRoles.includes('Parent')) audiences.push('un parent');
+  if (allowedRoles.includes('Administrator') || allowedRoles.includes('Manager')) audiences.push('un membre de l’administration');
+
+  if (audiences.length === 0) return 'Sélectionnez un destinataire';
+
+  const last = audiences.pop();
+
+  return `Sélectionnez ${audiences.length ? `${audiences.join(', ')} ou ${last}` : last}`;
+};
+
 const schema = object({
   recipient_id: pipe(number(), minValue(1, 'Destinataire requis')),
   subject: pipe(string(), minLength(1, 'Sujet requis'), minLength(3, 'Sujet trop court')),
@@ -53,6 +77,7 @@ export function SendMessageDialog({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recipients, setRecipients] = useState<MessageRecipient[]>([]);
+  const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -97,9 +122,10 @@ export function SendMessageDialog({
     const handle = setTimeout(() => {
       messagingService
         .recipients(search.trim() || undefined)
-        .then((list) => {
+        .then((result) => {
           if (!cancelled) {
-            setRecipients(list);
+            setRecipients(result.recipients);
+            setAllowedRoles(result.allowedRoles);
           }
         })
         .catch(() => {
@@ -127,9 +153,14 @@ export function SendMessageDialog({
       map.set(defaultRecipient.id, defaultRecipient);
     }
 
-    recipients.forEach((r) => map.set(r.id, r));
-    
-return map;
+    recipients.forEach((r) => {
+      const existing = map.get(r.id);
+      const roles = Array.from(new Set([...(existing?.roles ?? []), ...(r.roles ?? (r.role ? [r.role] : []))]));
+
+      map.set(r.id, { ...r, roles });
+    });
+
+    return map;
   }, [recipients, defaultRecipient]);
 
   const recipientOptions = useMemo(() => Array.from(recipientsById.values()), [recipientsById]);
@@ -192,9 +223,9 @@ return map;
                               {option.username}
                             </Typography>
                           )}
-                          {option.role && (
-                            <Chip label={option.role} size='small' color='primary' variant='outlined' />
-                          )}
+                          {(option.roles?.length ? option.roles : option.role ? [option.role] : []).map((role) => (
+                            <Chip key={role} label={roleLabel(role)} size='small' color='primary' variant='outlined' />
+                          ))}
                         </Stack>
                       </li>
                     )}
@@ -206,7 +237,7 @@ return map;
                         size='small'
                         error={!!errors.recipient_id}
                         helperText={
-                          errors.recipient_id?.message ?? 'Sélectionnez un enseignant ou un parent'
+                          errors.recipient_id?.message ?? recipientHelpText(allowedRoles)
                         }
                         InputProps={{
                           ...params.InputProps,

@@ -205,6 +205,12 @@ export interface RecordAttendanceRequest {
   arrival_time?: string;
 }
 
+/** Saisie en lot : même statut pour toute la séance (ou les élèves listés, users.id). */
+export interface BulkRecordAttendanceRequest {
+  status: AttendanceStatus;
+  student_ids?: number[];
+}
+
 export interface ModifyRecordRequest {
   status: AttendanceStatus;
   reason: string;

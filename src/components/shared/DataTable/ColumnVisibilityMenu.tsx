@@ -81,7 +81,7 @@ export function ColumnVisibilityMenu({
     >
       <div className='p-4' style={{ width: 300 }}>
         <div className='flex items-center justify-between mb-4'>
-          <Typography variant='h6'>Show Columns</Typography>
+          <Typography variant='h6'>Colonnes affichées</Typography>
           <IconButton size='small' onClick={onClose}>
             <i className='ri-close-line' />
           </IconButton>
@@ -89,13 +89,13 @@ export function ColumnVisibilityMenu({
         <Divider className='mb-2' />
         <div className='flex gap-2 mb-4'>
           <Button size='small' onClick={handleShowAll} variant='outlined'>
-            Show All
+            Tout afficher
           </Button>
           <Button size='small' onClick={handleHideAll} variant='outlined'>
-            Hide All
+            Tout masquer
           </Button>
           <Button size='small' onClick={handleReset} variant='outlined'>
-            Reset
+            Réinitialiser
           </Button>
         </div>
         <Divider className='mb-2' />

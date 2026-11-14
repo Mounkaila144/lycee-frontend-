@@ -53,17 +53,17 @@ type UserStatusType = {
 
 // Available columns configuration (only fields returned by API)
 const AVAILABLE_COLUMNS: ColumnConfig[] = [
-  { id: 'username', label: 'Username', defaultVisible: true },
-  { id: 'firstname', label: 'Firstname', defaultVisible: true },
-  { id: 'lastname', label: 'Lastname', defaultVisible: true },
-  { id: 'full_name', label: 'Full Name', defaultVisible: false },
-  { id: 'email', label: 'Email', defaultVisible: true },
+  { id: 'username', label: 'Nom d\'utilisateur', defaultVisible: true },
+  { id: 'firstname', label: 'Prénom', defaultVisible: true },
+  { id: 'lastname', label: 'Nom', defaultVisible: true },
+  { id: 'full_name', label: 'Nom complet', defaultVisible: false },
+  { id: 'email', label: 'E-mail', defaultVisible: true },
   { id: 'application', label: 'Application', defaultVisible: true },
-  { id: 'is_active', label: 'Status', defaultVisible: true },
-  { id: 'roles', label: 'Roles', defaultVisible: true },
+  { id: 'is_active', label: 'Statut', defaultVisible: true },
+  { id: 'roles', label: 'Rôles', defaultVisible: true },
   { id: 'permissions', label: 'Permissions', defaultVisible: false },
-  { id: 'created_at', label: 'Created At', defaultVisible: true },
-  { id: 'updated_at', label: 'Updated At', defaultVisible: false }
+  { id: 'created_at', label: 'Créé le', defaultVisible: true },
+  { id: 'updated_at', label: 'Modifié le', defaultVisible: false }
 ]
 
 const STORAGE_KEY = 'userListTableColumns'

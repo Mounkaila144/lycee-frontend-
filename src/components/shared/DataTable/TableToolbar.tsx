@@ -33,7 +33,7 @@ interface TableToolbarProps {
 }
 
 export function TableToolbar({
-  searchPlaceholder = 'Search...',
+  searchPlaceholder = 'Rechercher…',
   onSearch,
   onRefresh,
   loading = false,
@@ -108,7 +108,7 @@ export function TableToolbar({
                 onClick={handleOpenColumnMenu}
                 className='w-full sm:w-auto'
               >
-                Columns
+                Colonnes
               </Button>
             )}
             {onToggleColumnFilters && (
@@ -131,7 +131,7 @@ export function TableToolbar({
                 className='w-full sm:w-auto'
                 size='small'
               >
-                Clear Filters
+                Effacer les filtres
               </Button>
             )}
           </Box>
@@ -157,7 +157,7 @@ export function TableToolbar({
               disabled={loading}
               className='w-full sm:w-auto'
             >
-              {loading ? 'Loading...' : 'Refresh'}
+              {loading ? 'Chargement…' : 'Actualiser'}
             </Button>
           )}
         </div>

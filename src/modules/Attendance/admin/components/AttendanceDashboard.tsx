@@ -41,6 +41,7 @@ import {
   useCompleteSession,
   useCreateSession,
   useRecordAttendance,
+  useRecordAttendanceInBulk,
 } from '../hooks';
 
 import type {
@@ -106,6 +107,7 @@ export const AttendanceDashboard: React.FC = () => {
 
   const createSession = useCreateSession();
   const recordAttendance = useRecordAttendance();
+  const recordAttendanceInBulk = useRecordAttendanceInBulk();
   const completeSession = useCompleteSession();
 
   const sessions = useMemo(() => sessionsData?.data ?? [], [sessionsData]);
@@ -142,18 +144,16 @@ export const AttendanceDashboard: React.FC = () => {
     );
   };
 
-  const handleMarkAll = async (status: AttendanceStatus) => {
+  const handleMarkAll = (status: AttendanceStatus) => {
     if (!sheet || isCompleted) return;
 
-    try {
-      for (const record of sheet.records.filter(r => r.status !== status)) {
-        await recordAttendance.mutateAsync({ session_id: sheet.session.id, student_id: record.student_id, status });
-      }
-
-      notify(`Tous les élèves : ${ATTENDANCE_STATUS_LABELS[status]}`);
-    } catch (err) {
-      notify(errorMessage(err, 'Enregistrement impossible'), 'error');
-    }
+    recordAttendanceInBulk.mutate(
+      { sessionId: sheet.session.id, data: { status } },
+      {
+        onSuccess: () => notify(`Tous les élèves : ${ATTENDANCE_STATUS_LABELS[status]}`),
+        onError: err => notify(errorMessage(err, 'Enregistrement impossible'), 'error'),
+      },
+    );
   };
 
   const handleComplete = () => {
@@ -347,14 +347,19 @@ export const AttendanceDashboard: React.FC = () => {
           ) : (
             <>
               {!isCompleted && (
-                <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
-                  <Button size="small" variant="outlined" color="success" disabled={recordAttendance.isPending} onClick={() => handleMarkAll('present')}>
-                    Tout présent
-                  </Button>
-                  <Button size="small" variant="outlined" color="error" disabled={recordAttendance.isPending} onClick={() => handleMarkAll('absent')}>
-                    Tout absent
-                  </Button>
-                </Box>
+                <>
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Tous les élèves sont « Présent » par défaut : cliquez sur le statut d&apos;un élève pour le marquer absent, en retard ou excusé.
+                  </Alert>
+                  <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+                    <Button size="small" variant="outlined" color="success" disabled={recordAttendanceInBulk.isPending} onClick={() => handleMarkAll('present')}>
+                      Tout présent
+                    </Button>
+                    <Button size="small" variant="outlined" color="error" disabled={recordAttendanceInBulk.isPending} onClick={() => handleMarkAll('absent')}>
+                      Tout absent
+                    </Button>
+                  </Box>
+                </>
               )}
               {sheet.records.length === 0 && (
                 <Alert severity="warning">Aucun élève actif inscrit dans cette classe.</Alert>

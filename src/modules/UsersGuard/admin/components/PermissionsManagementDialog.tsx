@@ -69,9 +69,9 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
       <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth>
         <DialogTitle className='flex items-center justify-between'>
           <div>
-            <Typography variant='h5'>Permissions Management</Typography>
+            <Typography variant='h5'>Gestion des permissions</Typography>
             <Typography variant='body2' color='text.secondary'>
-              Manage all system permissions
+              Toutes les permissions de l'établissement
             </Typography>
           </div>
           <IconButton onClick={onClose} size='small'>
@@ -84,7 +84,7 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
             {/* Action Bar */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant='body2' color='text.secondary'>
-                Total: {permissions.length} permission(s)
+                Total : {permissions.length} permission(s)
               </Typography>
               <Button
                 variant='contained'
@@ -92,7 +92,7 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
                 onClick={handleCreate}
                 disabled={loading}
               >
-                Create New Permission
+                Nouvelle permission
               </Button>
             </Box>
 
@@ -106,10 +106,10 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
             {/* Error State */}
             {error && (
               <Alert severity='error'>
-                <strong>Error loading permissions:</strong> {error.message}
+                <strong>Erreur de chargement des permissions :</strong> {error.message}
                 <br />
                 <Typography variant='caption'>
-                  Make sure the backend has implemented <code>GET /api/admin/permissions</code>
+                  Vérifiez que le serveur expose <code>GET /api/admin/permissions</code>
                 </Typography>
               </Alert>
             )}
@@ -117,7 +117,7 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
             {/* Empty State */}
             {!loading && !error && permissions.length === 0 && (
               <Alert severity='info'>
-                No permissions found. Click "Create New Permission" to add your first permission.
+                Aucune permission. Cliquez sur « Nouvelle permission » pour en créer une.
               </Alert>
             )}
 
@@ -128,8 +128,8 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
                   <TableHead>
                     <TableRow>
                       <TableCell>ID</TableCell>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Display Name</TableCell>
+                      <TableCell>Nom</TableCell>
+                      <TableCell>Libellé</TableCell>
                       <TableCell>Description</TableCell>
                       <TableCell>Guard</TableCell>
                       <TableCell align='right'>Actions</TableCell>
@@ -171,7 +171,7 @@ const PermissionsManagementDialog = ({ open, onClose }: PermissionsManagementDia
         <Divider />
         <DialogActions>
           <Button onClick={onClose} variant='outlined' color='secondary'>
-            Close
+            Fermer
           </Button>
         </DialogActions>
       </Dialog>

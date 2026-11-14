@@ -104,7 +104,7 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
       onSuccess()
     } catch (err: any) {
       console.error('Error saving permission:', err)
-      setError(err?.response?.data?.message || 'Failed to save permission')
+      setError(err?.response?.data?.message || 'Échec de l\'enregistrement de la permission')
     } finally {
       setLoading(false)
     }
@@ -119,9 +119,9 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle className='flex items-center justify-between'>
         <div>
-          <Typography variant='h5'>{permission ? 'Edit Permission' : 'Create New Permission'}</Typography>
+          <Typography variant='h5'>{permission ? 'Modifier la permission' : 'Nouvelle permission'}</Typography>
           <Typography variant='body2' color='text.secondary'>
-            {permission ? `Editing: ${permission.name}` : 'Fill in the information to create a new permission'}
+            {permission ? `Modification : ${permission.name}` : 'Renseignez les informations pour créer une nouvelle permission'}
           </Typography>
         </div>
         <IconButton onClick={onClose} size='small'>
@@ -142,7 +142,7 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
               <TextField
                 fullWidth
                 required
-                label='Permission Name'
+                label='Nom de la permission'
                 value={formData.name}
                 onChange={e => handleFieldChange('name', e.target.value)}
                 helperText='Unique identifier (e.g., users.view, students.edit)'
@@ -153,7 +153,7 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
               <TextField
                 fullWidth
                 required
-                label='Display Name'
+                label='Libellé'
                 value={formData.display_name}
                 onChange={e => handleFieldChange('display_name', e.target.value)}
                 helperText='Human-readable name'
@@ -167,15 +167,15 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
                 label='Description'
                 value={formData.description}
                 onChange={e => handleFieldChange('description', e.target.value)}
-                helperText='Brief description of this permission'
+                helperText='Brève description de la permission'
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth>
-                <InputLabel>Guard Name</InputLabel>
+                <InputLabel>Guard</InputLabel>
                 <Select
                   value={formData.guard_name}
-                  label='Guard Name'
+                  label='Guard'
                   onChange={e => handleFieldChange('guard_name', e.target.value)}
                 >
                   <MenuItem value='web'>Web</MenuItem>
@@ -189,7 +189,7 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
       <Divider />
       <DialogActions>
         <Button onClick={onClose} variant='outlined' color='secondary' disabled={loading}>
-          Cancel
+          Annuler
         </Button>
         <Button
           onClick={handleSubmit}
@@ -198,7 +198,7 @@ const PermissionFormDialog = ({ open, onClose, onSuccess, permission }: Permissi
           disabled={loading || !isFormValid()}
           startIcon={loading ? <CircularProgress size={20} color='inherit' /> : <i className='ri-save-line' />}
         >
-          {loading ? 'Saving...' : permission ? 'Update Permission' : 'Create Permission'}
+          {loading ? 'Enregistrement…' : permission ? 'Enregistrer la permission' : 'Créer la permission'}
         </Button>
       </DialogActions>
     </Dialog>

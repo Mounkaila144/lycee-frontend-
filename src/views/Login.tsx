@@ -47,11 +47,11 @@ import { getLocalizedUrl } from '@/utils/i18n'
 type FormData = InferInput<typeof schema>
 
 const schema = object({
-  username: pipe(string(), minLength(1, 'This field is required'), minLength(3, 'Username must be at least 3 characters long')),
+  username: pipe(string(), minLength(1, 'Ce champ est obligatoire'), minLength(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères')),
   password: pipe(
     string(),
-    nonEmpty('This field is required'),
-    minLength(3, 'Password must be at least 3 characters long')
+    nonEmpty('Ce champ est obligatoire'),
+    minLength(3, 'Le mot de passe doit contenir au moins 3 caractères')
   )
 })
 
@@ -162,7 +162,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   fullWidth
                   autoFocus
                   type='text'
-                  label='Username'
+                  label="Nom d'utilisateur"
                   disabled={isLoading}
                   {...(errors.username && {
                     error: true,
@@ -179,7 +179,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                 <TextField
                   {...field}
                   fullWidth
-                  label='Password'
+                  label='Mot de passe'
                   id='login-password'
                   type={isPasswordShown ? 'text' : 'password'}
                   disabled={isLoading}
@@ -191,7 +191,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                             edge='end'
                             onClick={handleClickShowPassword}
                             onMouseDown={e => e.preventDefault()}
-                            aria-label='toggle password visibility'
+                            aria-label='Afficher ou masquer le mot de passe'
                             disabled={isLoading}
                           >
                             <i className={isPasswordShown ? 'ri-eye-off-line' : 'ri-eye-line'} />
@@ -205,25 +205,19 @@ const Login = ({ mode }: { mode: Mode }) => {
               )}
             />
             <div className='flex justify-between items-center flex-wrap gap-x-3 gap-y-1'>
-              <FormControlLabel control={<Checkbox defaultChecked />} label='Remember me' />
+              <FormControlLabel control={<Checkbox defaultChecked />} label='Se souvenir de moi' />
               <Typography
                 className='text-end'
                 color='primary.main'
                 component={Link}
                 href={getLocalizedUrl('/forgot-password', locale as Locale)}
               >
-                Forgot password?
+                Mot de passe oublié ?
               </Typography>
             </div>
             <Button fullWidth variant='contained' type='submit' disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Log In'}
+              {isLoading ? 'Connexion en cours…' : 'Se connecter'}
             </Button>
-            <div className='flex justify-center items-center flex-wrap gap-2'>
-              <Typography>New on our platform?</Typography>
-              <Typography component={Link} href={getLocalizedUrl('/register', locale as Locale)} color='primary.main'>
-                Create an account
-              </Typography>
-            </div>
             <Button
               fullWidth
               variant='outlined'

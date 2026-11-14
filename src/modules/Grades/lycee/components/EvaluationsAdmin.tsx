@@ -35,8 +35,8 @@ import { EVALUATION_STATUS_COLORS, EVALUATION_STATUS_LABELS, EVALUATION_TYPE_LAB
 
 /**
  * Liste des évaluations (Admin/Manager) — `/admin/grades/evaluations`.
- * Filtres classe / matière / semestre / statut. Publication unitaire et en masse, dépublication :
- * Administrator uniquement (le Manager consulte).
+ * Filtres classe / matière / semestre / statut. Publication unitaire et en masse, dépublication,
+ * suppression (évaluation non publiée) : Administrator uniquement (le Manager consulte).
  */
 export default function EvaluationsAdmin() {
   const { lang } = useParams<{ lang: string }>();
@@ -110,6 +110,17 @@ export default function EvaluationsAdmin() {
     } finally {
       setBusy(false);
     }
+  };
+
+  /** Suppression (Administrator) : une évaluation publiée doit d'abord être dépubliée. */
+  const handleDelete = (evaluation: ClassEvaluation) => {
+    const gradesInfo = evaluation.grades_count ? ` et ses ${evaluation.grades_count} note(s)` : '';
+
+    if (!window.confirm(`Supprimer définitivement « ${evaluation.title} »${gradesInfo} ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    runAction(() => lyceeGradesService.deleteEvaluation(evaluation.id), 'Évaluation supprimée.', 'Échec de la suppression.');
   };
 
   /**
@@ -367,6 +378,26 @@ export default function EvaluationsAdmin() {
                               >
                                 Publier
                               </Button>
+                            )}
+                            {canPublish && (
+                              <Tooltip
+                                title={
+                                  evaluation.status === 'published'
+                                    ? 'Dépubliez d’abord l’évaluation pour pouvoir la supprimer'
+                                    : 'Supprimer l’évaluation et toutes ses notes'
+                                }
+                              >
+                                <span>
+                                  <Button
+                                    size='small'
+                                    color='error'
+                                    disabled={busy || evaluation.status === 'published'}
+                                    onClick={() => handleDelete(evaluation)}
+                                  >
+                                    Supprimer
+                                  </Button>
+                                </span>
+                              </Tooltip>
                             )}
                           </Box>
                         </TableCell>

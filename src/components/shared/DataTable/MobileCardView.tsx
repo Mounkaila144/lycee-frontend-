@@ -18,7 +18,7 @@ interface MobileCardViewProps<TData> {
 export function MobileCardView<TData>({
   data,
   loading = false,
-  emptyMessage = 'No data available',
+  emptyMessage = 'Aucune donnée',
   config
 }: MobileCardViewProps<TData>) {
   if (loading) {

@@ -60,7 +60,7 @@ const ModeDropdown = () => {
   return (
     <>
       <Tooltip
-        title={settings.mode + ' Mode'}
+        title={settings.mode === 'dark' ? 'Mode sombre' : settings.mode === 'light' ? 'Mode clair' : 'Mode système'}
         onOpen={() => setTooltipOpen(true)}
         onClose={() => setTooltipOpen(false)}
         open={open ? false : tooltipOpen ? true : false}
@@ -92,7 +92,7 @@ const ModeDropdown = () => {
                     selected={settings.mode === 'light'}
                   >
                     <i className='ri-sun-line' />
-                    Light
+                    Clair
                   </MenuItem>
                   <MenuItem
                     className='gap-3 pli-4'
@@ -100,7 +100,7 @@ const ModeDropdown = () => {
                     selected={settings.mode === 'dark'}
                   >
                     <i className='ri-moon-clear-line' />
-                    Dark
+                    Sombre
                   </MenuItem>
                   <MenuItem
                     className='gap-3 pli-4'
@@ -108,7 +108,7 @@ const ModeDropdown = () => {
                     selected={settings.mode === 'system'}
                   >
                     <i className='ri-computer-line' />
-                    System
+                    Système
                   </MenuItem>
                 </MenuList>
               </ClickAwayListener>

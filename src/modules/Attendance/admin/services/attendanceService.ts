@@ -4,6 +4,7 @@ import type {
   AttendanceSession,
   AttendanceRecord,
   AttendanceSheet,
+  BulkRecordAttendanceRequest,
   ClasseSummary,
   CreateSessionRequest,
   RecordAttendanceRequest,
@@ -81,6 +82,21 @@ class AttendanceService {
     const client = createApiClient(tenantId);
     const response = await client.post<AttendanceRecord>(
       `${this.baseUrl}/record`,
+      data,
+    );
+
+    return response.data;
+  }
+
+  /** Saisie en lot (« Tout présent » / « Tout absent ») en un seul appel. */
+  async recordAttendanceInBulk(
+    sessionId: number,
+    data: BulkRecordAttendanceRequest,
+    tenantId?: string,
+  ): Promise<AttendanceSheet & { message: string; updated_count: number }> {
+    const client = createApiClient(tenantId);
+    const response = await client.post<AttendanceSheet & { message: string; updated_count: number }>(
+      `${this.baseUrl}/sessions/${sessionId}/records/bulk`,
       data,
     );
 

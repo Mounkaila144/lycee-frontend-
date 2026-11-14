@@ -37,7 +37,7 @@ export function DataTable<TData extends Record<string, any>>(props: DataTableCon
     onPageChange,
     onPageSizeChange,
     onRefresh,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder = 'Rechercher…',
     onSearch,
     mobileCard,
     availableColumns,
@@ -50,7 +50,7 @@ export function DataTable<TData extends Record<string, any>>(props: DataTableCon
     onColumnFilterChange,
     onClearAllFilters,
     createColumnFilter,
-    emptyMessage = 'No data available',
+    emptyMessage = 'Aucune donnée',
     rowsPerPageOptions = [10, 25, 50, 100]
   } = props
 
@@ -204,8 +204,10 @@ export function DataTable<TData extends Record<string, any>>(props: DataTableCon
           count={pagination.total}
           rowsPerPage={pagination.per_page}
           page={pagination.current_page - 1}
+          labelRowsPerPage='Lignes par page'
+          labelDisplayedRows={({ from, to, count }) => `${from}–${to} sur ${count !== -1 ? count : `plus de ${to}`}`}
           SelectProps={{
-            inputProps: { 'aria-label': 'rows per page' },
+            inputProps: { 'aria-label': 'Lignes par page' },
             disabled: loading
           }}
           slotProps={{
