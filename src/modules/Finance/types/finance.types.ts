@@ -135,17 +135,63 @@ export interface StudentSummary {
 
 // ──── Core Models ────
 
+export type FeeTypeCategory =
+  | 'tuition'
+  | 'registration'
+  | 'exam'
+  | 'library'
+  | 'lab'
+  | 'sports'
+  | 'insurance'
+  | 'card'
+  | 'other';
+
+export const FEE_TYPE_CATEGORY_LABELS: Record<FeeTypeCategory, string> = {
+  tuition: 'Scolarité',
+  registration: 'Inscription',
+  exam: 'Examen',
+  library: 'Bibliothèque',
+  lab: 'Laboratoire',
+  sports: 'Sport',
+  insurance: 'Assurance',
+  card: 'Carte scolaire',
+  other: 'Autre (APE, tenue…)',
+};
+
+export interface FeeTypeAppliesTo {
+
+  /** Codes de niveau concernés (vide = tous les niveaux) */
+  levels?: string[];
+
+  /** Montant spécifique par code de niveau (sinon montant par défaut) */
+  level_amounts?: Record<string, number>;
+  [key: string]: unknown;
+}
+
 export interface FeeType {
   id: number;
   name: string;
   code: string;
   description: string | null;
-  amount: number;
-  currency: string;
+  default_amount: number | string;
+  category: FeeTypeCategory;
+  is_mandatory: boolean;
   is_active: boolean;
-  academic_year_id: number;
+  applies_to: FeeTypeAppliesTo | null;
+  academic_year_id: number | null;
+  academic_year?: { id: number; name: string } | null;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
+
+  /** @deprecated champ historique — utiliser default_amount */
+  amount?: number;
+}
+
+export interface FeeTypeListParams {
+  include_inactive?: boolean;
+  academic_year_id?: number;
+  category?: FeeTypeCategory;
 }
 
 export interface InvoiceItem {
@@ -303,10 +349,13 @@ export interface WriteOff {
 export interface CreateFeeTypeRequest {
   name: string;
   code: string;
-  description?: string;
-  amount: number;
-  currency?: string;
-  academic_year_id: number;
+  description?: string | null;
+  default_amount: number;
+  category: FeeTypeCategory;
+  is_mandatory?: boolean;
+  academic_year_id?: number | null;
+  levels?: string[];
+  level_amounts?: Record<string, number | null>;
 }
 
 export interface UpdateFeeTypeRequest extends Partial<CreateFeeTypeRequest> {}
@@ -584,4 +633,73 @@ export interface AccountingExport {
     student_matricule?: string | null;
   }>;
   summary: { total_entries: number; total_amount: ReportAmount };
+}
+
+// ──── Facturation en masse ────
+
+export type BulkBillingScope = 'classe' | 'level' | 'year';
+
+export interface BulkBillingTargets {
+  academic_year: { id: number; name: string };
+  levels: Array<{ id: number; code: string; name: string; students_count: number }>;
+  classes: Array<{ id: number; name: string; level_id: number; level_code: string | null; students_count: number }>;
+  total_students: number;
+}
+
+export interface BulkBillingRequest {
+  academic_year_id: number;
+  scope: BulkBillingScope;
+  classe_id?: number | null;
+  level_id?: number | null;
+  fee_type_ids: number[];
+  invoice_date?: string;
+  due_date: string;
+  notes?: string;
+}
+
+export type BulkBillingLineStatus = 'to_invoice' | 'already_invoiced' | 'not_applicable';
+
+export interface BulkBillingSummary {
+  students_count: number;
+  invoices_count: number;
+  skipped_students_count: number;
+  already_invoiced_lines_count: number;
+  not_applicable_lines_count: number;
+  total_amount: number;
+}
+
+export interface BulkBillingPreviewStudent {
+  student_id: number;
+  matricule: string | null;
+  student_name: string;
+  classe_id: number;
+  classe_name: string | null;
+  level_code: string | null;
+  items: Array<{
+    fee_type_id: number;
+    name: string;
+    status: BulkBillingLineStatus;
+    amount: number;
+    discount_amount: number;
+    net_amount: number;
+  }>;
+  total_amount: number;
+  will_invoice: boolean;
+}
+
+export interface BulkBillingPreview {
+  summary: BulkBillingSummary;
+  students: BulkBillingPreviewStudent[];
+}
+
+export interface BulkBillingResult {
+  summary: BulkBillingSummary;
+  invoices: Array<{
+    id: number;
+    invoice_number: string;
+    student_id: number;
+    student_name: string;
+    classe_name: string | null;
+    total_amount: number;
+  }>;
 }

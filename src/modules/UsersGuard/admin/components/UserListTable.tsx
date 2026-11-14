@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
 import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
 
 // Third-party Imports
 import { createColumnHelper } from '@tanstack/react-table'
@@ -24,6 +25,7 @@ import type { User } from '../../types/user.types'
 import CustomAvatar from '@core/components/mui/Avatar'
 import UserAddModal from './UserAddModal'
 import UserEditModal from './UserEditModal'
+import ResetPasswordDialog from './ResetPasswordDialog'
 import { RolesManagementDialog } from './RolesManagementDialog'
 import { PermissionsManagementDialog } from './PermissionsManagementDialog'
 
@@ -95,6 +97,7 @@ const UserListTable = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [passwordResetUser, setPasswordResetUser] = useState<User | null>(null)
   const [rolesDialogOpen, setRolesDialogOpen] = useState(false)
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false)
 
@@ -322,6 +325,11 @@ const UserListTable = () => {
             <IconButton size='small' onClick={() => handleOpenEditModal(row.original)}>
               <i className='ri-edit-box-line text-textSecondary' />
             </IconButton>
+            <Tooltip title='Réinitialiser le mot de passe'>
+              <IconButton size='small' onClick={() => setPasswordResetUser(row.original)}>
+                <i className='ri-lock-password-line text-textSecondary' />
+              </IconButton>
+            </Tooltip>
           </div>
         ),
         enableSorting: false
@@ -457,6 +465,11 @@ const UserListTable = () => {
                 icon: 'ri-edit-box-line',
                 color: 'primary',
                 onClick: () => handleOpenEditModal(user)
+              },
+              {
+                icon: 'ri-lock-password-line',
+                color: 'warning',
+                onClick: () => setPasswordResetUser(user)
               }
             ]}
             item={user}
@@ -475,6 +488,12 @@ const UserListTable = () => {
 
       {/* Edit User Modal */}
       <UserEditModal open={editModalOpen} onClose={handleCloseEditModal} onSuccess={handleEditSuccess} user={selectedUser} />
+
+      <ResetPasswordDialog
+        open={passwordResetUser !== null}
+        user={passwordResetUser}
+        onClose={() => setPasswordResetUser(null)}
+      />
 
       {/* Roles Management Dialog */}
       <RolesManagementDialog

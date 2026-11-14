@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 
 // MUI Imports
 import Typography from '@mui/material/Typography'
-import TextField from '@mui/material/TextField'
+import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 
 // Third-party Imports
@@ -18,7 +18,6 @@ import type { Locale } from '@configs/i18n'
 
 // Component Imports
 import Logo from '@components/layout/shared/Logo'
-import DirectionalIcon from '@components/DirectionalIcon'
 
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
@@ -77,27 +76,18 @@ const ForgotPasswordV2 = ({ mode }: { mode: Mode }) => {
         </Link>
         <div className='flex flex-col gap-5 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset] mbs-11 sm:mbs-14 md:mbs-0'>
           <div>
-            <Typography variant='h4'>Forgot Password 🔒</Typography>
+            <Typography variant='h4'>Mot de passe oublié 🔒</Typography>
             <Typography className='mbs-1'>
-              Enter your email and we&#39;ll send you instructions to reset your password
+              La réinitialisation par e-mail n&apos;est pas disponible sur cette plateforme.
             </Typography>
           </div>
-          <form noValidate autoComplete='off' onSubmit={e => e.preventDefault()} className='flex flex-col gap-5'>
-            <TextField autoFocus fullWidth label='Email' />
-            <Button fullWidth variant='contained' type='submit'>
-              Send reset link
-            </Button>
-            <Typography className='flex justify-center items-center' color='primary.main'>
-              <Link href='/login' className='flex items-center gap-1.5'>
-                <DirectionalIcon
-                  ltrIconClass='ri-arrow-left-s-line'
-                  rtlIconClass='ri-arrow-right-s-line'
-                  className='text-xl'
-                />
-                <span>Back to Login</span>
-              </Link>
-            </Typography>
-          </form>
+          <Alert severity='info' icon={<i className='ri-information-line' />}>
+            Contactez l&apos;administration de l&apos;établissement pour réinitialiser votre mot de passe : un
+            administrateur peut vous attribuer un nouveau mot de passe depuis la gestion des utilisateurs.
+          </Alert>
+          <Button fullWidth variant='contained' component={Link} href={getLocalizedUrl('/login', locale as Locale)}>
+            Retour à la connexion
+          </Button>
         </div>
       </div>
     </div>

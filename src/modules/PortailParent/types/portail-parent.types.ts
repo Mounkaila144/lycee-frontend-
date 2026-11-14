@@ -91,13 +91,8 @@ export interface ChildDocument {
   generated_at: string | null;
 }
 
-export interface Announcement {
-  id: number;
-  title: string;
-  body: string;
-  published_at: string;
-  category?: string;
-}
+/** Annonce de l'établissement (module Messaging) — GET /admin/parent/announcements. */
+export type { Announcement } from '@/modules/Messaging/types/announcement.types';
 
 export interface OnlinePaymentInitResponse {
   payment_id: number;

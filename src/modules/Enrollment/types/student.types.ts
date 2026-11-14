@@ -107,6 +107,16 @@ export interface Student {
   updated_at: string;
   deleted_at?: string | null;
 
+  /** Compte de connexion (users.id) — null si l'élève n'a pas de compte */
+  user_id?: number | null;
+  /** Classe de l'année active (liste et fiche élève) */
+  current_class?: {
+    class_enrollment_id: number;
+    classe_id: number;
+    classe_name: string | null;
+    academic_year_id: number;
+  } | null;
+
   // Relations (Note: programme n'est PAS dans Student, mais dans StudentEnrollment)
   documents?: StudentDocument[];
 }

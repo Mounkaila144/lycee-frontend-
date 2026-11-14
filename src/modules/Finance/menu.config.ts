@@ -4,7 +4,8 @@ import type { ModuleMenuConfig } from '@/shared/types/menu-config.types';
  * Finance Module Menu Configuration
  *
  * Facturation (paiements accessibles depuis l'action « Paiements » par
- * facture), Rapports financiers (Admin/Manager/Comptable) et Rapprochement
+ * facture), Facturation en masse (Admin/Comptable), Types de frais (lecture
+ * Manager/Caissier, écriture Admin/Comptable), Rapports financiers (Admin/Manager/Comptable) et Rapprochement
  * bancaire (Admin/Comptable — aligné sur le middleware backend).
  */
 export const financeMenuConfig: ModuleMenuConfig = {
@@ -34,6 +35,38 @@ export const financeMenuConfig: ModuleMenuConfig = {
             value: '🧾',
           },
           order: 1,
+          module: 'Finance',
+          parentId: 'finance',
+          roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Manager', 'Comptable', 'Caissier'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'finance-bulk-billing',
+          label: 'Facturation en masse',
+          route: '/admin/finance/bulk-billing',
+          icon: {
+            type: 'emoji',
+            value: '📑',
+          },
+          order: 1.05,
+          module: 'Finance',
+          parentId: 'finance',
+          roles: ['admin', 'superadmin'],
+          requiredRoles: ['Administrator', 'Comptable'],
+          isVisible: true,
+          isActive: true,
+        },
+        {
+          id: 'finance-fee-types',
+          label: 'Types de frais',
+          route: '/admin/finance/fee-types',
+          icon: {
+            type: 'emoji',
+            value: '🏷️',
+          },
+          order: 1.06,
           module: 'Finance',
           parentId: 'finance',
           roles: ['admin', 'superadmin'],

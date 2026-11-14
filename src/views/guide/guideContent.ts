@@ -223,13 +223,13 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
     home: 'Tableau de bord super-admin (/superadmin/dashboard)',
     can: [
       'Créer une école (identifiant, société, contacts, domaines)',
-      'Activer un site (exécution des migrations de sa base)',
-      'Modifier, consulter ou supprimer un site'
+      'Activer un nouveau site (création et migration de sa base de données)',
+      'Désactiver / réactiver une école : une école désactivée ne répond plus (connexion et pages renvoient « Établissement désactivé »)',
+      'Modifier, consulter ou supprimer un site',
+      'Suivre sur le tableau de bord le nombre d’écoles (actives/inactives), de domaines et, par école, les élèves, professeurs et utilisateurs'
     ],
     cannot: [
-      'Gérer la vie scolaire d’une école (élèves, notes…) : il faut un compte de l’école',
-      'Le tableau de bord super-admin affiche des chiffres d’exemple (non branché)',
-      'L’entrée « Module Management » ne mène à aucune page (404)'
+      'Gérer la vie scolaire d’une école (élèves, notes…) : il faut un compte de l’école'
     ]
   },
   {
@@ -245,6 +245,8 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Affectations des professeurs, publication des notes, bulletins PDF',
       'Emplois du temps, présences, examens, documents officiels',
       'Comptabilité complète (y compris clôture de caisse et rapprochement), paie',
+      'Messagerie avec les parents, les professeurs et la direction (menu « Messages »)',
+      'Publier des annonces ciblées (tous, parents, élèves, professeurs, personnel, éventuellement une classe) — menu « Annonces »',
       'Réglages de l’établissement'
     ],
     cannot: ['Saisir des notes dans une matière à la place du professeur via « Saisie des notes » (menu réservé au Professeur) — il peut en revanche ouvrir et corriger une évaluation depuis Notes > Évaluations']
@@ -258,14 +260,15 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
     can: [
       'Tous les menus pédagogiques (structure, élèves, notes, EDT, présences, examens, documents)',
       'Publier / dépublier les évaluations, bulletins PDF, passages de classe',
-      'Consulter Facturation, Paiements, Recouvrement (consultation seule), Rapports financiers, Paie & RH'
+      'Consulter Facturation, Types de frais, Paiements, Recouvrement (consultation seule), Rapports financiers, Paie & RH',
+      'Messagerie avec les parents, les professeurs et la direction (menu « Messages »)',
+      'Publier, modifier et supprimer des annonces (menu « Annonces »)'
     ],
     cannot: [
       'Réglages de l’établissement',
       'Clôture de caisse et rapprochement bancaire',
-      'Créer des factures, rembourser, générer des relances (réservé Administrator / Comptable)',
-      'Gérer les rôles et permissions, supprimer un utilisateur (réservé Administrator)',
-      'Utiliser la messagerie'
+      'Créer des factures (y compris en masse), paramétrer les types de frais, rembourser, générer des relances (réservé Administrator / Comptable)',
+      'Gérer les rôles et permissions, supprimer un utilisateur (réservé Administrator)'
     ]
   },
   {
@@ -279,7 +282,8 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Voir les résultats de ses classes ; bulletins PDF et appréciation générale s’il est professeur principal',
       'Faire l’appel de ses classes',
       'Consulter son emploi du temps, les examens, signaler des incidents de surveillance',
-      'Échanger des messages avec les parents et l’administration'
+      'Échanger des messages avec les parents et la direction (Administrator, Manager)',
+      'Lire sur son accueil les annonces de l’établissement et de ses classes'
     ],
     cannot: [
       'Publier des notes (réservé Administrator / Manager)',
@@ -299,7 +303,8 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Consulter son emploi du temps, ses absences et ses factures',
       'Déposer un justificatif d’absence avec pièce jointe',
       'Télécharger ses documents officiels, voir sa carte scolaire',
-      'Répondre à une campagne de réinscription'
+      'Répondre à une campagne de réinscription',
+      'Lire sur son accueil les annonces de l’établissement et de sa classe'
     ],
     cannot: [
       'Voir les notes non publiées',
@@ -317,11 +322,11 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
     can: [
       'Ouvrir la fiche de chaque enfant (notes publiées, bulletin PDF, absences, EDT, factures, documents)',
       'Déposer un justificatif d’absence pour un enfant',
-      'Écrire aux professeurs et à l’administration'
+      'Écrire aux professeurs et à la direction (Administrator, Manager)',
+      'Lire les annonces de l’établissement et des classes de ses enfants (menu « Annonces »)'
     ],
     cannot: [
       'Payer en ligne (aucun bouton de paiement)',
-      'Lire des annonces : la page « Annonces » est vide (fonction non disponible)',
       'Voir les notes non publiées'
     ]
   },
@@ -338,7 +343,7 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
       'Consulter le recouvrement'
     ],
     cannot: [
-      'Créer une facture, rembourser un paiement',
+      'Créer une facture (individuelle ou en masse), modifier les types de frais, rembourser un paiement',
       'Générer / envoyer des relances, bloquer des services, créer un échéancier',
       'Rapports financiers, rapprochement, paie, pédagogie'
     ]
@@ -350,6 +355,7 @@ export const ROLE_OVERVIEWS: RoleOverview[] = [
     summary: 'Facturation, encaissements, recouvrement, rapports financiers, rapprochement et paie.',
     home: 'Rapports financiers (/admin/finance/reports)',
     can: [
+      'Paramétrer les types de frais (montants par niveau), facturer en masse une classe / un niveau / l’année',
       'Créer des factures, encaisser, rembourser',
       'Relances, blocages de services, échéanciers, passage en perte',
       'Rapports financiers et export comptable CSV',
@@ -372,6 +378,7 @@ const F = {
       'Rechercher un utilisateur dans le tableau (colonnes Nom d’utilisateur, Email, Application, Statut, Rôles…).',
       '« Ajouter » → renseigner Nom d’utilisateur, Mot de passe (8 caractères min.), prénom, nom, email, Application (Admin pour le personnel, Frontend pour élèves/parents), Actif, puis choisir les rôles → « Create User ».',
       'Icône Modifier → changer les informations ou les rôles ; cocher « Change Password » pour définir un nouveau mot de passe → « Update User ».',
+      'Icône cadenas « Réinitialiser le mot de passe » → saisir et confirmer le nouveau mot de passe (8 caractères min.) → « Réinitialiser », puis le communiquer à l’utilisateur (aucun e-mail n’est envoyé). Un Manager ne peut pas modifier le mot de passe d’un Administrator.',
       'Administrator uniquement : « Manage Roles » / « Manage Permissions » (créer ou modifier un rôle et ses permissions) et suppression d’un utilisateur (icône poubelle).'
     ]
   },
@@ -429,11 +436,14 @@ const F = {
     path: 'Inscriptions > Élèves',
     route: '/admin/enrollment/students',
     actions: [
-      '« Ajouter » → identité, coordonnées, contact d’urgence → « Créer » (matricule généré automatiquement ; alerte en cas de doublon probable, second clic pour forcer).',
+      '« Ajouter » → identité, coordonnées, contact d’urgence ; facultatif : « Inscrire dans la classe » (classes de l’année active) et case « Créer le compte de connexion de l’élève » → « Créer » (matricule généré automatiquement ; alerte en cas de doublon probable, second clic pour forcer). Si le compte est créé, l’identifiant et le mot de passe s’affichent une seule fois (boutons Copier).',
       '« Importer » → télécharger le modèle, déposer un fichier .csv/.xlsx, faire correspondre les colonnes, « Prévisualiser » puis « Importer N étudiants ».',
       '« Export Excel » de la liste.',
-      'Par ligne : « Voir détails » (onglets Informations, Documents, Statuts — « Changer le statut », Audit), « Modifier », « Situation financière » (factures PDF ; « Nouvelle facture » pour Administrator / Comptable), « Supprimer ».',
-      'Limite actuelle : cet écran ne crée ni compte de connexion élève, ni parent, ni affectation en classe (voir FAQ).'
+      'Colonne « Classe » : classe de l’année active (« Sans classe » sinon). Par ligne (Administrator / Manager) : icône « Inscrire en classe » ou « Changer de classe » → choisir la classe (effectif / capacité affichés, classes complètes grisées) → « Inscrire » / « Changer de classe ».',
+      'Par ligne : « Voir détails » (onglets Informations, Documents, Statuts — « Changer le statut », Audit, Classe, Parents, Compte), « Modifier », « Situation financière » (factures PDF ; « Nouvelle facture » pour Administrator / Comptable), « Supprimer ».',
+      'Onglet « Classe » : classe de l’année en cours et historique ; « Inscrire en classe » (une seule inscription active par élève et par année, capacité de la classe respectée), « Changer de classe » (transfert interne dans la même année, motif facultatif, tracé dans l’historique et l’Audit), « Annuler l’inscription ».',
+      'Onglet « Parents » : « Nouveau parent » (prénom, nom, lien de parenté, téléphone, e-mail, profession, contact principal / responsable financier → « Créer et lier » ; un téléphone déjà enregistré est refusé : utilisez la liaison), « Lier un parent existant » (recherche par nom, téléphone ou e-mail — utile pour les frères et sœurs), « Délier » (la fiche et le compte du parent sont conservés). Pour chaque parent : « Créer le compte » (identifiant prénom.nom), « Réinitialiser le mot de passe », « Désactiver » / « Activer ».',
+      'Onglet « Compte » : compte de connexion de l’élève (rôle Élève) — « Créer le compte » (identifiant eleve.<matricule> par défaut, ou saisi), « Réinitialiser le mot de passe », « Désactiver » / « Activer ». Le mot de passe généré s’affiche une seule fois (« Copier » ou « Copier les deux ») ; la réinitialisation et la désactivation ferment les sessions ouvertes.'
     ]
   },
   enrollmentStats: {
@@ -614,6 +624,27 @@ const F = {
       'Dans le reçu : « Imprimer ».'
     ]
   },
+  feeTypes: {
+    path: 'Comptabilité > Types de frais',
+    route: '/admin/finance/fee-types',
+    actions: [
+      'Liste des frais (scolarité, inscription, APE, tenue…) : code, catégorie, année, montant par défaut, niveaux et montants par niveau, statut ; case « Afficher les désactivés ».',
+      '« + Nouveau type de frais » / « Modifier » (Administrator / Comptable) : code, libellé, catégorie, montant par défaut, année scolaire (ou toutes), obligatoire, niveaux concernés (« Tous les niveaux » ou cases) et montant spécifique par niveau (vide = montant par défaut).',
+      '« Désactiver » / « Activer » : un frais désactivé n’est plus proposé à la facturation ; les factures existantes restent intactes.',
+      'Manager et Caissier : consultation seule.'
+    ]
+  },
+  bulkBilling: {
+    path: 'Comptabilité > Facturation en masse',
+    route: '/admin/finance/bulk-billing',
+    actions: [
+      'Réservé Administrator / Comptable. Étape « Cible » : année scolaire, puis une classe, un niveau ou toute l’année (effectif inscrit actif affiché).',
+      'Étape « Frais & échéance » : cocher les types de frais, date de facture, échéance, notes → « Voir l’aperçu ».',
+      'Étape « Aperçu » : élèves ciblés, factures à créer, montant total ; par élève, chaque frais « à facturer » (montant du niveau, remise éventuelle), « déjà facturé » ou « hors niveau ». Aucune facture n’est encore créée.',
+      '« Confirmer : générer N facture(s) » → une facture par élève. Un frais déjà facturé au même élève pour la même année (facture non annulée) est ignoré : relancer l’opération ne crée pas de doublon.',
+      'Étape « Résultat » : liste des factures créées → « Voir la facturation ».'
+    ]
+  },
   payments: {
     path: 'Comptabilité > Paiements & reçus',
     route: '/admin/finance/payments',
@@ -727,11 +758,21 @@ const F = {
     route: '/admin/settings/tenant',
     actions: ['« Nouveau réglage » → Clé (ex. school.name), Type, Valeur, Catégorie, Description ; « Modifier » / « Supprimer ».']
   },
+  announcements: {
+    path: 'Annonces',
+    route: '/admin/announcements',
+    actions: [
+      '« Nouvelle annonce » → Titre, Contenu, Audience (Tout le monde, Parents, Élèves, Professeurs, Personnel administratif), Classe (optionnel : limite l’annonce aux parents / élèves / professeurs de cette classe), « Publiée le » (vide = immédiatement), « Expire le » (optionnel), « Épingler » → « Enregistrer ».',
+      'L’encadré « Aperçu de l’audience » indique le nombre de comptes ciblés (parents, élèves, professeurs, personnel).',
+      'Liste filtrable par audience, statut Publiée / Programmée / Expirée ; « Modifier » / « Supprimer ».',
+      'Les annonces apparaissent dans la page « Annonces » du parent et dans l’encart « Dernières annonces » des accueils élève et professeur.'
+    ]
+  },
   messages: (route: string): MenuFeature => ({
     path: 'Messages',
     route,
     actions: [
-      '« Nouveau message » → rechercher le Destinataire (professeur, parent ou administration selon votre rôle), Sujet (3 caractères min.), Message → « Envoyer ».',
+      '« Nouveau message » → rechercher le Destinataire (professeur, parent ou direction selon votre rôle ; la direction peut écrire aux parents, aux professeurs et aux autres membres de la direction), Sujet (3 caractères min.), Message → « Envoyer ».',
       'Cliquer un message pour le lire (il passe en « Lu ») ; « Répondre » pré-remplit destinataire et sujet.'
     ]
   })
@@ -792,7 +833,11 @@ export const ROLE_GUIDES: RoleGuide[] = [
       {
         path: 'Dashboard',
         route: '/superadmin/dashboard',
-        actions: ['Page d’accueil super-admin. Les chiffres affichés sont des valeurs d’exemple (non reliées aux données).']
+        actions: [
+          'Indicateurs réels : nombre d’écoles (actives/inactives), domaines, total des élèves, professeurs et utilisateurs de toutes les écoles.',
+          'Tableau « Écoles » : pour chaque école, ses domaines, son statut et ses effectifs lus dans sa propre base ; le badge « Base indisponible » signale une école dont la base est absente ou illisible (les autres restent affichées).',
+          'Bloc « Dernières écoles créées » ; bouton « Actualiser » pour recharger les chiffres.'
+        ]
       },
       {
         path: 'Sites',
@@ -800,8 +845,9 @@ export const ROLE_GUIDES: RoleGuide[] = [
         actions: [
           'Indicateurs : total, actifs, inactifs, taux d’activation ; recherche par ID, société, email.',
           '« Nouveau Site » → Identifiant du tenant (lettres, chiffres, tirets), Nom de la société, email, téléphone, adresse, Statut, Domaines (le premier est le domaine principal ; « Ajouter un domaine ») → « Créer ».',
-          'Icône « Activer le site (exécuter les migrations) » sur un site pas encore à jour → confirmer : la base de l’école est créée/mise à jour.',
-          'Par site : « Voir les détails », « Modifier », « Supprimer ».',
+          'Icône « Activer le site (créer et migrer sa base) », visible seulement pour un site dont la base n’existe pas encore → confirmer : la base est créée, migrée (cela peut prendre une minute) et le site passe « Actif ». Une école déjà en service n’est jamais migrée depuis cet écran (mises à jour faites par l’équipe technique).',
+          'Par site : « Voir les détails », « Modifier » (nom, contacts, domaines, Statut), « Supprimer ».',
+          'Statut « Inactif » (via « Modifier ») : l’école est bloquée — ses utilisateurs reçoivent « Établissement désactivé » à la connexion et sur toutes les pages — jusqu’à sa réactivation.',
           'Ensuite, les comptes de l’école se créent depuis l’école elle-même (Utilisateurs) avec un compte Administrator.'
         ]
       }
@@ -815,6 +861,8 @@ export const ROLE_GUIDES: RoleGuide[] = [
       F.users,
       ...pedagogyFeatures,
       F.invoices,
+      F.bulkBilling,
+      F.feeTypes,
       F.payments,
       F.cashierClose,
       F.collection,
@@ -822,6 +870,8 @@ export const ROLE_GUIDES: RoleGuide[] = [
       F.bank,
       ...payrollFeatures,
       ...documentFeatures,
+      F.messages('/admin/messages'),
+      F.announcements,
       F.settings
     ]
   },
@@ -833,11 +883,14 @@ export const ROLE_GUIDES: RoleGuide[] = [
       F.users,
       ...pedagogyFeatures,
       F.invoices,
+      F.feeTypes,
       F.payments,
       F.collection,
       F.financeReports,
       ...payrollFeatures,
-      ...documentFeatures
+      ...documentFeatures,
+      F.messages('/admin/messages'),
+      F.announcements
     ]
   },
   {
@@ -849,7 +902,8 @@ export const ROLE_GUIDES: RoleGuide[] = [
         route: '/admin/teacher/home',
         actions: [
           'Raccourcis : Saisie des notes, Résultats & bulletins, Feuille d’appel, Mon emploi du temps, Messages.',
-          '« Mes classes » : classes dont vous êtes professeur principal ; cliquer une classe affiche la liste de ses élèves.'
+          '« Mes classes » : classes dont vous êtes professeur principal ; cliquer une classe affiche la liste de ses élèves.',
+          'Encart « Dernières annonces » : annonces de l’établissement destinées aux professeurs (et à vos classes).'
         ]
       },
       {
@@ -905,7 +959,10 @@ export const ROLE_GUIDES: RoleGuide[] = [
       {
         path: 'Accueil',
         route: '/admin/student/home',
-        actions: ['Matricule, classe, moyenne actuelle (notes publiées), prochain cours, absences des 30 derniers jours, factures et reste à payer.']
+        actions: [
+          'Matricule, classe, moyenne actuelle (notes publiées), prochain cours, absences des 30 derniers jours, factures et reste à payer.',
+          'Encart « Dernières annonces » : annonces de l’établissement destinées aux élèves (et à votre classe).'
+        ]
       },
       {
         path: 'Mes notes',
@@ -955,7 +1012,14 @@ export const ROLE_GUIDES: RoleGuide[] = [
         ]
       },
       F.messages('/admin/parent/messages'),
-      { path: 'Annonces', route: '/admin/parent/announcements', actions: ['Fonction non disponible : la page affiche « Aucune annonce publiée. »'] },
+      {
+        path: 'Annonces',
+        route: '/admin/parent/announcements',
+        actions: [
+          'Annonces publiées par la direction pour tous ou pour les parents, générales ou ciblant la classe d’un de vos enfants (les annonces épinglées en premier).',
+          'Sans annonce : « Aucune annonce publiée. »'
+        ]
+      },
       {
         path: 'Absences & justificatifs',
         route: '/admin/attendance/my-justifications',
@@ -968,7 +1032,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
   },
   {
     roleId: 'caissier',
-    intro: 'Menu : Comptabilité (Facturation, Paiements & reçus, Clôture de caisse, Recouvrement & relances).',
+    intro: 'Menu : Comptabilité (Facturation, Types de frais, Paiements & reçus, Clôture de caisse, Recouvrement & relances).',
     features: [
       {
         ...F.invoices,
@@ -987,13 +1051,14 @@ export const ROLE_GUIDES: RoleGuide[] = [
         ]
       },
       F.cashierClose,
+      { ...F.feeTypes, actions: ['Consultation seule des types de frais et de leurs montants par niveau.'] },
       { ...F.collection, actions: ['Consultation seule des factures en retard, relances et blocages.'] }
     ]
   },
   {
     roleId: 'comptable',
     intro: 'Menu : Comptabilité (tous les sous-menus) et Paie & RH.',
-    features: [F.invoices, F.payments, F.cashierClose, F.collection, F.financeReports, F.bank, ...payrollFeatures]
+    features: [F.invoices, F.bulkBilling, F.feeTypes, F.payments, F.cashierClose, F.collection, F.financeReports, F.bank, ...payrollFeatures]
   }
 ]
 
@@ -1009,13 +1074,15 @@ export const JOURNEYS: Journey[] = [
       { actor: 'Administrator', path: 'Structure Académique > Matières', action: 'Créer ou activer les matières enseignées.' },
       { actor: 'Administrator', path: 'Structure Académique > Coefficients', action: 'Pour chaque niveau / série : coefficient et heures par semaine de chaque matière.' },
       { actor: 'Administrator', path: 'Structure Académique > Classes', action: '« Nouvelle classe » : niveau, série, section, capacité, professeur principal.' },
-      { actor: 'Administrator', path: 'Utilisateurs', action: 'Créer les comptes du personnel (Professeur, Caissier, Comptable, Manager) et, si besoin, les comptes Élève / Parent (Application « Frontend »).' },
+      { actor: 'Administrator', path: 'Utilisateurs', action: 'Créer les comptes du personnel (Professeur, Caissier, Comptable, Manager). Les comptes Élève / Parent se créent plutôt depuis la fiche élève (onglets Compte et Parents).' },
       { actor: 'Administrator / Manager', path: 'Inscriptions > Élèves', action: '« Ajouter » ou « Importer » les élèves (matricule automatique).' },
-      { actor: 'Administrator / Manager', path: 'Inscriptions > Passages de classe', action: 'Élèves déjà scolarisés : affectation dans la classe de la nouvelle année (voir parcours g). Pour les nouveaux élèves, l’affectation en classe et le lien élève ↔ parent ↔ compte ne sont pas proposés à l’écran : ils sont réalisés par l’équipe technique (import / jeu de données).' },
+      { actor: 'Administrator / Manager', path: 'Inscriptions > Élèves', action: 'Nouveaux élèves : icône « Inscrire en classe » sur la ligne (ou onglet Classe de la fiche) ; onglet Parents → « Nouveau parent » ou « Lier un parent existant » ; onglets Compte / Parents → « Créer le compte » et remettre identifiant + mot de passe (affiché une seule fois).' },
+      { actor: 'Administrator / Manager', path: 'Inscriptions > Passages de classe', action: 'Élèves déjà scolarisés : affectation dans la classe de la nouvelle année (voir parcours g).' },
       { actor: 'Administrator / Manager', path: 'Notes > Affectations', action: 'Pour chaque classe, affecter un professeur à chaque matière → « Enregistrer ».' },
       { actor: 'Administrator / Manager', path: 'Emplois du Temps > Gestion des Salles', action: 'Créer les salles (capacité, équipements).' },
       { actor: 'Administrator / Manager', path: 'Emplois du Temps > Planification', action: 'Par classe : « + Ajouter une séance » (matière, enseignant, salle, jour, heures) ; corriger les conflits signalés.' },
-      { actor: 'Administrator / Comptable', path: 'Comptabilité > Facturation', action: '« + Nouvelle Facture » par élève avec le type de frais (inscription, scolarité, carte…). Les types de frais sont paramétrés par l’équipe technique (pas d’écran dédié).' },
+      { actor: 'Administrator / Comptable', path: 'Comptabilité > Types de frais', action: 'Paramétrer les frais de l’année (inscription, scolarité, APE, tenue, carte…) : montant par défaut et, si besoin, montant par niveau.' },
+      { actor: 'Administrator / Comptable', path: 'Comptabilité > Facturation en masse', action: 'Facturer une classe, un niveau ou toute l’année : choisir les frais et l’échéance → « Voir l’aperçu » → « Confirmer ». Les frais déjà facturés sont ignorés. Cas particuliers : « + Nouvelle Facture » dans Comptabilité > Facturation.' },
       { actor: 'Administrator / Manager', path: 'Inscriptions > Cartes Scolaires', action: '« Générer des cartes » (lot d’élèves) puis « Télécharger PDF ».' }
     ]
   },
@@ -1045,7 +1112,9 @@ export const JOURNEYS: Journey[] = [
     title: 'c) Finances',
     summary: 'Facturation, encaissement, reçu, clôture de caisse, recouvrement, rapports, rapprochement.',
     steps: [
-      { actor: 'Comptable / Administrator', path: 'Comptabilité > Facturation', action: '« + Nouvelle Facture » (matricule, type de frais, échéance). Également : Inscriptions > Élèves > « Situation financière » > « Nouvelle facture ».' },
+      { actor: 'Comptable / Administrator', path: 'Comptabilité > Types de frais', action: 'Créer / modifier les frais (montants par niveau), « Désactiver » ceux qui ne s’appliquent plus.' },
+      { actor: 'Comptable / Administrator', path: 'Comptabilité > Facturation en masse', action: 'Cible (classe, niveau, année) → frais + échéance → aperçu → « Confirmer » : une facture par élève inscrit, sans doublon.' },
+      { actor: 'Comptable / Administrator', path: 'Comptabilité > Facturation', action: 'Facture individuelle : « + Nouvelle Facture » (matricule, type de frais, échéance). Également : Inscriptions > Élèves > « Situation financière » > « Nouvelle facture ».' },
       { actor: 'Caissier', path: 'Comptabilité > Facturation', action: 'Rechercher la facture → « Paiements » → « Enregistrer un paiement ».' },
       { actor: 'Caissier', path: 'Fenêtre « Reçu de paiement »', action: '« Imprimer » le reçu (montant en lettres, reste à payer). Réimpression : Paiements & reçus > « Reçu ».' },
       { actor: 'Caissier', path: 'Comptabilité > Clôture de caisse', action: 'En fin de journée : « Nouvelle clôture » → espèces comptées → « Clôturer » (écart calculé).' },
@@ -1083,12 +1152,14 @@ export const JOURNEYS: Journey[] = [
   },
   {
     id: 'messagerie',
-    title: 'f) Messagerie',
-    summary: 'Échanges professeurs ↔ parents ↔ administration.',
+    title: 'f) Messagerie et annonces',
+    summary: 'Échanges professeurs ↔ parents ↔ direction, et annonces de l’établissement.',
     steps: [
       { actor: 'Parent', path: 'Messages', action: '« Nouveau message » → choisir un professeur ou l’administration → Sujet, Message → « Envoyer ».' },
       { actor: 'Professeur', path: 'Messages', action: 'Le message apparaît « Non lu » → l’ouvrir → « Répondre ».' },
-      { actor: 'Administrator', path: 'Adresse /fr/admin/teacher/messages', action: 'Pas d’entrée de menu pour l’administrateur ; la boîte est accessible par son adresse (à confirmer).' }
+      { actor: 'Administrator / Manager', path: 'Messages', action: 'Lire les messages reçus des parents et professeurs, « Répondre » ou « Nouveau message ».' },
+      { actor: 'Administrator / Manager', path: 'Annonces', action: '« Nouvelle annonce » → audience « Parents », classe (optionnel) → « Enregistrer ».' },
+      { actor: 'Parent', path: 'Annonces', action: 'L’annonce apparaît (si elle cible tous les parents ou la classe d’un de ses enfants).' }
     ]
   },
   {
@@ -1112,8 +1183,8 @@ export const JOURNEYS: Journey[] = [
     steps: [
       { actor: 'Super-admin', path: 'Page /fr/loginsuperadmin', action: 'Se connecter avec demo.superadmin.' },
       { actor: 'Super-admin', path: 'Sites', action: '« Nouveau Site » → identifiant, société, contacts, domaine principal → « Créer ».' },
-      { actor: 'Super-admin', path: 'Sites', action: '« Activer le site (exécuter les migrations) » → confirmer.' },
-      { actor: 'Super-admin', path: 'Sites', action: '« Voir les détails » / « Modifier » (statut actif/inactif, domaines) / « Supprimer ».' },
+      { actor: 'Super-admin', path: 'Sites', action: '« Activer le site (créer et migrer sa base) » sur la nouvelle école → confirmer.' },
+      { actor: 'Super-admin', path: 'Sites', action: '« Voir les détails » / « Modifier » (statut actif/inactif — une école inactive est bloquée —, domaines) / « Supprimer ».' },
       { actor: 'Direction de l’école', path: 'Domaine de l’école > /fr/login', action: 'Connexion avec un compte Administrator de l’école puis parcours a).' }
     ]
   }
@@ -1230,6 +1301,7 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     account: 'demo.superadmin',
     steps: [
       'Se connecter sur /fr/loginsuperadmin.',
+      'Tableau de bord : nombre d’écoles et de domaines, effectifs (élèves, professeurs, utilisateurs) de chaque école, dernières écoles créées.',
       'Menu Sites : indicateurs et liste des écoles (dont lycee1).',
       '« Voir les détails » sur une école ; « Nouveau Site » pour montrer le formulaire (Annuler pour ne rien créer).'
     ],
@@ -1240,7 +1312,7 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
 export const FAQ_ITEMS: FaqItem[] = [
   {
     q: 'J’ai oublié mon mot de passe.',
-    a: 'Le lien « Forgot password? » de la page de connexion n’envoie pas encore d’e-mail. Demandez à un Administrator ou Manager : menu Utilisateurs → Modifier → cocher « Change Password » → saisir un nouveau mot de passe (8 caractères min.) → « Update User ».'
+    a: 'Aucun e-mail de réinitialisation n’est envoyé : la page « Mot de passe oublié » invite à contacter l’administration de l’établissement. Un Administrator (ou un Manager, sauf pour un compte Administrator) va dans Utilisateurs → icône cadenas « Réinitialiser le mot de passe » → saisit et confirme un nouveau mot de passe (8 caractères min.) → « Réinitialiser », puis le communique à l’utilisateur. Pour un élève ou un parent, plus simple : Inscriptions > Élèves → « Voir détails » → onglet Compte (élève) ou Parents (parent) → « Réinitialiser le mot de passe » : un nouveau mot de passe est généré et affiché une seule fois.'
   },
   {
     q: 'Je me connecte mais « Identifiants invalides » s’affiche.',
@@ -1272,11 +1344,15 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'Comment rattacher un élève à une classe ou à un parent ?',
-    a: 'Pour un élève déjà inscrit, le passage d’une année à l’autre se fait dans Inscriptions > Passages de classe. L’affectation d’un nouvel élève dans une classe et le lien élève ↔ parent ne sont pas encore proposés à l’écran : ils sont réalisés par l’équipe technique (import ou jeu de données).'
+    a: 'Inscriptions > Élèves (Administrator / Manager) : icône « Inscrire en classe » / « Changer de classe » sur la ligne de l’élève, ou « Voir détails » → onglet Classe. Pour un parent : onglet Parents → « Nouveau parent » ou « Lier un parent existant » (et « Délier »). Les comptes de connexion se créent dans les onglets Compte (élève) et Parents (parent) ; le mot de passe généré s’affiche une seule fois. Le passage d’une année à l’autre se fait dans Inscriptions > Passages de classe.'
   },
   {
     q: 'Le caissier ne peut pas créer de facture.',
     a: 'C’est voulu : la création de facture est réservée à l’Administrator et au Comptable. Le caissier encaisse les factures existantes.'
+  },
+  {
+    q: 'La facturation en masse indique des élèves « ignorés ».',
+    a: 'Ces élèves ont déjà une facture (non annulée) pour ces frais sur la même année : l’assistant ne crée pas de doublon. Pour refacturer, annulez d’abord l’ancienne facture. Un frais limité à certains niveaux apparaît « hors niveau » pour les autres classes.'
   },
   {
     q: '« Nouvelle classe » ou « Nouvelle Facture » est désactivé.',

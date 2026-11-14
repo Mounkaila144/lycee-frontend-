@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { invoiceService } from '../services';
 import type {
+  BulkBillingRequest,
   CreateFeeTypeRequest,
+  FeeTypeListParams,
   UpdateFeeTypeRequest,
   CreateInvoiceRequest,
   UpdateInvoiceRequest,
@@ -14,6 +16,51 @@ export const useFeeTypes = (tenantId?: string) => {
   return useQuery({
     queryKey: ['fee-types'],
     queryFn: () => invoiceService.getFeeTypes(tenantId),
+  });
+};
+
+/** Liste des types de frais (tableau), désactivés inclus si demandé. */
+export const useFeeTypeList = (params?: FeeTypeListParams, tenantId?: string) => {
+  return useQuery({
+    queryKey: ['fee-types', 'list', params],
+    queryFn: () => invoiceService.listFeeTypes(params, tenantId),
+  });
+};
+
+export const useSetFeeTypeStatus = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ feeTypeId, isActive }: { feeTypeId: number; isActive: boolean }) =>
+      invoiceService.setFeeTypeStatus(feeTypeId, isActive, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['fee-types'] });
+    },
+  });
+};
+
+export const useBulkBillingTargets = (academicYearId?: number, tenantId?: string) => {
+  return useQuery({
+    queryKey: ['bulk-billing-targets', academicYearId],
+    queryFn: () => invoiceService.getBulkBillingTargets(academicYearId, tenantId),
+    enabled: !!academicYearId,
+  });
+};
+
+export const usePreviewBulkBilling = (tenantId?: string) => {
+  return useMutation({
+    mutationFn: (data: BulkBillingRequest) => invoiceService.previewBulkBilling(data, tenantId),
+  });
+};
+
+export const useGenerateBulkBilling = (tenantId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: BulkBillingRequest) => invoiceService.generateBulkBilling(data, tenantId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['invoices'] });
+    },
   });
 };
 

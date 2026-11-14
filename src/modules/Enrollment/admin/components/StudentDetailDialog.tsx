@@ -31,13 +31,18 @@ import { studentService } from '../services/studentService'
 
 // Context Imports
 import { useTenant } from '@/shared/lib/tenant-context'
+import { useAuthUser } from '@/shared/hooks/useAuthUser'
 
 // Component Imports
 import StudentDocumentsTab from './StudentDocumentsTab'
 import StudentAuditLogTab from './StudentAuditLogTab'
 import { StudentStatusHistoryTab } from './StudentStatusHistoryTab'
 import { StudentStatusChangeDialog } from './StudentStatusChangeDialog'
-import { OptionSelector } from './OptionSelector'
+import { StudentClassEnrollmentTab } from './StudentClassEnrollmentTab'
+import { StudentParentsTab } from './StudentParentsTab'
+import { StudentAccountTab } from './StudentAccountTab'
+
+const MANAGER_ROLES = ['Administrator', 'Manager']
 
 type StudentStatusColor = {
   [key in StudentStatus]: ThemeColor
@@ -58,6 +63,8 @@ interface StudentDetailDialogProps {
   studentId: number | null
   onEdit?: (student: Student) => void
   onDelete?: (student: Student) => void
+  /** Appelé après une inscription / un changement de classe (rafraîchir la liste) */
+  onStudentChanged?: () => void
 }
 
 /**
@@ -69,9 +76,12 @@ export const StudentDetailDialog = ({
   onClose,
   studentId,
   onEdit,
-  onDelete
+  onDelete,
+  onStudentChanged
 }: StudentDetailDialogProps) => {
   const { tenantId } = useTenant()
+  const authUser = useAuthUser()
+  const canManage = Boolean(authUser?.roles.some(role => MANAGER_ROLES.includes(role)))
 
   // State
   const [student, setStudent] = useState<Student | null>(null)
@@ -94,6 +104,17 @@ export const StudentDetailDialog = ({
       setError('Impossible de charger les informations de l\'étudiant')
     } finally {
       setLoading(false)
+    }
+  }, [studentId, tenantId])
+
+  /** Rafraîchit la fiche sans masquer l'onglet courant (après une action dans un onglet) */
+  const refreshStudentSilently = useCallback(async () => {
+    if (!studentId) return
+
+    try {
+      setStudent(await studentService.getById(studentId, tenantId || undefined))
+    } catch {
+      // la fiche affichée reste valable
     }
   }, [studentId, tenantId])
 
@@ -190,6 +211,7 @@ export const StudentDetailDialog = ({
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   {student.matricule}
+                  {student.current_class?.classe_name ? ` · ${student.current_class.classe_name}` : ' · Sans classe'}
                 </Typography>
                 <Chip
                   variant="tonal"
@@ -203,7 +225,7 @@ export const StudentDetailDialog = ({
 
             {/* Tabs */}
             <TabContext value={activeTab}>
-              <TabList onChange={handleTabChange} aria-label="Student detail tabs">
+              <TabList onChange={handleTabChange} aria-label="Student detail tabs" variant="scrollable" scrollButtons="auto">
                 <Tab
                   label="Informations"
                   value="1"
@@ -228,12 +250,30 @@ export const StudentDetailDialog = ({
                   icon={<i className="ri-history-line" />}
                   iconPosition="start"
                 />
-                <Tab
-                  label="Inscription"
-                  value="5"
-                  icon={<i className="ri-book-open-line" />}
-                  iconPosition="start"
-                />
+                {canManage && (
+                  <Tab
+                    label="Classe"
+                    value="5"
+                    icon={<i className="ri-book-open-line" />}
+                    iconPosition="start"
+                  />
+                )}
+                {canManage && (
+                  <Tab
+                    label="Parents"
+                    value="6"
+                    icon={<i className="ri-parent-line" />}
+                    iconPosition="start"
+                  />
+                )}
+                {canManage && (
+                  <Tab
+                    label="Compte"
+                    value="7"
+                    icon={<i className="ri-key-2-line" />}
+                    iconPosition="start"
+                  />
+                )}
               </TabList>
 
               {/* Information Tab */}
@@ -324,13 +364,26 @@ export const StudentDetailDialog = ({
                 <StudentAuditLogTab studentId={student.id} />
               </TabPanel>
 
-              {/* Enrollment Tab - Options Selection */}
+              {/* Classe : inscription / changement de classe */}
               <TabPanel value="5" sx={{ px: 0 }}>
-                <OptionSelector
-                  studentId={student.id}
-                  academicYearId={1}
-                  onSubmitSuccess={fetchStudent}
+                <StudentClassEnrollmentTab
+                  student={student}
+                  canManage={canManage}
+                  onChanged={() => {
+                    refreshStudentSilently()
+                    onStudentChanged?.()
+                  }}
                 />
+              </TabPanel>
+
+              {/* Parents : créer, lier, délier + comptes parents */}
+              <TabPanel value="6" sx={{ px: 0 }}>
+                <StudentParentsTab student={student} canManage={canManage} />
+              </TabPanel>
+
+              {/* Compte de connexion de l'élève */}
+              <TabPanel value="7" sx={{ px: 0 }}>
+                <StudentAccountTab student={student} canManage={canManage} />
               </TabPanel>
             </TabContext>
 

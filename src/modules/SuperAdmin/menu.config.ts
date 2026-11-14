@@ -34,7 +34,9 @@ export const superAdminMenuConfig: ModuleMenuConfig = {
       order: 30,
       module: 'SuperAdmin',
       roles: ['superadmin'],
-      isVisible: true,
+
+      // Aucune page /superadmin/modules n'existe encore : entrée masquée pour éviter un 404.
+      isVisible: false,
       isActive: true,
     },
   ],

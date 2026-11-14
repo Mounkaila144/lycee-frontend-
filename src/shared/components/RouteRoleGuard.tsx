@@ -84,6 +84,10 @@ export default function RouteRoleGuard({ children }: { children: ReactNode }) {
     return governing.length > 0 && !governing.some((menu) => userCanSeeMenu(menu, user));
   }, [path, user]);
 
+  if (user === undefined) {
+    return null;
+  }
+
   if (!isDenied) {
     return <>{children}</>;
   }

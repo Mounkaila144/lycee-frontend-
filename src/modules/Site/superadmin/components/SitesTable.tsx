@@ -197,7 +197,7 @@ export default function SitesTable({
           return (
             <div className='flex items-center gap-0.5'>
               {!isUptodate && (
-                <Tooltip title='Activer le site (exécuter les migrations)'>
+                <Tooltip title='Activer le site (créer et migrer sa base)'>
                   <span>
                     <IconButton
                       size='small'

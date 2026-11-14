@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
 import IconButton from '@mui/material/IconButton'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 // Third-party Imports
 import { createColumnHelper } from '@tanstack/react-table'
@@ -23,7 +25,7 @@ import { StudentFormDialog } from './StudentFormDialog'
 import { StudentDeleteDialog } from './StudentDeleteDialog'
 import { StudentDetailDialog } from './StudentDetailDialog'
 import { StudentImportWizard } from './StudentImportWizard'
-import { PedagogicalEnrollmentWizard } from './PedagogicalEnrollmentWizard'
+import { ClassEnrollmentDialog } from './ClassEnrollmentDialog'
 import { StudentFinancialDialog } from './StudentFinancialDialog'
 
 // Shared DataTable Components
@@ -38,6 +40,7 @@ import { studentService } from '../services/studentService'
 
 // Tenant Context
 import { useTenant } from '@/shared/lib/tenant-context'
+import { useAuthUser } from '@/shared/hooks/useAuthUser'
 
 type StudentWithAction = Student & {
   action?: string
@@ -61,6 +64,7 @@ const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'matricule', label: 'Matricule', defaultVisible: true },
   { id: 'firstname', label: 'Prénom', defaultVisible: true },
   { id: 'lastname', label: 'Nom', defaultVisible: true },
+  { id: 'current_class', label: 'Classe', defaultVisible: true },
   { id: 'email', label: 'Email', defaultVisible: true },
   { id: 'mobile', label: 'Mobile', defaultVisible: true },
   { id: 'status', label: 'Statut', defaultVisible: true },
@@ -79,6 +83,8 @@ const columnHelper = createColumnHelper<StudentWithAction>()
 const StudentListTable = () => {
   // Tenant
   const { tenantId } = useTenant()
+  const authUser = useAuthUser()
+  const canManage = Boolean(authUser?.roles.some(role => role === 'Administrator' || role === 'Manager'))
 
   // Context
   const { students, loading, pagination, setPage, setPageSize, setSearch, refresh, params } =
@@ -227,7 +233,7 @@ const StudentListTable = () => {
     setDeleteDialogOpen(true)
   }, [])
 
-  // Handle pedagogical enrollment
+  // Inscription en classe / changement de classe
   const handleOpenEnrollmentDialog = useCallback((student: Student) => {
     setEnrollmentStudent(student)
     setEnrollmentDialogOpen(true)
@@ -238,7 +244,10 @@ const StudentListTable = () => {
     setEnrollmentStudent(null)
   }, [])
 
-  const handleEnrollmentSuccess = useCallback(() => {
+  const [enrollmentMessage, setEnrollmentMessage] = useState<string | null>(null)
+
+  const handleEnrollmentSuccess = useCallback((message: string) => {
+    setEnrollmentMessage(message)
     refresh()
     handleCloseEnrollmentDialog()
   }, [refresh, handleCloseEnrollmentDialog])
@@ -303,6 +312,16 @@ const StudentListTable = () => {
         cell: ({ row }) => (
           <Typography className='font-medium'>{row.original.lastname || '-'}</Typography>
         )
+      }),
+      columnHelper.display({
+        id: 'current_class',
+        header: 'Classe',
+        cell: ({ row }) =>
+          row.original.current_class?.classe_name ? (
+            <Chip variant='tonal' size='small' color='primary' label={row.original.current_class.classe_name} />
+          ) : (
+            <Typography color='text.secondary'>Sans classe</Typography>
+          )
       }),
       columnHelper.accessor('phone', {
         id: 'phone',
@@ -384,6 +403,15 @@ const StudentListTable = () => {
             >
               <i className='ri-eye-line text-textSecondary' />
             </IconButton>
+            {canManage && (
+              <IconButton
+                size='small'
+                onClick={() => handleOpenEnrollmentDialog(row.original)}
+                title={row.original.current_class ? 'Changer de classe' : 'Inscrire en classe'}
+              >
+                <i className={`${row.original.current_class ? 'ri-arrow-left-right-line' : 'ri-user-add-line'} text-textSecondary`} />
+              </IconButton>
+            )}
             <IconButton
               size='small'
               onClick={() => handleOpenEditDialog(row.original)}
@@ -410,7 +438,7 @@ const StudentListTable = () => {
         enableSorting: false
       })
     ],
-    [handleViewClick, handleOpenEditDialog, handleOpenFinancial, handleOpenDeleteDialog, handleOpenEnrollmentDialog]
+    [handleViewClick, handleOpenEditDialog, handleOpenFinancial, handleOpenDeleteDialog, handleOpenEnrollmentDialog, canManage]
   )
 
   // DataTable configuration
@@ -475,6 +503,11 @@ const StudentListTable = () => {
             }}
             fields={[
               {
+                icon: 'ri-book-open-line',
+                label: 'Classe',
+                value: student.current_class?.classe_name || 'Sans classe'
+              },
+              {
                 icon: 'ri-phone-line',
                 label: 'Téléphone',
                 value: student.phone || '-'
@@ -503,11 +536,15 @@ const StudentListTable = () => {
                 color: 'default',
                 onClick: () => handleViewClick(student)
               },
-              {
-                icon: 'ri-book-open-line',
-                color: 'primary',
-                onClick: () => handleOpenEnrollmentDialog(student)
-              },
+              ...(canManage
+                ? [
+                    {
+                      icon: student.current_class ? 'ri-arrow-left-right-line' : 'ri-user-add-line',
+                      color: 'primary' as const,
+                      onClick: () => handleOpenEnrollmentDialog(student)
+                    }
+                  ]
+                : []),
               {
                 icon: 'ri-edit-line',
                 color: 'info',
@@ -554,6 +591,7 @@ const StudentListTable = () => {
         studentId={selectedStudentId}
         onEdit={handleEditFromDetail}
         onDelete={handleDeleteFromDetail}
+        onStudentChanged={refresh}
       />
 
       {/* Financial Situation Dialog */}
@@ -570,24 +608,37 @@ const StudentListTable = () => {
         onSuccess={refresh}
       />
 
-      {/* Pedagogical Enrollment Wizard */}
-      {enrollmentStudent && (
-        <PedagogicalEnrollmentWizard
-          open={enrollmentDialogOpen}
-          onClose={handleCloseEnrollmentDialog}
-          studentId={enrollmentStudent.id}
-          programId={(enrollmentStudent as any).programme_id || 1}
-          level="L1"
-          semesterId={1}
-          academicYearId={1}
-          studentInfo={{
-            matricule: enrollmentStudent.matricule ?? '',
-            firstname: enrollmentStudent.firstname,
-            lastname: enrollmentStudent.lastname
-          }}
-          onEnrollmentComplete={handleEnrollmentSuccess}
-        />
-      )}
+      {/* Inscription en classe / changement de classe */}
+      <ClassEnrollmentDialog
+        open={enrollmentDialogOpen}
+        student={
+          enrollmentStudent
+            ? {
+                id: enrollmentStudent.id,
+                fullName: `${enrollmentStudent.firstname} ${enrollmentStudent.lastname}`,
+                currentClass: enrollmentStudent.current_class
+                  ? {
+                      classe_id: enrollmentStudent.current_class.classe_id,
+                      classe_name: enrollmentStudent.current_class.classe_name
+                    }
+                  : null
+              }
+            : null
+        }
+        onClose={handleCloseEnrollmentDialog}
+        onSuccess={(_enrollment, message) => handleEnrollmentSuccess(message)}
+      />
+
+      <Snackbar
+        open={enrollmentMessage !== null}
+        autoHideDuration={5000}
+        onClose={() => setEnrollmentMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity='success' variant='filled' onClose={() => setEnrollmentMessage(null)}>
+          {enrollmentMessage}
+        </Alert>
+      </Snackbar>
     </>
   )
 }

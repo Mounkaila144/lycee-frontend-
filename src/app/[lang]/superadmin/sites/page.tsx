@@ -169,7 +169,7 @@ export default function SitesManagementPage() {
 
   const handleActivateClick = async (siteItem: SiteListItem) => {
     const displayName = siteItem.company_name || siteItem.id;
-    if (!window.confirm(`Voulez-vous activer le site "${displayName}" ? Cela va exécuter les migrations de la base de données.`)) {
+    if (!window.confirm(`Voulez-vous activer le site "${displayName}" ? Si sa base de données n'existe pas encore, elle sera créée et migrée (cela peut prendre une minute).`)) {
       return;
     }
 
@@ -177,7 +177,7 @@ export default function SitesManagementPage() {
       setActivatingId(siteItem.id);
       const result = await siteService.activateSite(siteItem.id);
       if (result.success) {
-        alert(`Site activé avec succès !`);
+        alert(result.message || 'Site activé avec succès !');
       }
       await refresh();
     } catch (err: any) {

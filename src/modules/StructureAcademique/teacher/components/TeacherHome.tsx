@@ -24,6 +24,7 @@ import Typography from '@mui/material/Typography'
 import { useAuth } from '@/modules/UsersGuard/admin/hooks/useAuth'
 import type { Classe, ClasseStudent } from '../../types/classe.types'
 import { teacherClassesService } from '../services/teacherClassesService'
+import { LatestAnnouncementsCard } from '@/modules/Messaging/components/LatestAnnouncementsCard'
 
 const shortcuts = [
   { label: 'Saisie des notes', route: '/admin/teacher/grades', icon: '✏️' },
@@ -96,6 +97,10 @@ export default function TeacherHome() {
           </Card>
         </Grid>
       ))}
+
+      <Grid size={{ xs: 12 }}>
+        <LatestAnnouncementsCard />
+      </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
         <Card>
